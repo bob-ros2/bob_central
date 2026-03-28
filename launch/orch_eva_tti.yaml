@@ -1,0 +1,26 @@
+# --- Eva Artist Engine (Text-To-Image) ---
+# Separated to manage GPU/PyTorch dependencies independently
+
+- &eva_ns "__ns:=/eva"
+- &log_level "info"
+
+# TTI: Text-To-Image Subsystem
+- name: tti
+  package: bob_central
+  executable: tti
+  output: screen
+  parameters:
+    model_type: "sdxl_turbo"
+    models_path: "/models" # Path inside the TTI container volume
+    output_path: "/tmp/eva_artist.jpg" # Shared path for Vision skill via /tmp volume
+    cpu_offload: false # Set to true if VRAM is tight, but False is faster
+  arguments:
+    - --ros-args
+    - --log-level
+    - *log_level
+    - -r
+    - "prompt:=/eva/artist/prompt"
+    - -r
+    - "image_raw:=/eva/artist/image_raw"
+    - -r
+    - *eva_ns

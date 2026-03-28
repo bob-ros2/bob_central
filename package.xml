@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>bob_central</name>
+  <version>0.1.0</version>
+  <description>The Central Orchestration Brain-Mesh System for Bob. Integrates multiple specialised LLMs and tools via ROS 2.</description>
+  <maintainer email="bobmeuchelm@gmail.com">Bob Ros</maintainer>
+  <license>Apache-2.0</license>
+
+  <url type="website">https://github.com/bob-ros2/bob_central</url>
+  <url type="repository">https://github.com/bob-ros2/bob_central</url>
+  <url type="bugtracker">https://github.com/bob-ros2/bob_central/issues</url>
+
+  <author email="bobmeuchelm@gmail.com">Bob Ros</author>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>bob_launch</depend>
+  <depend>bob_llm</depend>
+  <depend>bob_nlp_tools</depend>
+  <depend>bob_topic_tools</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

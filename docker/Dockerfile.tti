@@ -1,0 +1,52 @@
+# -- GPU-Ready TTI Artist Subsystem (The Visual Studio) --
+# Base: Official ROS 2 Humble (Ubuntu 22.04 Jammy)
+ARG ROS_DISTRO=humble
+FROM ros:${ROS_DISTRO}-ros-base
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV SHELL=/bin/bash
+
+# -- Install System Dependencies --
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    python3-colcon-common-extensions \
+    ros-${ROS_DISTRO}-cv-bridge \
+    ros-${ROS_DISTRO}-sensor-msgs \
+    git \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# -- Install PyTorch with CUDA 12.1 support via Pip --
+# This ensures we are on Ubuntu 22.04 with a modern Torch stack
+RUN pip3 install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+# -- Install TTI Artist Dependencies --
+COPY requirements_tti.txt /tmp/requirements_tti.txt
+# First install PyTorch with CUDA 12.1 support, then the rest
+RUN pip3 install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121 \
+    && pip3 install --no-cache-dir -r /tmp/requirements_tti.txt
+
+# -- ROS 2 Workspace Setup --
+# Context should be '..' in compose file (repo root)
+WORKDIR /ros2_ws
+RUN mkdir -p /ros2_ws/src
+
+# 1. Clone Bob's engine dependencies
+RUN git clone https://github.com/bob-ros2/bob_launch /ros2_ws/src/bob_launch
+
+# 2. Copy current local repo (bob_central) into workspace
+COPY . /ros2_ws/src/bob_central
+
+# -- Build the Workspace --
+RUN . /opt/ros/${ROS_DISTRO}/setup.sh && \
+    colcon build --packages-select bob_central bob_launch
+
+# -- Entrypoint Script --
+RUN echo "#!/bin/bash\nsource /opt/ros/${ROS_DISTRO}/setup.bash\nsource /ros2_ws/install/setup.bash\nexec \"\$@\"" > /ros_entrypoint.sh \
+    && chmod +x /ros_entrypoint.sh
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+
+# Run the TTI node by default (uses the tti console_script)
+CMD ["ros2", "run", "bob_central", "tti"]

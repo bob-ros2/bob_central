@@ -1,0 +1,17 @@
+# Ignore build artifacts and local development files
+build/
+install/
+log/
+.git/
+venv/
+__pycache__/
+*.pyc
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+docker/
+
+# Ignore heavy model weights (handled via Docker volumes)
+[mM]odels/

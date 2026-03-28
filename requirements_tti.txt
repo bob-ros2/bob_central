@@ -1,0 +1,16 @@
+# -- Eva Artist Requirements (TTI / GPU) --
+# PyTorch stack (Recommended to install via --index-url https://download.pytorch.org/whl/cu121)
+torch
+torchvision
+torchaudio
+
+# Diffusion & Generative Models
+diffusers
+transformers
+accelerate
+safetensors
+
+# Graphics & Processing
+opencv-python
+pillow
+numpy<2.0 # Force stability in artist container too

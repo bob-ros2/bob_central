@@ -1,0 +1,10 @@
+# -- Eva Core Requirements (Brain & Logic) --
+# Note: ROS 2 packages like 'rclpy' or 'cv_bridge' are already installed via apt/system images
+
+# Utility & Network
+requests
+python-dotenv
+pillow
+
+# Compatibility (Must be < 2.0 for ROS Humble cv_bridge)
+numpy<2.0

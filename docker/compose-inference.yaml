@@ -1,0 +1,61 @@
+# -- Eva Inference Backends (The GPU Powerhouse) --
+name: eva-inference
+
+networks:
+  eva-net:
+    external: true
+
+services:
+  # -- LLM: THE EYES & RESEARCHER (Gemma 3 4B Multimodal IQ4_XS) --
+  # This container handles both Multimodal Vision and general research/chat reasoning
+  llama-gemma34b:
+    image: ghcr.io/ggml-org/llama.cpp:server-cuda
+    container_name: eva-researcher-vision
+    networks:
+      - eva-net
+    command: --jinja -a gemma-3-4b-it-IQ4_XS --no-mmap
+    environment:
+      LLAMA_ARG_MODEL: /models/gemma-3-4b-it-IQ4_XS/model.gguf
+      LLAMA_ARG_MMPROJ: /models/gemma-3-4b-it-IQ4_XS/mmproj.gguf
+      LLAMA_ARG_CTX_SIZE: 131072
+      LLAMA_ARG_CACHE_TYPE_K: q4_0
+      LLAMA_ARG_CACHE_TYPE_V: q4_0
+      LLAMA_ARG_BATCH: 2048
+      LLAMA_ARG_UBATCH: 512
+      LLAMA_ARG_N_GPU_LAYERS: 100
+      LLAMA_ARG_PORT: 8080
+    ports:
+      - 8022:8080 # Reserved for vision and multimodal research requests
+    volumes:
+      - /volume1/ros/models:/models
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
+
+  # -- SUMMARIZER (Llama 3.2 1B - The Speedster) --
+  llama-summarizer:
+    image: ghcr.io/ggml-org/llama.cpp:server
+    container_name: eva-summarizer
+    networks:
+      - eva-net
+    command: --jinja -a llama-3.2-1b-instruct-q8_0 --no-mmap
+    environment:
+      LLAMA_ARG_MODEL: /models/llama-3.2-1b-instruct-q8_0.gguf
+      LLAMA_ARG_CTX_SIZE: 8192
+      LLAMA_ARG_N_GPU_LAYERS: 0
+      LLAMA_ARG_PORT: 8080
+    ports:
+      - 8023:8080 # Dedicated summarization port
+    volumes:
+      - /volume1/ros/models:/models
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]

@@ -1,0 +1,42 @@
+# -- Eva Artist Subsystem (The Visual Studio) --
+name: eva-artist
+
+networks:
+  eva-net:
+    external: true
+
+# Persistent storage for diffusion weights
+volumes:
+  eva-artist-models:
+
+services:
+  # -- TTI: EVA'S ATELIER (Diffusion Engine) --
+  artist:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile.tti
+      args:
+        # Defaults to humble if ROS_DISTRO is not set in env
+        ROS_DISTRO: ${ROS_DISTRO:-humble}
+    container_name: eva-artist
+    networks:
+      - eva-net
+    environment:
+      - ROS_DOMAIN_ID=50 # Synched with your setup
+      - TTI_MODEL_TYPE=sdxl_turbo
+      - TTI_MODELS_PATH=/models
+      - TTI_OUTPUT_PATH=/tmp/eva_artist.jpg
+    # Launch the artist-only orchestrator (with correct GPU/Model paths)
+    command: ros2 launch bob_launch generic.launch.py config:=/ros2_ws/src/bob_central/launch/orch_eva_tti.yaml
+    volumes:
+      - /tmp/eva:/tmp # Shared folder for visuals (Eva self-inspection)
+      - eva-artist-models:/models # Dedicated persistent volume for models
+      # - ./models:/models # Optional: Use local folder instead of docker volume
+      - ~/.cache/huggingface/cache/huggingface/token:/root/.cache/huggingface/token # Map HF Token directly
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]

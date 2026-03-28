@@ -1,0 +1,16 @@
+server {
+    listen 8080;
+
+    location /v1/ {
+        # Inject the API Key from the environment variable
+        proxy_set_header Authorization "Bearer ${ORCHESTRATOR_API_KEY}";
+        proxy_set_header Content-Type "application/json";
+        
+        # Forward the request to DeepSeek
+        proxy_pass https://api.deepseek.com/v1/;
+        
+        # Ensure SSL/TLS is handled correctly for the outgoing request
+        proxy_ssl_server_name on;
+        proxy_ssl_protocols TLSv1.2 TLSv1.3;
+    }
+}
