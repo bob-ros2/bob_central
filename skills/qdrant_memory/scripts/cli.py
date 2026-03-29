@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,202 +13,118 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#!/usr/bin/env python3
 """Qdrant Memory CLI - Command line interface for the skill."""
 
 import argparse
-import json
-import os
 import sys
+import os
+import json
 
-# Add parent directory to path for imports
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add scripts directory to path for imports
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from scripts import (  # noqa: E402
-    save_text, load_text, list_collections, create_collection,
+from __init__ import (  # noqa: E402
+    save_text, load_text, search_similar, list_collections, create_collection,
     delete_collection, get_all_texts, test_connection
 )
 
 
-def print_json(data, indent=2):
-    """Print data as formatted JSON."""
-    print(json.dumps(data, indent=indent, ensure_ascii=False))
-
-
-def cmd_store(args):
-    """Store text command."""
-    metadata = None
-    if args.metadata:
-        try:
-            metadata = json.loads(args.metadata)
-        except json.JSONDecodeError:
-            print(f'Error: Invalid JSON metadata: {args.metadata}')
-            return 1
-
-    doc_id = save_text(args.collection, args.text, metadata)
-
-    if doc_id:
-        print(f'Document saved with ID: {doc_id}')
-        return 0
-    else:
-        print('Error saving document')
-        return 1
-
-
-def cmd_load(args):
-    """Load text command."""
-    document = load_text(args.collection, args.doc_id)
-
-    if document:
-        print_json(document)
-        return 0
-    else:
-        print(f'Document "{args.doc_id}" not found in collection "{args.collection}"')
-        return 1
-
-
-def cmd_search(args):
-    """Execute search command."""
-    # For CLI, we can't easily provide embeddings
-    # This would require embedding generation or file input
-    print('Note: Search requires embedding vectors.')
-    print('Use the Python API directly for embedding-based search.')
-    return 0
-
-
-def cmd_list(args):
-    """List collections command."""
-    collections = list_collections()
-
-    if not collections:
-        print('No collections found')
-        return 0
-
-    print('Available collections:')
-    for collection in collections:
-        print(f'  - {collection}')
-
-    return 0
-
-
-def cmd_create(args):
-    """Create collection command."""
-    success = create_collection(args.collection, args.size)
-
-    if success:
-        print(f'Collection "{args.collection}" created successfully')
-        return 0
-    else:
-        print(f'Error creating collection "{args.collection}"')
-        return 1
-
-
-def cmd_delete(args):
-    """Delete collection command."""
-    success = delete_collection(args.collection)
-
-    if success:
-        print(f'Collection "{args.collection}" deleted successfully')
-        return 0
-    else:
-        print(f'Error deleting collection "{args.collection}"')
-        return 1
-
-
-def cmd_all(args):
-    """Get all documents command."""
-    documents = get_all_texts(args.collection, args.limit)
-
-    if not documents:
-        print(f'No documents found in collection "{args.collection}"')
-        return 0
-
-    print(f'Documents in "{args.collection}":')
-    for i, doc in enumerate(documents, 1):
-        print(f'\n{i}. ID: {doc["id"]}')
-        print(f'   Text: {doc["text"][:60]}...')
-        print(f'   Metadata: {json.dumps(doc["metadata"], ensure_ascii=False)}')
-
-    return 0
-
-
-def cmd_test(args):
-    """Test Qdrant connection command."""
-    success = test_connection()
-
-    if success:
-        print('✓ Connected to Qdrant successfully')
-        collections = list_collections()
-        print(f'✓ Available collections: {len(collections)}')
-        if collections:
-            print(f'  - {", ".join(collections[:5])}')
-            if len(collections) > 5:
-                print(f'  ... and {len(collections) - 5} more')
-        return 0
-    else:
-        print('✗ Failed to connect to Qdrant')
-        return 1
-
-
 def main():
-    """Start the main CLI entry point."""
+    """Run the CLI for Qdrant memory management."""
     parser = argparse.ArgumentParser(description='Qdrant Memory CLI')
-    subparsers = parser.add_subparsers(dest='command', help='Command to execute')
+    subparsers = parser.add_subparsers(dest='command', help='Commands')
 
-    # Store command
-    store_parser = subparsers.add_parser('store', help='Store text in collection')
-    store_parser.add_argument('collection', help='Collection name')
-    store_parser.add_argument('text', help='Text to store')
-    store_parser.add_argument('--metadata', '-m', help='Metadata as JSON string')
-    store_parser.set_defaults(func=cmd_store)
+    # Save command
+    save_parser = subparsers.add_parser('save', help='Save text to collection')
+    save_parser.add_argument('collection', help='Collection name')
+    save_parser.add_argument('text', help='Text to save')
+    save_parser.add_argument('--metadata', help='JSON metadata string')
 
     # Load command
     load_parser = subparsers.add_parser('load', help='Load text by ID')
     load_parser.add_argument('collection', help='Collection name')
     load_parser.add_argument('doc_id', help='Document ID')
-    load_parser.set_defaults(func=cmd_load)
 
-    # Search command (placeholder)
-    search_parser = subparsers.add_parser('search', help='Search for similar texts')
+    # Search command
+    search_parser = subparsers.add_parser('search', help='Search similar texts')
     search_parser.add_argument('collection', help='Collection name')
-    search_parser.add_argument('query', help='Search query (note: requires embeddings)')
-    search_parser.add_argument('--limit', '-l', type=int, default=5, help='Maximum results')
-    search_parser.set_defaults(func=cmd_search)
+    search_parser.add_argument('query', help='Query text')
+    search_parser.add_argument('--limit', type=int, default=5, help='Result limit')
 
-    # List command
-    list_parser = subparsers.add_parser('list', help='List all collections')
-    list_parser.set_defaults(func=cmd_list)
+    # List collections command
+    subparsers.add_parser('list', help='List all collections')
 
-    # Create command
-    create_parser = subparsers.add_parser('create', help='Create new collection')
+    # Create collection command
+    create_parser = subparsers.add_parser('create', help='Create a collection')
     create_parser.add_argument('collection', help='Collection name')
-    create_parser.add_argument('--size', '-s', type=int, default=384, help='Vector size')
-    create_parser.set_defaults(func=cmd_create)
+    create_parser.add_argument('--size', type=int, default=384, help='Vector size')
 
-    # Delete command
-    delete_parser = subparsers.add_parser('delete', help='Delete collection')
+    # Delete collection command
+    delete_parser = subparsers.add_parser('delete', help='Delete a collection')
     delete_parser.add_argument('collection', help='Collection name')
-    delete_parser.set_defaults(func=cmd_delete)
 
-    # All command
-    all_parser = subparsers.add_parser('all', help='List all documents in collection')
-    all_parser.add_argument('collection', help='Collection name')
-    all_parser.add_argument('--limit', '-l', type=int, default=20, help='Maximum documents')
-    all_parser.set_defaults(func=cmd_all)
+    # Get all command
+    get_all_parser = subparsers.add_parser('get-all', help='Get all texts from collection')
+    get_all_parser.add_argument('collection', help='Collection name')
+    get_all_parser.add_argument('--limit', type=int, default=100, help='Result limit')
 
-    # Test command
-    test_parser = subparsers.add_parser('test', help='Test Qdrant connection')
-    test_parser.set_defaults(func=cmd_test)
+    # Test connection command
+    subparsers.add_parser('test', help='Test Qdrant connection')
 
-    # Parse arguments
     args = parser.parse_args()
 
-    if not args.command:
-        parser.print_help()
-        return 1
+    if args.command == 'save':
+        metadata = json.loads(args.metadata) if args.metadata else None
+        doc_id = save_text(args.collection, args.text, metadata)
+        if doc_id:
+            print(f'Successfully saved with ID: {doc_id}')
+        else:
+            print('Failed to save to Qdrant')
 
-    return args.func(args)
+    elif args.command == 'load':
+        doc = load_text(args.collection, args.doc_id)
+        if doc:
+            print(json.dumps(doc, indent=2))
+        else:
+            print('Document \'{}\' not found in collection \'{}\''.format(args.doc_id, args.collection))
+
+    elif args.command == 'search':
+        # For simplicity in CLI, we use dummy embedding for search
+        # In practice, use the same model used for saving
+        from examples.embedding_demo import generate_dummy_embedding
+        query_embedding = generate_dummy_embedding(args.query)
+        results = search_similar(args.collection, query_embedding, args.limit)
+        print(json.dumps(results, indent=2))
+
+    elif args.command == 'list':
+        collections = list_collections()
+        print(json.dumps(collections, indent=2))
+
+    elif args.command == 'create':
+        if create_collection(args.collection, args.size):
+            print(f'Collection \'{args.collection}\' created')
+        else:
+            print(f'Failed to create collection \'{args.collection}\'')
+
+    elif args.command == 'delete':
+        if delete_collection(args.collection):
+            print(f'Collection \'{args.collection}\' deleted')
+        else:
+            print(f'Failed to delete collection \'{args.collection}\'')
+
+    elif args.command == 'get-all':
+        texts = get_all_texts(args.collection, args.limit)
+        print(json.dumps(texts, indent=2))
+
+    elif args.command == 'test':
+        if test_connection():
+            print('Qdrant connection successful')
+        else:
+            print('Qdrant connection failed')
+
+    else:
+        parser.print_help()
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    main()

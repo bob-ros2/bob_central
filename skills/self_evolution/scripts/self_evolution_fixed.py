@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#!/usr/bin/env python3
 """Fixed version of self_evolution with better git handling."""
 
 import datetime
@@ -446,7 +446,8 @@ if __name__ == '__main__':
             print(json.dumps(res, indent=2))
 
         else:
-            print('''Self Evolution CLI Usage:
+            print('''#!/usr/bin/env python3
+Self Evolution CLI Usage:
   init <task_id> <description> <target_file> <test_cmd>
   iterate <task_id> [mutation_prompt]
   status [task_id]
