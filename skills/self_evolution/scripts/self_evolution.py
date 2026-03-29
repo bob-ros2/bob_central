@@ -24,9 +24,8 @@ import datetime
 import json
 import logging
 import os
-import subprocess
-import tempfile
 import re
+import subprocess
 import sys
 
 # Add scripts directory to path for imports
@@ -56,15 +55,15 @@ class Evolver:
         if not os.path.exists(EVA_ROOT):
             os.makedirs(EVA_ROOT)
         self.tasks = self._load_tasks()
-        
+
         # Try to import LLM integration
         try:
             from llm_integration import get_llm_integration
             self.llm_integration = get_llm_integration()
             self.has_llm = True
-            logging.info("LLM integration available for mutations")
+            logging.info('LLM integration available for mutations')
         except ImportError as e:
-            logging.warning(f"LLM integration not available: {e}")
+            logging.warning(f'LLM integration not available: {e}')
             self.llm_integration = None
             self.has_llm = False
 
@@ -124,8 +123,8 @@ class Evolver:
 
     def _call_llm_for_mutation(self, prompt, current_code, context=None):
         """Call Eva's LLM to generate a code mutation based on the prompt."""
-        logging.info(f"LLM mutation requested with prompt: {prompt[:100]}...")
-        
+        logging.info(f'LLM mutation requested with prompt: {prompt[:100]}...')
+
         if self.has_llm and self.llm_integration:
             try:
                 # Use real LLM integration
@@ -135,50 +134,50 @@ class Evolver:
                     context=json.dumps(context, indent=2) if context else None,
                     timeout=60  # 60 second timeout for LLM
                 )
-                
+
                 if mutated_code:
-                    logging.info("LLM mutation generated successfully")
+                    logging.info('LLM mutation generated successfully')
                     return mutated_code
                 else:
-                    logging.warning("LLM returned no response, using fallback")
-                    
+                    logging.warning('LLM returned no response, using fallback')
+
             except Exception as e:
-                logging.error(f"LLM integration failed: {e}")
-        
+                logging.error(f'LLM integration failed: {e}')
+
         # Fallback: simple mutation logic
         return self._fallback_mutation(prompt, current_code, context)
 
     def _fallback_mutation(self, prompt, current_code, context):
         """Fallback mutation logic when LLM is not available."""
         prompt_lower = prompt.lower()
-        
+
         # Simple rule-based mutations
         lines = current_code.split('\n')
         modified_lines = []
-        
+
         for line in lines:
             modified_lines.append(line)
-            
+
             # Add error handling if mentioned
             if 'error' in prompt_lower or 'exception' in prompt_lower:
                 if line.strip().startswith('def ') and '):' in line:
                     modified_lines.append('    try:')
                     # We'll need to adjust indentation later
-        
+
         result = '\n'.join(modified_lines)
-        
+
         # Add appropriate closing for try blocks
         if 'try:' in result and 'except' not in result:
-            result += '\n    except Exception as e:\n        logging.error(f"Error: {e}")\n        raise'
-        
+            result += '\n    except Exception as e:\n        logging.error(f\'Error: {e}\')\n        raise'
+
         # Add optimization comment if performance mentioned
         if 'performance' in prompt_lower or 'optimize' in prompt_lower:
             result += '\n\n# Performance optimization applied based on mutation prompt'
-        
+
         # Add feature comment if feature mentioned
         if 'feature' in prompt_lower or 'add' in prompt_lower:
             result += '\n\n# New feature placeholder added'
-        
+
         return result
 
     def _apply_mutation(self, task_id, mutation_prompt):
@@ -207,15 +206,15 @@ class Evolver:
 
             # Call LLM for mutation
             mutated_code = self._call_llm_for_mutation(
-                mutation_prompt, 
-                current_code, 
+                mutation_prompt,
+                current_code,
                 context
             )
 
             # Extract code from LLM response (handle code blocks)
             code_pattern = r'```(?:python)?\n(.*?)\n```'
             matches = re.findall(code_pattern, mutated_code, re.DOTALL)
-            
+
             if matches:
                 mutated_code = matches[0]
             else:
@@ -231,8 +230,8 @@ class Evolver:
             with open(target_file, 'w') as f:
                 f.write(mutated_code)
 
-            logging.info(f"Applied mutation to {target_file}")
-            
+            logging.info(f'Applied mutation to {target_file}')
+
             # Git commit the change
             subprocess.run(
                 ['git', 'add', target_file],
@@ -281,15 +280,8 @@ class Evolver:
             )
 
             # Calculate score based on test results
-            # Simple scoring: 100 for pass, 0 for fail
-            # In a real implementation, this could parse test output for more nuanced scoring
             success = (result.returncode == 0)
             score = 100 if success else 0
-
-            # Additional scoring factors could include:
-            # - Test coverage
-            # - Performance metrics
-            # - Code quality metrics
 
             return {
                 'status': 'success',
@@ -355,13 +347,13 @@ class Evolver:
             # Step 3: Check for improvement
             current_score = iteration_result['score']
             best_score = task.get('best_score', 0)
-            
+
             if current_score > best_score:
                 task['best_score'] = current_score
                 task['best_iteration'] = len(task['iterations'])
                 iteration_result['improvement'] = True
                 logging.info(f'New best score: {current_score} (previous: {best_score})')
-                
+
                 # Push to Gitea if significant improvement
                 if current_score >= 80:  # Threshold for pushing
                     try:
@@ -416,17 +408,16 @@ class Evolver:
 
 
 if __name__ == '__main__':
-    import sys
     evolver = Evolver()
-    
+
     # Enhanced CLI with mutation support
     if len(sys.argv) > 1:
         action = sys.argv[1]
-        
+
         if action == 'init' and len(sys.argv) == 6:
             res = evolver.init_task(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
             print(json.dumps(res, indent=2))
-            
+
         elif action == 'iterate':
             if len(sys.argv) == 3:
                 # Iterate without mutation prompt
@@ -436,7 +427,7 @@ if __name__ == '__main__':
                 # Iterate with mutation prompt
                 res = evolver.run_iteration(sys.argv[2], sys.argv[3])
                 print(json.dumps(res, indent=2))
-                
+
         elif action == 'status':
             if len(sys.argv) == 3:
                 # Specific task status
@@ -445,17 +436,17 @@ if __name__ == '__main__':
             else:
                 # Overall status
                 print(json.dumps(evolver.tasks, indent=2))
-                
+
         elif action == 'mutate' and len(sys.argv) == 4:
             # Direct mutation without iteration
             res = evolver._apply_mutation(sys.argv[2], sys.argv[3])
             print(json.dumps(res, indent=2))
-            
+
         else:
-            print("""
+            print('''#!/usr/bin/env python3
 Self Evolution CLI Usage:
   init <task_id> <description> <target_file> <test_cmd>
   iterate <task_id> [mutation_prompt]
   status [task_id]
   mutate <task_id> <mutation_prompt>
-            """)
+''')

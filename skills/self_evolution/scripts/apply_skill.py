@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Apply Self-Evolution skill actions."""
+
 import argparse
 import json
 
@@ -20,6 +22,7 @@ from self_evolution import Evolver
 
 
 def main():
+    """Run CLI for self-evolution actions."""
     parser = argparse.ArgumentParser(description='Apply Self-Evolution skill actions.')
     parser.add_argument('--action', choices=['init_task', 'iterate', 'status'], required=True)
     parser.add_argument('--task_id', type=str, help='Evolution Task ID')
