@@ -17,8 +17,8 @@
 
 import argparse
 import json
-import sys
 from pathlib import Path
+import sys
 
 # Add script directory to sys.path
 SCRIPT_DIR = Path(__file__).parent.resolve()

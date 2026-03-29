@@ -254,14 +254,14 @@ def perform_check():
 
 def log_activity(activity, details=None):
     """Log a specific activity manually."""
-    return log_entry("ACTIVITY", activity, details)
+    return log_entry('ACTIVITY', activity, details)
 
 
 def show_status():
     """Check if monitoring is active in crontab."""
     try:
         result = subprocess.run(
-            'crontab -l 2>/dev/null | grep -q \'self_monitor.py\'',
+            "crontab -l 2>/dev/null | grep -q 'self_monitor.py'",
             shell=True
         )
         active = (result.returncode == 0)
