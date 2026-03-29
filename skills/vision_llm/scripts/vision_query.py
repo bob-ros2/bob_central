@@ -20,28 +20,28 @@ import os
 import sys
 
 
-def create_vision_prompt(prompt_text, image_path, role="user"):
+def create_vision_prompt(prompt_text, image_path, role='user'):
     """
     Create the JSON format for a multimodal bob_llm request.
 
     :param prompt_text: Text-Prompt for the LLM.
     :param image_path: Path to the image file.
-    :param role: Role of the message (default: "user").
+    :param role: Role of the message (default: 'user').
     :return: JSON-String in bob_llm format.
     """
     # Überprüfe ob die Datei existiert
     if not os.path.exists(image_path):
-        raise FileNotFoundError(f"Bilddatei nicht gefunden: {image_path}")
+        raise FileNotFoundError(f'Bilddatei nicht gefunden: {image_path}')
 
     # Erstelle file:// URL
     abs_path = os.path.abspath(image_path)
-    image_url = f"file://{abs_path}"
+    image_url = f'file://{abs_path}'
 
     # Erstelle JSON-Nachricht
     message = {
-        "role": role,
-        "content": prompt_text,
-        "image_url": image_url
+        'role': role,
+        'content': prompt_text,
+        'image_url': image_url
     }
 
     return json.dumps(message, ensure_ascii=False)
@@ -69,19 +69,19 @@ def main():
             args.prompt, args.image_path, args.role)
 
         # Ausgabe für den Skill-Executor
-        print(f"JSON Message für {args.topic}:")
+        print(f'JSON Message für {args.topic}:')
         print(json_message)
 
         # Exit-Code 0 für Erfolg
         sys.exit(0)
 
     except FileNotFoundError as e:
-        print(f"FEHLER: {e}", file=sys.stderr)
+        print(f'FEHLER: {e}', file=sys.stderr)
         sys.exit(1)
     except Exception as e:
-        print(f"FEHLER: {e}", file=sys.stderr)
+        print(f'FEHLER: {e}', file=sys.stderr)
         sys.exit(1)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

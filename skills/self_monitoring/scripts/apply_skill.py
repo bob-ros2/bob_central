@@ -34,11 +34,11 @@ try:
         setup_logging
     )
 except ImportError:
-    print(json.dumps({"status": "error", "message": "Failed to import self_monitor"}))
+    print(json.dumps({'status': 'error', 'message': 'Failed to import self_monitor'}))
     sys.exit(1)
 
 
-def apply_skill(action="status", params=None):
+def apply_skill(action='status', params=None):
     """
     Apply the self_monitoring skill.
 
@@ -51,30 +51,30 @@ def apply_skill(action="status", params=None):
 
     setup_logging()
 
-    if action == "start":
+    if action == 'start':
         return start_monitoring()
-    if action == "stop":
+    if action == 'stop':
         return stop_monitoring()
-    if action == "check":
+    if action == 'check':
         return perform_check()
-    if action == "status":
+    if action == 'status':
         return show_status()
-    if action == "log":
-        activity = params.get("activity", "manual_log")
-        details = params.get("details", {})
+    if action == 'log':
+        activity = params.get('activity', 'manual_log')
+        details = params.get('details', {})
         return log_activity(activity, details)
 
-    return {"status": "error", "message": f"Unknown action: {action}"}
+    return {'status': 'error', 'message': f'Unknown action: {action}'}
 
 
 def main():
     """CLI wrapper for the skill application."""
-    parser = argparse.ArgumentParser(description="Apply self_monitoring skill")
-    parser.add_argument("--action", default="status",
-                        choices=["start", "stop", "check", "status", "log"],
-                        help="Action to perform")
-    parser.add_argument("--params", type=json.loads, default="{}",
-                        help="JSON parameters for the action")
+    parser = argparse.ArgumentParser(description='Apply self_monitoring skill')
+    parser.add_argument('--action', default='status',
+                        choices=['start', 'stop', 'check', 'status', 'log'],
+                        help='Action to perform')
+    parser.add_argument('--params', type=json.loads, default='{}',
+                        help='JSON parameters for the action')
 
     args = parser.parse_args()
 
@@ -82,9 +82,9 @@ def main():
         result = apply_skill(args.action, args.params)
         print(json.dumps(result, indent=2))
     except Exception as exc:
-        print(json.dumps({"status": "error", "message": str(exc)}))
+        print(json.dumps({'status': 'error', 'message': str(exc)}))
         sys.exit(1)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

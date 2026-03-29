@@ -19,42 +19,42 @@ from self_evolution import Evolver
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Apply Self-Evolution skill actions.")
-    parser.add_argument("--action", choices=["init_task", "iterate", "status"], required=True)
-    parser.add_argument("--task_id", type=str, help="Evolution Task ID")
-    parser.add_argument("--description", type=str, help="Task description")
-    parser.add_argument("--target", type=str, help="Target file for mutation")
-    parser.add_argument("--test_cmd", type=str, help="Command to verify results")
+    parser = argparse.ArgumentParser(description='Apply Self-Evolution skill actions.')
+    parser.add_argument('--action', choices=['init_task', 'iterate', 'status'], required=True)
+    parser.add_argument('--task_id', type=str, help='Evolution Task ID')
+    parser.add_argument('--description', type=str, help='Task description')
+    parser.add_argument('--target', type=str, help='Target file for mutation')
+    parser.add_argument('--test_cmd', type=str, help='Command to verify results')
 
     args = parser.parse_args()
     evolver = Evolver()
 
     try:
-        if args.action == "init_task":
+        if args.action == 'init_task':
             if not all([args.task_id, args.description, args.target, args.test_cmd]):
-                result = {"status": "error", "message": "Missing arguments for init_task."}
+                result = {'status': 'error', 'message': 'Missing arguments for init_task.'}
             else:
                 result = evolver.init_task(
                     args.task_id, args.description, args.target, args.test_cmd
                 )
 
-        elif args.action == "iterate":
+        elif args.action == 'iterate':
             if not args.task_id:
-                result = {"status": "error", "message": "Missing task_id for iterate."}
+                result = {'status': 'error', 'message': 'Missing task_id for iterate.'}
             else:
                 result = evolver.run_iteration(args.task_id)
 
-        elif args.action == "status":
-            result = {"status": "success", "data": evolver.tasks}
+        elif args.action == 'status':
+            result = {'status': 'success', 'data': evolver.tasks}
 
         else:
-            result = {"status": "error", "message": f"Unknown action: {args.action}"}
+            result = {'status': 'error', 'message': f'Unknown action: {args.action}'}
 
     except Exception as e:
-        result = {"status": "error", "message": str(e)}
+        result = {'status': 'error', 'message': str(e)}
 
     print(json.dumps(result, indent=2))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

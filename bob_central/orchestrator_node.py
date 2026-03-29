@@ -115,9 +115,9 @@ class OrchestratorNode(Node):
 
             # Bundle original query + specialist result + meta-intent
             bundled_data = {
-                "user_query": self.last_user_query,
-                "is_detailed": self.is_detailed,
-                "specialist_response": content
+                'user_query': self.last_user_query,
+                'is_detailed': self.is_detailed,
+                'specialist_response': content
             }
 
             response_msg = String()
@@ -126,8 +126,8 @@ class OrchestratorNode(Node):
         except json.JSONDecodeError:
             # Fallback if it's not JSON
             bundled_data = {
-                "user_query": self.last_user_query,
-                "specialist_response": msg.data
+                'user_query': self.last_user_query,
+                'specialist_response': msg.data
             }
             response_msg = String()
             response_msg.data = json.dumps(bundled_data)

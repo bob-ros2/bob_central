@@ -24,8 +24,8 @@ import shlex
 import subprocess
 from typing import Any, List
 
+from bob_llm.tool_utils import register as default_register, Tool
 import rclpy
-from bob_llm.tool_utils import Tool, register as default_register
 
 
 class _NodeContext:
@@ -36,14 +36,14 @@ def register(module: Any, node: Any = None) -> List[Tool]:
     """Register the tool with bob_llm."""
     _NodeContext.node = node
     node.get_logger().info(
-        "[Coder Tools] Eva's engineering hands are now active.")
+        '[Coder Tools] Eva\'s engineering hands are now active.')
     return default_register(module, node)
 
 
 def read_file(path: str, start_line: int = 1, end_line: int = 800) -> str:
     """Read the content of a file (1-indexed, inclusive)."""
     if not os.path.exists(path):
-        return f"Error: File '{path}' not found."
+        return f'Error: File \'{path}\' not found.'
 
     try:
         with open(path, 'r', encoding='utf-8') as f:
@@ -52,13 +52,13 @@ def read_file(path: str, start_line: int = 1, end_line: int = 800) -> str:
         # Adjustment for 1-indexing
         requested_lines = lines[start_line - 1: end_line]
         if not requested_lines:
-            return f"Empty or out of bounds (File has {len(lines)} lines)."
+            return f'Empty or out of bounds (File has {len(lines)} lines).'
 
-        content = "".join(requested_lines)
-        return (f"--- {path} (Lines {start_line}-"
-                f"{min(end_line, len(lines))}) ---\n{content}")
+        content = ''.join(requested_lines)
+        return (f'--- {path} (Lines {start_line}-'
+                f'{min(end_line, len(lines))}) ---\n{content}')
     except Exception as e:
-        return f"Error reading file: {str(e)}"
+        return f'Error reading file: {str(e)}'
 
 
 def write_file(path: str, content: str, overwrite: bool = True) -> str:
@@ -69,15 +69,15 @@ def write_file(path: str, content: str, overwrite: bool = True) -> str:
     Use this to save your code creations or modify settings.
     """
     if os.path.exists(path) and not overwrite:
-        return f"Error: File '{path}' already exists and overwrite is False."
+        return f'Error: File \'{path}\' already exists and overwrite is False.'
 
     try:
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
         with open(path, 'w', encoding='utf-8') as f:
             f.write(content)
-        return f"Successfully saved {len(content)} characters to {path}."
+        return f'Successfully saved {len(content)} characters to {path}.'
     except Exception as e:
-        return f"Error writing file: {str(e)}"
+        return f'Error writing file: {str(e)}'
 
 
 def list_dir(path: str = '.') -> str:
@@ -87,18 +87,18 @@ def list_dir(path: str = '.') -> str:
     Defaults to the current working directory.
     """
     if not os.path.exists(path):
-        return f"Error: Path '{path}' not found."
+        return f'Error: Path \'{path}\' not found.'
 
     try:
         items = os.listdir(path)
         result = [
-            f"{'[DIR] ' if os.path.isdir(os.path.join(path, i)) else '      '}{i}"
+            f'{"[DIR] " if os.path.isdir(os.path.join(path, i)) else "      "}{i}'
             for i in items
         ]
         result.sort()
-        return f"Contents of {os.path.abspath(path)}:\n" + "\n".join(result)
+        return f'Contents of {os.path.abspath(path)}:\n' + '\n'.join(result)
     except Exception as e:
-        return f"Error listing directory: {str(e)}"
+        return f'Error listing directory: {str(e)}'
 
 
 def run_command(command: str, timeout: float = 120.0) -> str:
@@ -119,13 +119,13 @@ def run_command(command: str, timeout: float = 120.0) -> str:
 
         output = result.stdout.strip()
         if result.returncode != 0:
-            output += f"\n[Error {result.returncode}]: {result.stderr.strip()}"
+            output += f'\n[Error {result.returncode}]: {result.stderr.strip()}'
 
         if not output:
-            return "[Success: Command returned no output]"
+            return '[Success: Command returned no output]'
         return output
     except Exception as e:
-        return f"Command failed: {str(e)}"
+        return f'Command failed: {str(e)}'
 
 
 def search_text(directory: str, query: str, pattern: str = "*") -> str:
@@ -138,13 +138,13 @@ def search_text(directory: str, query: str, pattern: str = "*") -> str:
     """
     try:
         # We use the built-in 'grep' command for high performance
-        cmd = ["grep", "-rn", "--include", pattern, query, directory]
+        cmd = ['grep', '-rn', '--include', pattern, query, directory]
         result = subprocess.run(cmd, capture_output=True, text=True,
                                 timeout=30.0)
 
         output = result.stdout.strip()
         if not output:
-            return "No matches found."
+            return 'No matches found.'
         return output[:5000]  # Cap output for LLM context
     except Exception as e:
-        return f"Search failed: {str(e)}"
+        return f'Search failed: {str(e)}'

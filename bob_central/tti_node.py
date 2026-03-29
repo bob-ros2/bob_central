@@ -78,12 +78,12 @@ class TTInode(Node):
         dtype = torch.float16
 
         model_map = {
-            'sdxs': "IDZX/sdxs-512-0.9",
-            'sd15': "runwayml/stable-diffusion-v1-5",
-            'sdxl_turbo': "stabilityai/sdxl-turbo"
+            'sdxs': 'IDZX/sdxs-512-0.9',
+            'sd15': 'runwayml/stable-diffusion-v1-5',
+            'sdxl_turbo': 'stabilityai/sdxl-turbo'
         }
 
-        repo_id = model_map.get(self.model_type, "stabilityai/sdxl-turbo")
+        repo_id = model_map.get(self.model_type, 'stabilityai/sdxl-turbo')
 
         try:
             if self.model_type == 'sdxs':
@@ -91,7 +91,7 @@ class TTInode(Node):
                     repo_id, torch_dtype=dtype, cache_dir=self.models_path)
                 self.steps = 1
             else:
-                variant = "fp16" if "sdxl" in self.model_type else None
+                variant = 'fp16' if 'sdxl' in self.model_type else None
                 self.pipe = AutoPipelineForText2Image.from_pretrained(
                     repo_id, torch_dtype=dtype, variant=variant,
                     cache_dir=self.models_path)
@@ -99,10 +99,10 @@ class TTInode(Node):
 
             # VRAM management
             if self.cpu_offload:
-                self.get_logger().info("Activating model CPU offload...")
+                self.get_logger().info('Activating model CPU offload...')
                 self.pipe.enable_model_cpu_offload()
             else:
-                self.pipe.to("cuda")
+                self.pipe.to('cuda')
                 self.pipe.enable_attention_slicing()
 
             self.get_logger().info(f'Model {self.model_type} loaded.')
@@ -126,12 +126,12 @@ class TTInode(Node):
                     guidance_scale=0.0).images[0]
 
             # Save to file system for reachability
-            result.save(self.output_path, "JPEG")
+            result.save(self.output_path, 'JPEG')
             self.get_logger().info(f'Image saved to {self.output_path}')
 
             # Conversion and transmission
             img_msg = self.bridge.cv2_to_imgmsg(
-                np.array(result), encoding="rgb8")
+                np.array(result), encoding='rgb8')
             img_msg.header.stamp = self.get_clock().now().to_msg()
             self.publisher_.publish(img_msg)
         except Exception as e:

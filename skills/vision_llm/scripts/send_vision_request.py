@@ -49,11 +49,11 @@ def resize_image_if_needed(image_path, max_dim=1024):
             resized_img = img.resize((new_w, new_h), Image.LANCZOS)
 
             # Save to a temporary JPG
-            temp_path = f"/tmp/vision_api_payload_{os.getpid()}.jpg"
-            resized_img.save(temp_path, "JPEG", quality=85)
+            temp_path = f'/tmp/vision_api_payload_{os.getpid()}.jpg'
+            resized_img.save(temp_path, 'JPEG', quality=85)
             return temp_path
     except Exception as e:
-        print(f"Warning: Resize failed: {e}", file=sys.stderr)
+        print(f'Warning: Resize failed: {e}', file=sys.stderr)
         return image_path
 
 
@@ -61,12 +61,12 @@ def encode_image_to_base64(image_path):
     """Encode an image file to a base64 data URL string."""
     mime_type, _ = mimetypes.guess_type(image_path)
     if not mime_type:
-        mime_type = "image/jpeg"
+        mime_type = 'image/jpeg'
 
-    with open(image_path, "rb") as f:
-        b64_data = base64.b64encode(f.read()).decode("utf-8")
+    with open(image_path, 'rb') as f:
+        b64_data = base64.b64encode(f.read()).decode('utf-8')
 
-    return f"data:{mime_type};base64,{b64_data}"
+    return f'data:{mime_type};base64,{b64_data}'
 
 
 def main():
@@ -99,19 +99,19 @@ def main():
 
         # 2. Build OpenAI-compatible Payload
         payload = {
-            "model": "gemma-3-4b-it",
-            "messages": [
+            'model': 'gemma-3-4b-it',
+            'messages': [
                 {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": args.prompt},
-                        {"type": "image_url",
-                         "image_url": {"url": image_data_url}}
+                    'role': 'user',
+                    'content': [
+                        {'type': 'text', 'text': args.prompt},
+                        {'type': 'image_url',
+                         'image_url': {'url': image_data_url}}
                     ]
                 }
             ],
-            "stream": False,
-            "temperature": 0.2
+            'stream': False,
+            'temperature': 0.2
         }
 
         # 3. Direct HTTP POST
@@ -127,12 +127,12 @@ def main():
         sys.exit(0)
 
     except requests.exceptions.RequestException as e:
-        print(f"API Error: {e}", file=sys.stderr)
+        print(f'API Error: {e}', file=sys.stderr)
         sys.exit(1)
     except Exception as e:
-        print(f"Internal Error: {str(e)}", file=sys.stderr)
+        print(f'Internal Error: {str(e)}', file=sys.stderr)
         sys.exit(1)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+
 import psutil
 
 
@@ -23,9 +24,9 @@ def get_system_status():
     load_avg = os.getloadavg()
 
     return {
-        'cpu_load': f"{cpu_percent}%",
-        'memory_used': f"{mem.percent}%",
-        'memory_free_gb': f"{mem.available / (1024**3):.2f} GB",
+        'cpu_load': f'{cpu_percent}%',
+        'memory_used': f'{mem.percent}%',
+        'memory_free_gb': f'{mem.available / (1024**3):.2f} GB',
         'load_average': load_avg
     }
 

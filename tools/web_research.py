@@ -51,14 +51,14 @@ def search_web(query: str, num_results: int = 3) -> str:
             })
 
         if not results:
-            return json.dumps({"status": "no results found"})
+            return json.dumps({'status': 'no results found'})
 
-        return json.dumps({"status": "success", "results": results})
+        return json.dumps({'status': 'success', 'results': results})
 
     except Exception as e:
-        return json.dumps({"status": "error", "message": str(e)})
+        return json.dumps({'status': 'error', 'message': str(e)})
 
 
 if __name__ == '__main__':
     # Test
-    print(search_web("ros2 hardware acceleration"))
+    print(search_web('ros2 hardware acceleration'))
