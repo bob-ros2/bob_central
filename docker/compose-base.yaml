@@ -76,5 +76,5 @@ services:
       - GITEA_INSTANCE_URL=http://eva-gitea:3000
       - GITEA_RUNNER_REGISTRATION_TOKEN=2B0G4dCfvHXL4OP4CJ7qYDspzw1tepeFjzfIGCzb
       - GITEA_RUNNER_NAME=eva-nucleus-runner
-      - GITEA_RUNNER_LABELS=ubuntu-latest:docker://catthehacker/ubuntu:act-latest,ubuntu-22.04:docker://catthehacker/ubuntu:act-22.04,ros-humble:docker://ros:humble-ros-base
+      - GITEA_RUNNER_LABELS=ubuntu-latest:docker://catthehacker/ubuntu:act-latest,ubuntu-22.04:docker://catthehacker/ubuntu:act-22.04,ros-humble:docker://ros:humble
     restart: always
