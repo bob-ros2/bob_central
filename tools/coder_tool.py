@@ -36,14 +36,14 @@ def register(module: Any, node: Any = None) -> List[Tool]:
     """Register the tool with bob_llm."""
     _NodeContext.node = node
     node.get_logger().info(
-        '[Coder Tools] Eva\'s engineering hands are now active.')
+        "[Coder Tools] Eva's engineering hands are now active.")
     return default_register(module, node)
 
 
 def read_file(path: str, start_line: int = 1, end_line: int = 800) -> str:
     """Read the content of a file (1-indexed, inclusive)."""
     if not os.path.exists(path):
-        return f'Error: File \'{path}\' not found.'
+        return f"Error: File '{path}' not found."
 
     try:
         with open(path, 'r', encoding='utf-8') as f:
@@ -69,7 +69,7 @@ def write_file(path: str, content: str, overwrite: bool = True) -> str:
     Use this to save your code creations or modify settings.
     """
     if os.path.exists(path) and not overwrite:
-        return f'Error: File \'{path}\' already exists and overwrite is False.'
+        return f"Error: File '{path}' already exists and overwrite is False."
 
     try:
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
@@ -87,7 +87,7 @@ def list_dir(path: str = '.') -> str:
     Defaults to the current working directory.
     """
     if not os.path.exists(path):
-        return f'Error: Path \'{path}\' not found.'
+        return f"Error: Path '{path}' not found."
 
     try:
         items = os.listdir(path)
@@ -128,7 +128,7 @@ def run_command(command: str, timeout: float = 120.0) -> str:
         return f'Command failed: {str(e)}'
 
 
-def search_text(directory: str, query: str, pattern: str = "*") -> str:
+def search_text(directory: str, query: str, pattern: str = '*') -> str:
     """
     Search for a string recursively in a directory using grep-like logic.
 

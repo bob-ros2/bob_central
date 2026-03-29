@@ -44,8 +44,8 @@ def resize_image_if_needed(image_path, max_dim=1024):
             else:
                 new_w, new_h = int(w * (max_dim / h)), max_dim
 
-            print(f"Resizing {w}x{h} -> {new_w}x{new_h} for "
-                  f"token efficiency...", file=sys.stderr)
+            print(f'Resizing {w}x{h} -> {new_w}x{new_h} for '
+                  f'token efficiency...', file=sys.stderr)
             resized_img = img.resize((new_w, new_h), Image.LANCZOS)
 
             # Save to a temporary JPG
@@ -115,7 +115,7 @@ def main():
         }
 
         # 3. Direct HTTP POST
-        print(f"Sending Vision request to {args.url}...", file=sys.stderr)
+        print(f'Sending Vision request to {args.url}...', file=sys.stderr)
         response = requests.post(args.url, json=payload, timeout=args.timeout)
         response.raise_for_status()
 

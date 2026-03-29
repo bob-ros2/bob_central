@@ -44,9 +44,9 @@ def draw_image(prompt: str) -> str:
     node.destroy_node()
     return (f"Image prompt '{prompt}' sent to TTI subsystem. "
             f"The result will be saved to '/tmp/eva/eva_artist.jpg' after a few "
-            f"seconds. You can use your vision tools to inspect it there.")
+            f'seconds. You can use your vision tools to inspect it there.')
 
 
 if __name__ == '__main__':
     # Test
-    print(draw_image("A futuristic robot library full of holographic books"))
+    print(draw_image('A futuristic robot library full of holographic books'))

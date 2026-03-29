@@ -60,7 +60,7 @@ class OrchestratorNode(Node):
 
         self.get_logger().info('Orchestrator ready to route intents.')
 
-        self.last_user_query = "Unknown"
+        self.last_user_query = 'Unknown'
         self.is_detailed = False
 
     def user_query_callback(self, msg):
@@ -71,7 +71,7 @@ class OrchestratorNode(Node):
         """
         query = msg.data
         self.last_user_query = query  # Store for the summarizer
-        self.get_logger().debug(f"Received user query: {query}")
+        self.get_logger().debug(f'Received user query: {query}')
 
         # Simple Intent/Verbosity Detection
         details_keywords = [
@@ -79,7 +79,7 @@ class OrchestratorNode(Node):
         self.is_detailed = any(k in query.lower() for k in details_keywords)
 
         self.get_logger().info(
-            f"New query received (Detailed={self.is_detailed}): {query[:50]}...")
+            f'New query received (Detailed={self.is_detailed}): {query[:50]}...')
 
         # Get current time
         now = datetime.now()
@@ -87,8 +87,8 @@ class OrchestratorNode(Node):
         day_of_week = now.strftime('%A')
 
         # Prefix the user's message with the exact time
-        sys_ctx = (f"[System Context: Current Real Time is "
-                   f"{day_of_week}, {time_str}] ")
+        sys_ctx = (f'[System Context: Current Real Time is '
+                   f'{day_of_week}, {time_str}] ')
         enriched_query = sys_ctx + query
 
         routing_data = {
@@ -111,7 +111,7 @@ class OrchestratorNode(Node):
             data = json.loads(msg.data)
             content = data.get('content', msg.data)
             self.get_logger().debug(
-                f"Received specialist response: {content[:100]}...")
+                f'Received specialist response: {content[:100]}...')
 
             # Bundle original query + specialist result + meta-intent
             bundled_data = {
