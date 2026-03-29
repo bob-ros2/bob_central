@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,10 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Text-To-Image (TTI) Generation Node.
+
+Interprets textual prompts and generates qualitative imagery.
+"""
+
 import os
 
 from cv_bridge import CvBridge
-from diffusers import AutoPipelineForText2Image, DiffusionPipeline
+import diffusers
 import numpy as np
 from rcl_interfaces.msg import ParameterDescriptor
 import rclpy
@@ -71,6 +78,9 @@ class TTInode(Node):
 
         self.get_logger().info(
             f'Initializing TTI with: {self.model_type}')
+        # guidance_scale=0.0 fix
+        self.pipe = None
+        self.steps = 5
         self._init_pipeline()
 
     def _init_pipeline(self):
@@ -87,12 +97,12 @@ class TTInode(Node):
 
         try:
             if self.model_type == 'sdxs':
-                self.pipe = DiffusionPipeline.from_pretrained(
+                self.pipe = diffusers.DiffusionPipeline.from_pretrained(
                     repo_id, torch_dtype=dtype, cache_dir=self.models_path)
                 self.steps = 1
             else:
                 variant = 'fp16' if 'sdxl' in self.model_type else None
-                self.pipe = AutoPipelineForText2Image.from_pretrained(
+                self.pipe = diffusers.AutoPipelineForText2Image.from_pretrained(
                     repo_id, torch_dtype=dtype, variant=variant,
                     cache_dir=self.models_path)
                 self.steps = 2 if 'turbo' in self.model_type else 20
@@ -146,8 +156,10 @@ def main(args=None):
         rclpy.spin(node)
     except KeyboardInterrupt:
         pass
-    node.destroy_node()
-    rclpy.shutdown()
+    finally:
+        node.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == '__main__':

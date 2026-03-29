@@ -14,15 +14,15 @@
 
 """Qdrant Memory Skill - Main implementation."""
 
-import os
-import uuid
-from typing import Dict, List, Optional, Any
 from datetime import datetime
+import os
+from typing import Any, Dict, List, Optional
+import uuid
 
 try:
     from qdrant_client import QdrantClient
     from qdrant_client.http import models
-    from qdrant_client.http.models import VectorParams, Distance
+    from qdrant_client.http.models import Distance, VectorParams
     QDRANT_AVAILABLE = True
 except ImportError:
     QDRANT_AVAILABLE = False
@@ -281,18 +281,17 @@ class QdrantMemory:
 
 
 # Global instance for easy access
-_memory_instance = None
+_MEMORY_INSTANCE = None
 
 
 def get_memory() -> QdrantMemory:
     """Get or create Qdrant memory instance."""
-    global _memory_instance
-    if _memory_instance is None:
-        _memory_instance = QdrantMemory()
-    return _memory_instance
+    global _MEMORY_INSTANCE
+    if _MEMORY_INSTANCE is None:
+        _MEMORY_INSTANCE = QdrantMemory()
+    return _MEMORY_INSTANCE
 
 
-# Public API functions
 def save_text(collection: str, text: str, metadata: Optional[Dict] = None) -> Optional[str]:
     """Save text to collection."""
     return get_memory().save_text(collection, text, metadata)

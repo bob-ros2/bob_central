@@ -13,117 +13,98 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Qdrant Memory CLI - Command line interface for the skill."""
+"""Command line interface for Qdrant Memory Skill."""
 
 import argparse
-import sys
-import os
 import json
+import os
+import sys
 
-# Add scripts directory to path for imports
+# Add scripts directory to path for imports if needed
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from __init__ import (  # noqa: E402
-    save_text, load_text, search_similar, list_collections, create_collection,
-    delete_collection, get_all_texts, test_connection
+    create_collection, delete_collection, get_all_texts, list_collections,
+    load_text, save_text, test_connection
 )
 
 
 def main():
-    """Run the CLI for Qdrant memory management."""
-    parser = argparse.ArgumentParser(description='Qdrant Memory CLI')
-    subparsers = parser.add_subparsers(dest='command', help='Commands')
-
-    # Save command
-    save_parser = subparsers.add_parser('save', help='Save text to collection')
-    save_parser.add_argument('collection', help='Collection name')
-    save_parser.add_argument('text', help='Text to save')
-    save_parser.add_argument('--metadata', help='JSON metadata string')
-
-    # Load command
-    load_parser = subparsers.add_parser('load', help='Load text by ID')
-    load_parser.add_argument('collection', help='Collection name')
-    load_parser.add_argument('doc_id', help='Document ID')
-
-    # Search command
-    search_parser = subparsers.add_parser('search', help='Search similar texts')
-    search_parser.add_argument('collection', help='Collection name')
-    search_parser.add_argument('query', help='Query text')
-    search_parser.add_argument('--limit', type=int, default=5, help='Result limit')
-
-    # List collections command
-    subparsers.add_parser('list', help='List all collections')
-
-    # Create collection command
-    create_parser = subparsers.add_parser('create', help='Create a collection')
-    create_parser.add_argument('collection', help='Collection name')
-    create_parser.add_argument('--size', type=int, default=384, help='Vector size')
-
-    # Delete collection command
-    delete_parser = subparsers.add_parser('delete', help='Delete a collection')
-    delete_parser.add_argument('collection', help='Collection name')
-
-    # Get all command
-    get_all_parser = subparsers.add_parser('get-all', help='Get all texts from collection')
-    get_all_parser.add_argument('collection', help='Collection name')
-    get_all_parser.add_argument('--limit', type=int, default=100, help='Result limit')
-
-    # Test connection command
-    subparsers.add_parser('test', help='Test Qdrant connection')
+    """Run CLI for Qdrant memory operations."""
+    parser = argparse.ArgumentParser(description='Qdrant Memory Skill CLI')
+    parser.add_argument('command', choices=[
+        'save', 'load', 'search', 'list', 'create', 'delete', 'test'
+    ])
+    parser.add_argument('--collection', type=str, help='Collection name')
+    parser.add_argument('--text', type=str, help='Text to save')
+    parser.add_argument('--doc_id', type=str, help='Document ID')
+    parser.add_argument('--limit', type=int, default=10, help='Result limit')
 
     args = parser.parse_args()
 
     if args.command == 'save':
-        metadata = json.loads(args.metadata) if args.metadata else None
-        doc_id = save_text(args.collection, args.text, metadata)
+        if not args.collection or not args.text:
+            print('Error: --collection and --text are required for save')
+            sys.exit(1)
+        doc_id = save_text(args.collection, args.text)
         if doc_id:
-            print(f'Successfully saved with ID: {doc_id}')
+            print(f'Document saved with ID: {doc_id}')
         else:
-            print('Failed to save to Qdrant')
+            print('Failed to save document')
 
     elif args.command == 'load':
+        if not args.collection or not args.doc_id:
+            print('Error: --collection and --doc_id are required for load')
+            sys.exit(1)
         doc = load_text(args.collection, args.doc_id)
         if doc:
             print(json.dumps(doc, indent=2))
         else:
-            print('Document \'{}\' not found in collection \'{}\''.format(args.doc_id, args.collection))
+            print(f"Document '{args.doc_id}' not found in '{args.collection}'")
 
     elif args.command == 'search':
-        # For simplicity in CLI, we use dummy embedding for search
-        # In practice, use the same model used for saving
-        from examples.embedding_demo import generate_dummy_embedding
-        query_embedding = generate_dummy_embedding(args.query)
-        results = search_similar(args.collection, query_embedding, args.limit)
-        print(json.dumps(results, indent=2))
+        if not args.collection or not args.text:
+            print('Error: --collection and --text are required for search')
+            sys.exit(1)
+        # Note: In real search, we'd need an embedding.
+        # This CLI is simplified.
+        print('Error: CLI search requires embedding generation which is not implemented here.')
+        print('Use search_similar() directly in code or use the provided examples.')
+        sys.exit(1)
 
     elif args.command == 'list':
-        collections = list_collections()
-        print(json.dumps(collections, indent=2))
+        if args.collection:
+            docs = get_all_texts(args.collection, limit=args.limit)
+            print(json.dumps(docs, indent=2))
+        else:
+            cols = list_collections()
+            print('Collections:')
+            for col in cols:
+                print(f' - {col}')
 
     elif args.command == 'create':
-        if create_collection(args.collection, args.size):
-            print(f'Collection \'{args.collection}\' created')
+        if not args.collection:
+            print('Error: --collection is required for create')
+            sys.exit(1)
+        if create_collection(args.collection):
+            print(f"Collection '{args.collection}' created")
         else:
-            print(f'Failed to create collection \'{args.collection}\'')
+            print(f"Failed to create collection '{args.collection}'")
 
     elif args.command == 'delete':
+        if not args.collection:
+            print('Error: --collection is required for delete')
+            sys.exit(1)
         if delete_collection(args.collection):
-            print(f'Collection \'{args.collection}\' deleted')
+            print(f"Collection '{args.collection}' deleted")
         else:
-            print(f'Failed to delete collection \'{args.collection}\'')
-
-    elif args.command == 'get-all':
-        texts = get_all_texts(args.collection, args.limit)
-        print(json.dumps(texts, indent=2))
+            print(f"Failed to delete collection '{args.collection}'")
 
     elif args.command == 'test':
         if test_connection():
-            print('Qdrant connection successful')
+            print('Status: Connected to Qdrant successfully')
         else:
-            print('Qdrant connection failed')
-
-    else:
-        parser.print_help()
+            print('Status: Failed to connect to Qdrant')
 
 
 if __name__ == '__main__':

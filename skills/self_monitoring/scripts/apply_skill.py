@@ -26,12 +26,12 @@ sys.path.insert(0, str(SCRIPT_DIR))
 
 try:
     from self_monitor import (
-        start_monitoring,
-        stop_monitoring,
-        perform_check,
-        show_status,
         log_activity,
-        setup_logging
+        perform_check,
+        setup_logging,
+        show_status,
+        start_monitoring,
+        stop_monitoring
     )
 except ImportError:
     print(json.dumps({'status': 'error', 'message': 'Failed to import self_monitor'}))

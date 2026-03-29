@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,15 +30,15 @@ def create_vision_prompt(prompt_text, image_path, role='user'):
     :param role: Role of the message (default: 'user').
     :return: JSON-String in bob_llm format.
     """
-    # Überprüfe ob die Datei existiert
+    # Check if the file exists
     if not os.path.exists(image_path):
-        raise FileNotFoundError(f'Bilddatei nicht gefunden: {image_path}')
+        raise FileNotFoundError(f'Image file not found: {image_path}')
 
-    # Erstelle file:// URL
+    # Create file:// URL
     abs_path = os.path.abspath(image_path)
     image_url = f'file://{abs_path}'
 
-    # Erstelle JSON-Nachricht
+    # Create JSON-Message
     message = {
         'role': role,
         'content': prompt_text,
@@ -64,22 +65,22 @@ def main():
     args = parser.parse_args()
 
     try:
-        # Erstelle die JSON-Nachricht
+        # Create JSON message
         json_message = create_vision_prompt(
             args.prompt, args.image_path, args.role)
 
-        # Ausgabe für den Skill-Executor
-        print(f'JSON Message für {args.topic}:')
+        # Output for skill executor
+        print(f'JSON Message for {args.topic}:')
         print(json_message)
 
-        # Exit-Code 0 für Erfolg
+        # Exit-Code 0 for success
         sys.exit(0)
 
     except FileNotFoundError as e:
-        print(f'FEHLER: {e}', file=sys.stderr)
+        print(f'ERROR: {e}', file=sys.stderr)
         sys.exit(1)
     except Exception as e:
-        print(f'FEHLER: {e}', file=sys.stderr)
+        print(f'ERROR: {e}', file=sys.stderr)
         sys.exit(1)
 
 

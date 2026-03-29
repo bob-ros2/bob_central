@@ -13,9 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Embedding demonstration for Qdrant Memory Skill."""
+"""Example showing how to use Qdrant for vector search (embeddings)."""
 
-import hashlib
 import os
 import sys
 
@@ -28,102 +27,70 @@ from scripts import (  # noqa: E402
 )
 
 
-def generate_dummy_embedding(text: str, dimension: int = 384) -> list:
-    """Generate a dummy embedding for demonstration."""
-    # Create deterministic vector based on text hash
-    hash_obj = hashlib.md5(text.encode())
-    hash_bytes = hash_obj.digest()
-
-    # Convert to list of floats
-    vector = []
-    for i in range(dimension):
-        # Use hash bytes cyclically
-        byte_val = hash_bytes[i % len(hash_bytes)]
-        # Normalize to [-1, 1]
-        val = (byte_val / 127.5) - 1.0
-        vector.append(float(val))
-
-    return vector
-
-
 def main():
-    """Demonstrate embedding usage."""
+    """Demonstrate embedding search with Qdrant Memory Skill."""
     print('=== Qdrant Memory Skill - Embedding Demo ===\n')
 
-    # Test connection
-    print('1. Testing connection...')
     if not test_connection():
-        print('   ✗ Connection failed')
-        return 1
-    print('   ✓ Connected')
-
-    # Create collection for embeddings
-    collection_name = 'embedding_demo'
-    vector_dim = 384
-
-    print(f'\n2. Creating collection "{collection_name}" with vector size {vector_dim}...')
-    if create_collection(collection_name, vector_dim):
-        print('   ✓ Collection created')
-    else:
-        print('   ✗ Failed to create collection')
+        print('✗ Qdrant connection failed. Make sure Qdrant is running.')
         return 1
 
-    # Sample texts with embeddings
-    print('\n3. Storing texts with embeddings...')
+    # In a real scenario, use a real embedding model (e.g. sentencetransformers)
+    # This demo uses dummy vectors of size 128
+    vector_size = 128
+    collection = 'test_embeddings'
 
-    sample_texts = [
-        'Artificial intelligence is transforming industries',
-        'Machine learning algorithms learn from data patterns',
-        'Deep learning uses neural networks with many layers',
-        'Natural language processing understands human language',
-        'Computer vision enables machines to interpret images',
-        'Robotics combines hardware and AI for physical tasks'
+    # 1. Prepare collection
+    print(f"1. Creating collection '{collection}' for vector size {vector_size}...")
+    if not create_collection(collection, vector_size):
+        print('✗ Failed to create collection.')
+        return 1
+    print('✓ Collection ready')
+
+    # 2. Add texts with dummy embeddings
+    print('\n2. Adding texts with vectors...')
+    entries = [
+        ('Die Katze sitzt auf der Matte.', [0.1] * vector_size),
+        ('Hunde spielen gerne im Park.', [0.2] * vector_size),
+        ('Der Computer berechnet die Daten.', [0.5] * vector_size),
+        ('Die Sonne ist sehr heiß heute.', [0.9] * vector_size)
     ]
 
-    doc_ids = []
-    for text in sample_texts:
-        # Generate dummy embedding
-        embedding = generate_dummy_embedding(text, vector_dim)
-
-        # Store with embedding
+    for i, (text, vector) in enumerate(entries):
         doc_id = save_with_embedding(
-            collection_name,
-            text,
-            embedding,
-            {'topic': 'ai', 'source': 'demo'}
+            collection, text, vector,
+            metadata={'id': i, 'topic': 'demo'}
         )
-
         if doc_id:
-            doc_ids.append(doc_id)
-            print(f'   ✓ Stored: {text[:40]}...')
+            print(f'   ✓ Saved "{text[:30]}..." (ID: {doc_id})')
+        else:
+            print(f'   ✗ Failed to save "{text}"')
 
-    print(f'   Total stored: {len(doc_ids)} documents')
+    # 3. Search similar with a dummy query vector
+    # Query vector close to dogs (0.2)
+    query_vector = [0.22] * vector_size
+    print('\n3. Searching for documents similar to dummy query vector...')
+    results = search_similar(collection, query_vector, limit=2)
 
-    # Demonstrate similarity search
-    if doc_ids:
-        print('\n4. Demonstrating similarity search...')
+    print(f'   Found {len(results)} matches:')
+    for match in results:
+        print(f'   - Score {match["score"]:.4f}: "{match["text"]}"')
 
-        # Create a query embedding
-        query_text = 'neural networks and artificial intelligence'
-        query_embedding = generate_dummy_embedding(query_text, vector_dim)
+    # 4. Search closer to sun (0.9)
+    query_vector_sun = [0.88] * vector_size
+    print('\n4. Searching for documents similar to sun query vector...')
+    results_sun = search_similar(collection, query_vector_sun, limit=1)
 
-        print(f'   Query: "{query_text}"')
+    print(f'   Found {len(results_sun)} match:')
+    for match in results_sun:
+        print(f'   - Score {match["score"]:.4f}: "{match["text"]}"')
 
-        # Search for similar documents
-        results = search_similar(collection_name, query_embedding, limit=3)
-
-        print(f'   Found {len(results)} similar documents:')
-        for i, result in enumerate(results, 1):
-            print(f'\n   {i}. Similarity score: {result["score"]:.4f}')
-            print(f'      Text: {result["text"]}')
-            print(f'      ID: {result["id"]}')
-
-    # Clean up
-    print('\n5. Cleaning up...')
-    if delete_collection(collection_name):
-        print('   ✓ Collection deleted')
+    # 5. Optional: Clean up
+    print(f"\n5. Cleaning up (deleting collection '{collection}')...")
+    if delete_collection(collection):
+        print('✓ Clean up successful')
     else:
-        print('   ✗ Failed to delete collection')
+        print('✗ Failed to delete collection')
 
     print('\n=== Embedding Demo Completed ===')
     return 0

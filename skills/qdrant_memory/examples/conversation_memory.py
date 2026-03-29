@@ -13,152 +13,102 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Conversation memory example for Qdrant Memory Skill."""
+"""Example showing how to use Qdrant for conversation memory."""
 
+from datetime import datetime
 import os
 import sys
-from datetime import datetime
 
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from scripts import (  # noqa: E402
-    delete_collection, get_all_texts, save_text, test_connection
+    get_all_texts, save_text, test_connection
 )
-
-
-class ConversationMemory:
-    """Implement simple conversation memory using Qdrant."""
-
-    def __init__(self, user_id: str = 'default'):
-        """Initialize with user ID."""
-        self.user_id = user_id
-        self.collection_name = f'conversations_{user_id}'
-
-    def initialize(self):
-        """Initialize conversation storage."""
-        if not test_connection():
-            print('Qdrant connection failed')
-            return False
-
-        # Collection will be auto-created on first save
-        return True
-
-    def add_message(self, role: str, content: str, additional_metadata: dict = None):
-        """Add a message to conversation history."""
-        metadata = {
-            'user_id': self.user_id,
-            'role': role,
-            'timestamp': datetime.now().isoformat()
-        }
-
-        if additional_metadata:
-            metadata.update(additional_metadata)
-
-        doc_id = save_text(self.collection_name, content, metadata)
-        return doc_id
-
-    def get_recent_messages(self, limit: int = 10):
-        """Get recent messages from conversation."""
-        messages = get_all_texts(self.collection_name, limit=limit)
-
-        # Sort by timestamp (newest first)
-        messages.sort(key=lambda x: x.get('metadata', {}).get('timestamp', ''), reverse=True)
-
-        return messages
-
-    def get_conversation_context(self, limit: int = 5):
-        """Get conversation context for LLM prompts."""
-        messages = self.get_recent_messages(limit=limit)
-
-        context = []
-        for msg in messages:
-            role = msg['metadata'].get('role', 'unknown')
-            content = msg['text']
-            context.append(f'{role}: {content}')
-
-        return '\n'.join(context)
-
-    def clear_conversation(self):
-        """Clear conversation history."""
-        return delete_collection(self.collection_name)
 
 
 def main():
     """Demonstrate conversation memory usage."""
     print('=== Qdrant Memory Skill - Conversation Memory Example ===\n')
 
-    # Create conversation memory for a user
-    user_id = 'bob'
-    memory = ConversationMemory(user_id)
-
-    print(f'1. Initializing conversation memory for user "{user_id}"...')
-    if memory.initialize():
-        print('   ✓ Conversation memory initialized')
-    else:
-        print('   ✗ Initialization failed')
+    if not test_connection():
+        print('✗ Qdrant connection failed. Make sure Qdrant is running.')
         return 1
 
-    # Simulate a conversation
-    print('\n2. Simulating conversation...')
+    # In a real scenario, use a unique ID for each session
+    session_id = 'session_' + datetime.now().strftime('%Y%m%d_%H%M%S')
+    collection = 'eva_conversation_history'
 
+    print(f'1. Using session ID: {session_id}')
+    print(f'2. Using collection: {collection}')
+
+    # Simulated conversation entries
     conversation = [
-        ('user', 'Hallo Eva, wie geht es dir heute?'),
-        ('assistant', 'Hallo Bob! Mir geht es gut, danke der Nachfrage. Wie kann ich dir helfen?'),
-        ('user', 'Kannst du mir bei ROS 2 helfen?'),
-        ('assistant', 'Ja, natürlich! ROS 2 ist ein Robot Operating System. Was genau möchtest du wissen?'),
-        ('user', 'Wie starte ich einen ROS 2 Node?'),
-        ('assistant', 'Du kannst einen ROS 2 Node mit "ros2 run <package> <node>" starten.'),
-        ('user', 'Ja, zeig mir ein Beispiel mit turtlesim.'),
-        ('assistant', 'Sicher! "ros2 run turtlesim turtlesim_node" und "ros2 run turtlesim turtle_teleop_key".')
+        ('user', 'Hallo Eva! Wie geht es dir heute?'),
+        (
+            'assistant',
+            'Hallo! Mir geht es ausgezeichnet. Wie kann ich dir bei deinem Roboter '
+            'helfen?'
+        ),
+        ('user', 'Kannst du mir erklären, was ROS 2 ist?'),
+        (
+            'assistant',
+            'Ja, natürlich! ROS 2 ist ein Robot Operating System. Was genau möchtest '
+            'du wissen?'
+        ),
+        ('user', 'Gibt es ein Beispiel für den Start von Turtlesim?'),
+        (
+            'assistant',
+            'Sicher! "ros2 run turtlesim turtlesim_node" und "ros2 run turtlesim '
+            'turtle_teleop_key".'
+        )
     ]
 
-    for role, content in conversation:
-        doc_id = memory.add_message(role, content)
+    print('\n3. Saving conversation entries...')
+    for i, (role, content) in enumerate(conversation, 1):
+        metadata = {
+            'session_id': session_id,
+            'role': role,
+            'sequence': i,
+            'type': 'chat_message'
+        }
+
+        doc_id = save_text(collection, content, metadata)
         if doc_id:
-            print(f'   ✓ {role}: {content[:40]}...')
+            print(f'   ✓ Saved {role}: {content[:30]}...')
         else:
-            print('   ✗ Failed to save message')
+            print(f'   ✗ Failed to save entry {i}')
 
-    # Retrieve conversation context
-    print('\n3. Retrieving conversation context...')
-    context = memory.get_conversation_context(limit=4)
-    print('   Recent conversation:')
-    print('   ' + '-' * 50)
-    for line in context.split('\n'):
-        print(f'   {line}')
-    print('   ' + '-' * 50)
+    # Retrieve memory for this session
+    print(f'\n4. Retrieving history for session {session_id}...')
+    all_docs = get_all_texts(collection, limit=100)
 
-    # Show all messages
-    print('\n4. Showing all stored messages...')
-    all_messages = memory.get_recent_messages(limit=20)
-    print(f'   Total messages stored: {len(all_messages)}')
+    # Filter by session_id in metadata (in production, use Qdrant filtering)
+    session_history = [
+        d for d in all_docs
+        if d.get('metadata', {}).get('session_id') == session_id
+    ]
 
-    for i, msg in enumerate(all_messages, 1):
-        role = msg['metadata'].get('role', 'unknown')
-        timestamp = msg['metadata'].get('timestamp', '')
-        content_preview = msg['text'][:50] + '...' if len(msg['text']) > 50 else msg['text']
+    # Sort by sequence
+    session_history.sort(key=lambda x: x.get('metadata', {}).get('sequence', 0))
 
-        print(f'\n   {i}. {role.upper()} ({timestamp}):')
-        print(f'      {content_preview}')
+    print(f'   Found {len(session_history)} entries for this session:')
+    for doc in session_history:
+        role = doc['metadata'].get('role', 'unknown')
+        text = doc['text']
+        print(f'   [{role.upper()}]: {text}')
 
-    # Demonstrate how this could be used with an LLM
-    print('\n5. Example LLM context preparation...')
-    llm_context = memory.get_conversation_context(limit=3)
+    # Demonstrate search in history
+    print('\n5. Searching in whole history for keyword "Turtlesim"...')
+    # Simple keyword search (in production, use vector search)
+    turtlesim_entries = [
+        d for d in all_docs
+        if 'turtlesim' in d['text'].lower()
+    ]
 
-    print('   Context for LLM prompt:')
-    print("   '''")
-    print(f'   Conversation history:\n{llm_context}')
-    print("   '''")
-    print('\n   This context can be prepended to LLM prompts for continuity.')
-
-    # Clean up
-    print('\n6. Cleaning up...')
-    print('   Deleting conversation history...')
-    if memory.clear_conversation():
-        print('   ✓ Conversation history deleted')
-    else:
-        print('   ✗ Failed to delete history')
+    print(f'   Found {len(turtlesim_entries)} entries mentioning "Turtlesim":')
+    for d in turtlesim_entries:
+        print(f'   - Found at {d["timestamp"]}: "{d["text"][:50]}..."')
 
     print('\n=== Conversation Memory Example Completed ===')
     return 0

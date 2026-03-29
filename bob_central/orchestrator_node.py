@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,6 +12,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""
+Central Orchestration Node for Bob's Brain-Mesh.
+
+Handles high-level intent routing and manages specialized LLM agents.
+"""
 
 from datetime import datetime
 import json

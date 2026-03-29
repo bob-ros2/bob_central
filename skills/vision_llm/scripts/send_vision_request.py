@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +22,7 @@ import os
 import sys
 
 import requests
+
 try:
     from PIL import Image
     PIL_AVAILABLE = True

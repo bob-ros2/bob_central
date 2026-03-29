@@ -13,38 +13,44 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Simple self-evolution implementation for testing."""
-
-import json
-import os
+"""Simple Evolver script for testing."""
 
 
-class SimpleEvolver:
-    """Implement simple evolution logic."""
+def calculate_sum(numbers):
+    """Calculate the sum of a list of numbers."""
+    result = 0
+    for num in numbers:
+        result += num
+    return result
 
-    def __init__(self, repo_path):
-        """Initialize with repository path."""
-        self.repo_path = repo_path
 
-    def mutate(self, filepath, prompt):
-        """Mutate a file based on a prompt."""
-        if not os.path.exists(filepath):
-            return {'status': 'error', 'message': f'File not found: {filepath}'}
+def find_max(numbers):
+    """Find the maximum value in a list of numbers."""
+    if not numbers:
+        return None
+    max_val = numbers[0]
+    for num in numbers:
+        if num > max_val:
+            max_val = num
+    return max_val
 
-        try:
-            with open(filepath, 'r') as f:
-                code = f.read()
 
-            # Simple placeholder mutation
-            mutated_code = f'{code}\n\n# Evolved: {prompt}'
+def test_functions():
+    """Run tests for simple functions."""
+    nums = [1, 2, 3, 4, 5]
 
-            with open(filepath, 'w') as f:
-                f.write(mutated_code)
+    sum_res = calculate_sum(nums)
+    assert sum_res == 15, f'Expected 15, got {sum_res}'
 
-            return {'status': 'success', 'message': 'File mutated'}
-        except Exception as e:
-            return {'status': 'error', 'message': str(e)}
+    max_res = find_max(nums)
+    assert max_res == 5, f'Expected 5, got {max_res}'
+
+    empty_res = find_max([])
+    assert empty_res is None, f'Expected None, got {empty_res}'
+
+    print('Simple Evolver tests passed!')
 
 
 if __name__ == '__main__':
+    test_functions()
     print('Simple Evolver loaded.')

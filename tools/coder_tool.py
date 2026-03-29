@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,8 +25,8 @@ import shlex
 import subprocess
 from typing import Any, List
 
-from bob_llm.tool_utils import register as default_register, Tool
 import rclpy
+from bob_llm.tool_utils import Tool, register as default_register
 
 
 class _NodeContext:
@@ -114,7 +115,8 @@ def run_command(command: str, timeout: float = 120.0) -> str:
             args,
             capture_output=True,
             text=True,
-            timeout=timeout
+            timeout=timeout,
+            check=False
         )
 
         output = result.stdout.strip()
@@ -140,7 +142,7 @@ def search_text(directory: str, query: str, pattern: str = '*') -> str:
         # We use the built-in 'grep' command for high performance
         cmd = ['grep', '-rn', '--include', pattern, query, directory]
         result = subprocess.run(cmd, capture_output=True, text=True,
-                                timeout=30.0)
+                                timeout=30.0, check=False)
 
         output = result.stdout.strip()
         if not output:

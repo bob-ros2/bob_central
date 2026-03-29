@@ -94,9 +94,13 @@ def get_system_status():
         # ROS nodes
         try:
             ros_domain = os.environ.get('ROS_DOMAIN_ID', '50')
-            ros_cmd = f'export ROS_DOMAIN_ID={ros_domain} && ' \
-                      'source /opt/ros/${ROS_DISTRO:-humble}/setup.bash && ' \
-                      'source /ros2_ws/install/setup.bash && ros2 node list'
+            ros_setup = '/opt/ros/${ROS_DISTRO:-humble}/setup.bash'
+            ws_setup = '/ros2_ws/install/setup.bash'
+            ros_cmd = (
+                f'export ROS_DOMAIN_ID={ros_domain} && '
+                f'source {ros_setup} && '
+                f'source {ws_setup} && ros2 node list'
+            )
             result = subprocess.run(
                 ros_cmd,
                 shell=True,
@@ -262,7 +266,8 @@ def show_status():
     try:
         result = subprocess.run(
             "crontab -l 2>/dev/null | grep -q 'self_monitor.py'",
-            shell=True
+            shell=True,
+            check=False
         )
         active = (result.returncode == 0)
 
@@ -309,8 +314,8 @@ def main():
 
 if __name__ == '__main__':
     try:
-        res = main()
-        print(json.dumps(res, indent=2))
+        res_main = main()
+        print(json.dumps(res_main, indent=2))
     except Exception as exc:
         print(json.dumps({'status': 'error', 'message': str(exc)}))
         sys.exit(1)

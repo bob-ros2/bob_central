@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,6 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Artist Tool for Eva."""
 
 import time
 
@@ -44,7 +47,7 @@ def draw_image(prompt: str) -> str:
     node.destroy_node()
     return (f"Image prompt '{prompt}' sent to TTI subsystem. "
             f"The result will be saved to '/tmp/eva/eva_artist.jpg' after a few "
-            f'seconds. You can use your vision tools to inspect it there.')
+            f"seconds. You can use your vision tools to inspect it there.")
 
 
 if __name__ == '__main__':

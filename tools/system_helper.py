@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,6 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""System Helper Tools for Eva."""
 
 import os
 
@@ -41,5 +44,7 @@ def scan_workspace(path='.'):
         return f"Error: Workspace path '{path}' not found"
 
     entities = os.listdir(path)
+    # Sort for consistent output
+    entities.sort()
     return [e for e in entities if
             os.path.isdir(os.path.join(path, e)) and not e.startswith('.')]

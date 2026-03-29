@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Basic usage example for Qdrant Memory Skill."""
+"""Example showing basic Qdrant Memory Skill usage."""
 
 import os
 import sys
@@ -23,94 +23,64 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from scripts import (  # noqa: E402
     create_collection, delete_collection, get_all_texts, list_collections,
-    load_text, save_text, test_connection
+    save_text, test_connection
 )
 
 
 def main():
-    """Demonstrate basic skill usage."""
+    """Demonstrate basic usage of Qdrant Memory Skill."""
     print('=== Qdrant Memory Skill - Basic Usage Example ===\n')
 
-    # Test connection
-    print('1. Testing connection to Qdrant...')
-    if test_connection():
-        print('   ✓ Connected successfully')
-    else:
-        print('   ✗ Connection failed')
+    # 1. Test connection
+    if not test_connection():
+        print('✗ Qdrant connection failed. Make sure Qdrant is running.')
         return 1
+    print('✓ Connected to Qdrant\n')
 
-    # Save some texts (collection will be auto-created with vector_size=1)
-    print('\n2. Saving example texts...')
+    # 2. List existing collections
+    print('1. Listing collections...')
+    cols = list_collections()
+    for col in cols:
+        print(f' - {col}')
 
-    examples = [
-        ('Hello, this is a test document', {'type': 'test', 'source': 'example'}),
-        (
-            'Qdrant is a vector database for similarity search',
-            {'topic': 'database', 'category': 'vector'}
-        ),
-        (
-            'Python is a popular programming language',
-            {'topic': 'programming', 'language': 'Python'}
-        ),
-        ('ROS 2 is used for robotic applications', {'topic': 'robotics', 'framework': 'ROS'})
+    # 3. Create a test collection
+    test_col = 'test_basics'
+    print(f"\n2. Creating collection '{test_col}'...")
+    if create_collection(test_col, vector_size=1):
+        print(f"✓ Collection '{test_col}' ready")
+    else:
+        print(f"✗ Failed to create collection '{test_col}'")
+
+    # 4. Save some simple text
+    print('\n3. Saving sample texts...')
+    texts = [
+        'Die Sonne scheint heute sehr hell.',
+        'Roboter sind faszinierende Maschinen.',
+        'Eva ist ein intelligenter Bot-Assistent.'
     ]
 
-    doc_ids = []
-    for text, metadata in examples:
-        doc_id = save_text('test_example_basic', text, metadata)
+    for i, t in enumerate(texts):
+        doc_id = save_text(test_col, t, metadata={'idx': i, 'origin': 'demo'})
         if doc_id:
-            doc_ids.append(doc_id)
-            print(f'   ✓ Saved: {text[:30]}...')
+            print(f'   ✓ Saved: "{t}" (ID: {doc_id})')
         else:
-            print(f'   ✗ Failed to save: {text[:30]}...')
+            print(f'   ✗ Failed to save: "{t}"')
 
-    print(f'   Total saved: {len(doc_ids)} documents')
+    # 5. List all texts in collection
+    print('\n4. Retrieving all texts from collection...')
+    docs = get_all_texts(test_col)
+    print(f'   Found {len(docs)} documents:')
+    for doc in docs:
+        print(f'   - [{doc["id"][:8]}] {doc["text"]}')
 
-    # Load a document
-    if doc_ids:
-        print(f'\n3. Loading document "{doc_ids[0]}"...')
-        document = load_text('test_example_basic', doc_ids[0])
-        if document:
-            print('   ✓ Document loaded:')
-            print(f'   Text: {document["text"]}')
-            print(f'   Metadata: {document["metadata"]}')
-            print(f'   Timestamp: {document["timestamp"]}')
-
-    # List all documents
-    print('\n4. Listing all documents in collection...')
-    all_docs = get_all_texts('test_example_basic', limit=10)
-    print(f'   Found {len(all_docs)} documents:')
-    for i, doc in enumerate(all_docs, 1):
-        print(f'   {i}. {doc["text"][:40]}...')
-
-    # List collections
-    print('\n5. Listing all collections...')
-    collections = list_collections()
-    print(f'   Available collections: {len(collections)}')
-    for coll in collections:
-        print(f'   - {coll}')
-
-    # Clean up
-    print('\n6. Cleaning up test collection...')
-    if delete_collection('test_example_basic'):
-        print('   ✓ Collection "test_example_basic" deleted')
+    # 6. Optional: Clean up
+    print(f"\n5. Cleaning up (deleting collection '{test_col}')...")
+    if delete_collection(test_col):
+        print('✓ Clean up successful')
     else:
-        print('   ✗ Failed to delete collection')
+        print('✗ Failed to delete collection')
 
-    # Now demonstrate creating collection with specific vector size
-    print('\n7. Creating collection for embeddings (vector_size=384)...')
-    if create_collection('test_embeddings', 384):
-        print('   ✓ Collection "test_embeddings" created for embeddings')
-        # Note: This collection would need save_with_embedding() with 384-dim vectors
-        delete_collection('test_embeddings')
-        print('   ✓ Collection cleaned up')
-
-    print('\n=== Example completed successfully ===')
-    print('\nKey points demonstrated:')
-    print('1. save_text() auto-creates collections with vector_size=1')
-    print('2. create_collection() can specify vector size for embeddings')
-    print('3. Collections must match vector dimensions of stored data')
-
+    print('\n=== Basic Usage Example Completed ===')
     return 0
 
 

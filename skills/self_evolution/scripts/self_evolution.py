@@ -168,7 +168,11 @@ class Evolver:
 
         # Add appropriate closing for try blocks
         if 'try:' in result and 'except' not in result:
-            result += '\n    except Exception as e:\n        logging.error(f\'Error: {e}\')\n        raise'
+            result += (
+                "\n    except Exception as e:\n"
+                "        logging.error(f'Error: {e}')\n"
+                "        raise"
+            )
 
         # Add optimization comment if performance mentioned
         if 'performance' in prompt_lower or 'optimize' in prompt_lower:
@@ -238,8 +242,10 @@ class Evolver:
                 cwd='/ros2_ws/src/bob_central',
                 check=True
             )
+            i_count = len(task['iterations']) + 1
+            m_msg = f'Evolution iteration {i_count}: {mutation_prompt[:50]}...'
             subprocess.run(
-                ['git', 'commit', '-m', f'Evolution iteration {len(task["iterations"]) + 1}: {mutation_prompt[:50]}...'],
+                ['git', 'commit', '-m', m_msg],
                 cwd='/ros2_ws/src/bob_central',
                 check=True
             )
@@ -394,59 +400,61 @@ class Evolver:
         if not task:
             return {'status': 'error', 'message': f'Task {task_id} not found.'}
 
+        iterations = task['iterations']
+        successful = sum(1 for i in iterations if i.get('score', 0) > 0)
         return {
             'status': 'success',
             'task': task,
             'summary': {
-                'iterations': len(task['iterations']),
+                'iterations': len(iterations),
                 'best_score': task.get('best_score', 0),
                 'best_iteration': task.get('best_iteration', -1),
-                'successful_iterations': sum(1 for i in task['iterations'] if i.get('score', 0) > 0),
-                'mutations_applied': sum(1 for i in task['iterations'] if i.get('applied', False))
+                'successful_iterations': successful,
+                'mutations_applied': sum(1 for i in iterations if i.get('applied', False))
             }
         }
 
 
 if __name__ == '__main__':
-    evolver = Evolver()
+    evolver_inst = Evolver()
 
     # Enhanced CLI with mutation support
     if len(sys.argv) > 1:
-        action = sys.argv[1]
+        action_cli = sys.argv[1]
 
-        if action == 'init' and len(sys.argv) == 6:
-            res = evolver.init_task(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
-            print(json.dumps(res, indent=2))
+        if action_cli == 'init' and len(sys.argv) == 6:
+            res_cli = evolver_inst.init_task(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
+            print(json.dumps(res_cli, indent=2))
 
-        elif action == 'iterate':
+        elif action_cli == 'iterate':
             if len(sys.argv) == 3:
                 # Iterate without mutation prompt
-                res = evolver.run_iteration(sys.argv[2])
-                print(json.dumps(res, indent=2))
+                res_cli = evolver_inst.run_iteration(sys.argv[2])
+                print(json.dumps(res_cli, indent=2))
             elif len(sys.argv) == 4:
                 # Iterate with mutation prompt
-                res = evolver.run_iteration(sys.argv[2], sys.argv[3])
-                print(json.dumps(res, indent=2))
+                res_cli = evolver_inst.run_iteration(sys.argv[2], sys.argv[3])
+                print(json.dumps(res_cli, indent=2))
 
-        elif action == 'status':
+        elif action_cli == 'status':
             if len(sys.argv) == 3:
                 # Specific task status
-                res = evolver.get_task_status(sys.argv[2])
-                print(json.dumps(res, indent=2))
+                res_cli = evolver_inst.get_task_status(sys.argv[2])
+                print(json.dumps(res_cli, indent=2))
             else:
                 # Overall status
-                print(json.dumps(evolver.tasks, indent=2))
+                print(json.dumps(evolver_inst.tasks, indent=2))
 
-        elif action == 'mutate' and len(sys.argv) == 4:
+        elif action_cli == 'mutate' and len(sys.argv) == 4:
             # Direct mutation without iteration
-            res = evolver._apply_mutation(sys.argv[2], sys.argv[3])
-            print(json.dumps(res, indent=2))
+            res_cli = evolver_inst._apply_mutation(sys.argv[2], sys.argv[3])
+            print(json.dumps(res_cli, indent=2))
 
         else:
-            print('''#!/usr/bin/env python3
+            print("""#!/usr/bin/env python3
 Self Evolution CLI Usage:
   init <task_id> <description> <target_file> <test_cmd>
   iterate <task_id> [mutation_prompt]
   status [task_id]
   mutate <task_id> <mutation_prompt>
-''')
+""")
