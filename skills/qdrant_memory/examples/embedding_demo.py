@@ -15,16 +15,16 @@
 
 """Embedding demonstration for Qdrant Memory Skill."""
 
+import hashlib
 import os
 import sys
-import hashlib
 
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from scripts import (  # noqa: E402
-    save_with_embedding, search_similar, create_collection,
-    delete_collection, test_connection
+    create_collection, delete_collection, save_with_embedding,
+    search_similar, test_connection
 )
 
 

@@ -62,3 +62,19 @@ services:
       - /tmp/eva:/tmp/eva # Shared workspace for logos, images, logs
       - /tmp/eva/ssh:/root/.ssh # Persistent AI Identity (Keys)
       - ..:/ros2_ws/src/bob_central # Persistent Source Code (Self-Evolution)
+
+  # -- RUNNER: LOCAL ACTIONS (Eva's CI) --
+  act-runner:
+    image: gitea/act_runner:latest
+    container_name: eva-runner
+    networks:
+      - eva-net
+    volumes:
+      - /tmp/eva/runner_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - GITEA_INSTANCE_URL=http://eva-gitea:3000
+      - GITEA_RUNNER_REGISTRATION_TOKEN=2B0G4dCfvHXL4OP4CJ7qYDspzw1tepeFjzfIGCzb
+      - GITEA_RUNNER_NAME=eva-nucleus-runner
+      - GITEA_RUNNER_LABELS=ubuntu-latest:docker://catthehacker/ubuntu:act-latest,ubuntu-22.04:docker://catthehacker/ubuntu:act-22.04,ros-humble:docker://ros:humble-ros-base
+    restart: always

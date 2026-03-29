@@ -22,8 +22,8 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from scripts import (  # noqa: E402
-    save_text, load_text, list_collections, create_collection,
-    delete_collection, get_all_texts, test_connection
+    create_collection, delete_collection, get_all_texts, list_collections,
+    load_text, save_text, test_connection
 )
 
 
@@ -44,8 +44,14 @@ def main():
 
     examples = [
         ('Hello, this is a test document', {'type': 'test', 'source': 'example'}),
-        ('Qdrant is a vector database for similarity search', {'topic': 'database', 'category': 'vector'}),
-        ('Python is a popular programming language', {'topic': 'programming', 'language': 'Python'}),
+        (
+            'Qdrant is a vector database for similarity search',
+            {'topic': 'database', 'category': 'vector'}
+        ),
+        (
+            'Python is a popular programming language',
+            {'topic': 'programming', 'language': 'Python'}
+        ),
         ('ROS 2 is used for robotic applications', {'topic': 'robotics', 'framework': 'ROS'})
     ]
 

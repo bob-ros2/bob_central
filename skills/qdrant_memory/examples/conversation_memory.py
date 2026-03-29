@@ -23,7 +23,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from scripts import (  # noqa: E402
-    save_text, get_all_texts, test_connection, delete_collection
+    delete_collection, get_all_texts, save_text, test_connection
 )
 
 
@@ -147,15 +147,15 @@ def main():
     llm_context = memory.get_conversation_context(limit=3)
 
     print('   Context for LLM prompt:')
-    print('   \'\'\'')
+    print("   '''")
     print(f'   Conversation history:\n{llm_context}')
-    print('   \'\'\'')
+    print("   '''")
     print('\n   This context can be prepended to LLM prompts for continuity.')
 
     # Clean up
     print('\n6. Cleaning up...')
     print('   Deleting conversation history...')
-    if clear_success := memory.clear_conversation():
+    if memory.clear_conversation():
         print('   ✓ Conversation history deleted')
     else:
         print('   ✗ Failed to delete history')
