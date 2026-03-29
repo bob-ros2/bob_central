@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
-"""
-Fixed version of self_evolution with better git handling.
-"""
+"""Fixed version of self_evolution with better git handling."""
 
 import datetime
+import hashlib
 import json
 import logging
 import os
-import subprocess
-import tempfile
 import re
+import subprocess
 import sys
 
 # Add scripts directory to path for imports
@@ -40,15 +38,15 @@ class EvolverFixed:
             os.makedirs(EVA_ROOT)
         self.tasks = self._load_tasks()
         self.repo_path = '/ros2_ws/src/bob_central'
-        
+
         # Try to import LLM integration
         try:
             from llm_integration import get_llm_integration
             self.llm_integration = get_llm_integration()
             self.has_llm = True
-            logging.info("LLM integration available for mutations")
+            logging.info('LLM integration available for mutations')
         except ImportError as e:
-            logging.warning(f"LLM integration not available: {e}")
+            logging.warning(f'LLM integration not available: {e}')
             self.llm_integration = None
             self.has_llm = False
 
@@ -72,14 +70,15 @@ class EvolverFixed:
             logging.error(f'Failed to save tasks: {e}')
 
     def _git_reset_if_staged(self, filepath):
-        """Reset a file if it's already staged."""
+        """Reset a file if it is already staged."""
         try:
             # Check if file is staged
             result = subprocess.run(
                 ['git', 'diff', '--cached', '--name-only', filepath],
                 cwd=self.repo_path,
                 capture_output=True,
-                text=True
+                text=True,
+                check=False
             )
             if result.stdout.strip():
                 # File is staged, unstage it
@@ -88,9 +87,9 @@ class EvolverFixed:
                     cwd=self.repo_path,
                     check=True
                 )
-                logging.info(f"Unstaged previously staged file: {filepath}")
+                logging.info(f'Unstaged previously staged file: {filepath}')
         except Exception as e:
-            logging.warning(f"Could not check git staging status: {e}")
+            logging.warning(f'Could not check git staging status: {e}')
 
     def init_task(self, task_id, description, target_file, test_cmd):
         """Set up a new evolution task."""
@@ -129,8 +128,8 @@ class EvolverFixed:
 
     def _call_llm_for_mutation(self, prompt, current_code, context=None):
         """Call Eva's LLM to generate a code mutation based on the prompt."""
-        logging.info(f"LLM mutation requested with prompt: {prompt[:100]}...")
-        
+        logging.info(f'LLM mutation requested with prompt: {prompt[:100]}...')
+
         if self.has_llm and self.llm_integration:
             try:
                 # Use real LLM integration
@@ -140,50 +139,48 @@ class EvolverFixed:
                     context=json.dumps(context, indent=2) if context else None,
                     timeout=30  # 30 second timeout for LLM
                 )
-                
+
                 if mutated_code:
-                    logging.info("LLM mutation generated successfully")
+                    logging.info('LLM mutation generated successfully')
                     return mutated_code
                 else:
-                    logging.warning("LLM returned no response, using fallback")
-                    
+                    logging.warning('LLM returned no response, using fallback')
+
             except Exception as e:
-                logging.error(f"LLM integration failed: {e}")
-        
+                logging.error(f'LLM integration failed: {e}')
+
         # Fallback: simple mutation logic
         return self._fallback_mutation(prompt, current_code, context)
 
     def _fallback_mutation(self, prompt, current_code, context):
         """Fallback mutation logic when LLM is not available."""
         prompt_lower = prompt.lower()
-        
+
         # Simple rule-based mutations
         lines = current_code.split('\n')
         modified_lines = []
-        
+
         for i, line in enumerate(lines):
             # Check if this is the calculate_sum function
             if 'def calculate_sum' in line and 'performance' in prompt_lower:
                 # Replace with optimized version
                 modified_lines.append('def calculate_sum(numbers):')
-                modified_lines.append('    """Calculate the sum of a list of numbers using built-in sum()."""')
+                modified_lines.append('    """Calculate sum using sum()."""')
                 modified_lines.append('    return sum(numbers)')
                 # Skip the original implementation
-                # Find where the function ends
                 j = i + 1
                 while j < len(lines) and (lines[j].startswith(' ') or lines[j] == ''):
                     j += 1
-                # Skip to after the function
                 return '\n'.join(modified_lines + lines[j:])
             else:
                 modified_lines.append(line)
-        
+
         result = '\n'.join(modified_lines)
-        
+
         # Add optimization comment if performance mentioned
         if 'performance' in prompt_lower or 'optimize' in prompt_lower:
             result += '\n\n# Performance optimization applied based on mutation prompt'
-        
+
         return result
 
     def _apply_mutation(self, task_id, mutation_prompt):
@@ -212,15 +209,15 @@ class EvolverFixed:
 
             # Call LLM for mutation
             mutated_code = self._call_llm_for_mutation(
-                mutation_prompt, 
-                current_code, 
+                mutation_prompt,
+                current_code,
                 context
             )
 
             # Extract code from LLM response (handle code blocks)
             code_pattern = r'```(?:python)?\n(.*?)\n```'
             matches = re.findall(code_pattern, mutated_code, re.DOTALL)
-            
+
             if matches:
                 mutated_code = matches[0]
             else:
@@ -239,15 +236,15 @@ class EvolverFixed:
             with open(target_file, 'w') as f:
                 f.write(mutated_code)
 
-            logging.info(f"Applied mutation to {target_file}")
-            
+            logging.info(f'Applied mutation to {target_file}')
+
             # Git commit the change
             subprocess.run(
                 ['git', 'add', target_file],
                 cwd=self.repo_path,
                 check=True
             )
-            
+
             commit_msg = f'Evolution iteration {len(task["iterations"]) + 1}: {mutation_prompt[:50]}...'
             subprocess.run(
                 ['git', 'commit', '-m', commit_msg],
@@ -270,7 +267,6 @@ class EvolverFixed:
 
     def _get_file_hash(self, filepath):
         """Get a simple hash of file content for comparison."""
-        import hashlib
         with open(filepath, 'rb') as f:
             return hashlib.md5(f.read()).hexdigest()[:8]
 
@@ -322,7 +318,7 @@ class EvolverFixed:
             }
 
     def run_iteration(self, task_id, mutation_prompt=None):
-        """Execute one verify-test-learn cycle with LLM-based mutation."""
+        """Execute one verify-test-learn cycle with LLMnd mutation."""
         task = self.tasks['tasks'].get(task_id)
         if not task:
             return {'status': 'error', 'message': f'Task {task_id} not found.'}
@@ -358,13 +354,13 @@ class EvolverFixed:
             # Step 3: Check for improvement
             current_score = iteration_result['score']
             best_score = task.get('best_score', 0)
-            
+
             if current_score > best_score:
                 task['best_score'] = current_score
                 task['best_iteration'] = len(task['iterations'])
                 iteration_result['improvement'] = True
                 logging.info(f'New best score: {current_score} (previous: {best_score})')
-                
+
                 # Push to Gitea if significant improvement
                 if current_score >= 80:
                     try:
@@ -401,17 +397,16 @@ class EvolverFixed:
 
 
 if __name__ == '__main__':
-    import sys
     evolver = EvolverFixed()
-    
+
     # Enhanced CLI with mutation support
     if len(sys.argv) > 1:
         action = sys.argv[1]
-        
+
         if action == 'init' and len(sys.argv) == 6:
             res = evolver.init_task(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
             print(json.dumps(res, indent=2))
-            
+
         elif action == 'iterate':
             if len(sys.argv) == 3:
                 # Iterate without mutation prompt
@@ -421,26 +416,24 @@ if __name__ == '__main__':
                 # Iterate with mutation prompt
                 res = evolver.run_iteration(sys.argv[2], sys.argv[3])
                 print(json.dumps(res, indent=2))
-                
+
         elif action == 'status':
             if len(sys.argv) == 3:
                 # Specific task status
-                res = evolver.get_task_status(sys.argv[2])
-                print(json.dumps(res, indent=2))
+                # res = evolver.get_task_status(sys.argv[2])
+                print(json.dumps(evolver.tasks['tasks'].get(sys.argv[2]), indent=2))
             else:
                 # Overall status
                 print(json.dumps(evolver.tasks, indent=2))
-                
+
         elif action == 'mutate' and len(sys.argv) == 4:
             # Direct mutation without iteration
             res = evolver._apply_mutation(sys.argv[2], sys.argv[3])
             print(json.dumps(res, indent=2))
-            
+
         else:
-            print("""
-Self Evolution CLI Usage:
+            print('''Self Evolution CLI Usage:
   init <task_id> <description> <target_file> <test_cmd>
   iterate <task_id> [mutation_prompt]
   status [task_id]
-  mutate <task_id> <mutation_prompt>
-            """)
+  mutate <task_id> <mutation_prompt>''')
