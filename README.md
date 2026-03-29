@@ -61,6 +61,10 @@ graph TD
         subgraph "Container: eva-gitea"
             GITEA[(Local Gitea Repository)]
         end
+
+        subgraph "Container: eva-memory"
+            QDRANT[(Qdrant Vector DB)]
+        end
     end
 
     %% Communication Flow
@@ -70,6 +74,9 @@ graph TD
     BRAIN -- "/eva/llm_stream" --> CLIENT
     BRAIN -- "/eva/llm_tool_calls" --> CLIENT
     LOGIC -- "/eva/logic/internal/full_response_text" --> CLIENT
+    
+    %% Memory Access
+    BRAIN -- "REST / gRPC" --> QDRANT
     
     %% Specialist Actions
     LOGIC -- "Trigger" --> TTI
