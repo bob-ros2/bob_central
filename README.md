@@ -23,10 +23,11 @@ The system handles:
 `bob_central` is strictly **Docker-First**, emphasizing security, absolute process isolation, and portability.
 
 ### Container Ecosystem & Network
-* **`api-gateway` (Nginx)**: A secure entry point that proxies all LLM traffic. It injects credentials at runtime, keeping the main AI images "clean" and secret-free.
-* **`eva-base`**: The core execution environment for the orchestrator and logic nodes.
-* **Specialist Containers**: Isolated environments for heavy inference tasks (TTI/Vision) or specific research tools.
-* **Network Isolation**: All internal communication happens over a dedicated Docker bridge network. Only required ports are exposed to the host, ensuring the AI operates in a controlled sandbox.
+* **`api-gateway` (Nginx)**: Secure entry point that proxies LLM traffic and injects runtime authentication.
+* **`eva-base`**: The core execution environment for orchestration, logic, and self-evolution modules.
+* **`eva-summarizer`**: Focused inference layer for logic and voice-gate summarization (optimized on Qwen-14B).
+* **`eva-memory` (Qdrant)**: High-performance Vector Database for semantic search and long-term embedding storage.
+* **Network Isolation**: All internal communication happens over a dedicated Docker bridge network (`eva-net`).
 
 ### Security Features
 * **Credential Isolation**: Pure separation of code and secrets.

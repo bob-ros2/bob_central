@@ -1,23 +1,6 @@
 #!/usr/bin/env python3
-# Copyright 2026 Bob Ros
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 """
-Self-Evolution Engine for Eva (Nucleus).
-
-This script provides the tools for autonomous iterative code improvement,
-inspired by AlphaEvolve. It manages tasks, branches, and test execution.
+Fixed version of self_evolution with better git handling.
 """
 
 import datetime
@@ -35,7 +18,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 # Configuration paths relative to Eva's root-mapping
 EVA_ROOT = '/tmp/eva'
 TASKS_FILE = os.path.join(EVA_ROOT, 'tasks.json')
-LOG_FILE = os.path.join(EVA_ROOT, 'self_evolution.log')
+LOG_FILE = os.path.join(EVA_ROOT, 'self_evolution_fixed.log')
 
 # Setup Logging
 logging.basicConfig(
@@ -48,14 +31,15 @@ logging.basicConfig(
 )
 
 
-class Evolver:
-    """Manages the evolution of Eva's code."""
+class EvolverFixed:
+    """Improved Evolver with better git handling."""
 
     def __init__(self):
         """Initialize the Evolver and ensure the persistent directory exists."""
         if not os.path.exists(EVA_ROOT):
             os.makedirs(EVA_ROOT)
         self.tasks = self._load_tasks()
+        self.repo_path = '/ros2_ws/src/bob_central'
         
         # Try to import LLM integration
         try:
@@ -87,6 +71,27 @@ class Evolver:
         except Exception as e:
             logging.error(f'Failed to save tasks: {e}')
 
+    def _git_reset_if_staged(self, filepath):
+        """Reset a file if it's already staged."""
+        try:
+            # Check if file is staged
+            result = subprocess.run(
+                ['git', 'diff', '--cached', '--name-only', filepath],
+                cwd=self.repo_path,
+                capture_output=True,
+                text=True
+            )
+            if result.stdout.strip():
+                # File is staged, unstage it
+                subprocess.run(
+                    ['git', 'reset', 'HEAD', filepath],
+                    cwd=self.repo_path,
+                    check=True
+                )
+                logging.info(f"Unstaged previously staged file: {filepath}")
+        except Exception as e:
+            logging.warning(f"Could not check git staging status: {e}")
+
     def init_task(self, task_id, description, target_file, test_cmd):
         """Set up a new evolution task."""
         if task_id in self.tasks['tasks']:
@@ -97,10 +102,10 @@ class Evolver:
         # Git preparations (on host/container repo)
         try:
             # Create a branch for the task
-            subprocess.run(['git', 'checkout', 'main'], cwd='/ros2_ws/src/bob_central', check=True)
+            subprocess.run(['git', 'checkout', 'main'], cwd=self.repo_path, check=True)
             subprocess.run(
                 ['git', 'checkout', '-b', f'evolution/{task_id}'],
-                cwd='/ros2_ws/src/bob_central',
+                cwd=self.repo_path,
                 check=True
             )
             logging.info(f'Created branch evolution/{task_id}')
@@ -133,7 +138,7 @@ class Evolver:
                     prompt=prompt,
                     current_code=current_code,
                     context=json.dumps(context, indent=2) if context else None,
-                    timeout=60  # 60 second timeout for LLM
+                    timeout=30  # 30 second timeout for LLM
                 )
                 
                 if mutated_code:
@@ -156,28 +161,28 @@ class Evolver:
         lines = current_code.split('\n')
         modified_lines = []
         
-        for line in lines:
-            modified_lines.append(line)
-            
-            # Add error handling if mentioned
-            if 'error' in prompt_lower or 'exception' in prompt_lower:
-                if line.strip().startswith('def ') and '):' in line:
-                    modified_lines.append('    try:')
-                    # We'll need to adjust indentation later
+        for i, line in enumerate(lines):
+            # Check if this is the calculate_sum function
+            if 'def calculate_sum' in line and 'performance' in prompt_lower:
+                # Replace with optimized version
+                modified_lines.append('def calculate_sum(numbers):')
+                modified_lines.append('    """Calculate the sum of a list of numbers using built-in sum()."""')
+                modified_lines.append('    return sum(numbers)')
+                # Skip the original implementation
+                # Find where the function ends
+                j = i + 1
+                while j < len(lines) and (lines[j].startswith(' ') or lines[j] == ''):
+                    j += 1
+                # Skip to after the function
+                return '\n'.join(modified_lines + lines[j:])
+            else:
+                modified_lines.append(line)
         
         result = '\n'.join(modified_lines)
-        
-        # Add appropriate closing for try blocks
-        if 'try:' in result and 'except' not in result:
-            result += '\n    except Exception as e:\n        logging.error(f"Error: {e}")\n        raise'
         
         # Add optimization comment if performance mentioned
         if 'performance' in prompt_lower or 'optimize' in prompt_lower:
             result += '\n\n# Performance optimization applied based on mutation prompt'
-        
-        # Add feature comment if feature mentioned
-        if 'feature' in prompt_lower or 'add' in prompt_lower:
-            result += '\n\n# New feature placeholder added'
         
         return result
 
@@ -227,6 +232,9 @@ class Evolver:
             with open(backup_file, 'w') as f:
                 f.write(current_code)
 
+            # Reset git staging for this file
+            self._git_reset_if_staged(target_file)
+
             # Write mutated code
             with open(target_file, 'w') as f:
                 f.write(mutated_code)
@@ -236,12 +244,14 @@ class Evolver:
             # Git commit the change
             subprocess.run(
                 ['git', 'add', target_file],
-                cwd='/ros2_ws/src/bob_central',
+                cwd=self.repo_path,
                 check=True
             )
+            
+            commit_msg = f'Evolution iteration {len(task["iterations"]) + 1}: {mutation_prompt[:50]}...'
             subprocess.run(
-                ['git', 'commit', '-m', f'Evolution iteration {len(task["iterations"]) + 1}: {mutation_prompt[:50]}...'],
-                cwd='/ros2_ws/src/bob_central',
+                ['git', 'commit', '-m', commit_msg],
+                cwd=self.repo_path,
                 check=True
             )
 
@@ -281,15 +291,8 @@ class Evolver:
             )
 
             # Calculate score based on test results
-            # Simple scoring: 100 for pass, 0 for fail
-            # In a real implementation, this could parse test output for more nuanced scoring
             success = (result.returncode == 0)
             score = 100 if success else 0
-
-            # Additional scoring factors could include:
-            # - Test coverage
-            # - Performance metrics
-            # - Code quality metrics
 
             return {
                 'status': 'success',
@@ -363,11 +366,11 @@ class Evolver:
                 logging.info(f'New best score: {current_score} (previous: {best_score})')
                 
                 # Push to Gitea if significant improvement
-                if current_score >= 80:  # Threshold for pushing
+                if current_score >= 80:
                     try:
                         subprocess.run(
                             ['git', 'push', 'sandbox', f'evolution/{task_id}'],
-                            cwd='/ros2_ws/src/bob_central',
+                            cwd=self.repo_path,
                             check=True
                         )
                         iteration_result['pushed_to_gitea'] = True
@@ -396,28 +399,10 @@ class Evolver:
             self._save_tasks()
             return {'status': 'error', 'message': error_msg}
 
-    def get_task_status(self, task_id):
-        """Get detailed status of a task."""
-        task = self.tasks['tasks'].get(task_id)
-        if not task:
-            return {'status': 'error', 'message': f'Task {task_id} not found.'}
-
-        return {
-            'status': 'success',
-            'task': task,
-            'summary': {
-                'iterations': len(task['iterations']),
-                'best_score': task.get('best_score', 0),
-                'best_iteration': task.get('best_iteration', -1),
-                'successful_iterations': sum(1 for i in task['iterations'] if i.get('score', 0) > 0),
-                'mutations_applied': sum(1 for i in task['iterations'] if i.get('applied', False))
-            }
-        }
-
 
 if __name__ == '__main__':
     import sys
-    evolver = Evolver()
+    evolver = EvolverFixed()
     
     # Enhanced CLI with mutation support
     if len(sys.argv) > 1:

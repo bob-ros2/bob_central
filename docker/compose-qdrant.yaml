@@ -1,0 +1,19 @@
+# -- Eva Memory Layer (Vector Database) --
+name: eva-memory
+
+networks:
+  eva-net:
+    external: true
+
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: eva-qdrant
+    networks:
+      - eva-net
+    ports:
+      - "6333:6333" # HTTP API
+      - "6334:6334" # gRPC API
+    volumes:
+      - /tmp/eva/qdrant_storage:/qdrant/storage/
+    restart: always
