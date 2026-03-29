@@ -25,8 +25,8 @@ import shlex
 import subprocess
 from typing import Any, List
 
+from bob_llm.tool_utils import register as default_register, Tool
 import rclpy
-from bob_llm.tool_utils import Tool, register as default_register
 
 
 class _NodeContext:

@@ -15,6 +15,7 @@
 
 """LLM Integration for Self-Evolution Skill."""
 
+import logging
 import threading
 
 import rclpy
@@ -56,9 +57,9 @@ class LLMIntegration:
                 self.ros_thread.daemon = True
                 self.ros_thread.start()
 
-                print('LLM Integration: ROS initialized successfully')
+                logging.info('LLM Integration: ROS initialized successfully')
             except Exception as e:
-                print(f'LLM Integration: ROS initialization failed: {e}')
+                logging.error(f'LLM Integration: ROS initialization failed: {e}')
                 self.use_ros = False
 
     def _llm_response_callback(self, msg):
@@ -87,7 +88,7 @@ class LLMIntegration:
         if self.response_received.wait(timeout):
             return self.llm_response
         else:
-            print(f'LLM Integration: Timeout after {timeout} seconds')
+            logging.warning(f'LLM Integration: Timeout after {timeout} seconds')
             return None
 
     def generate_mutation_via_direct(self, prompt, current_code, context):
@@ -123,14 +124,12 @@ Your task is to improve the following code based on the mutation prompt: {prompt
 ## MODIFIED CODE:"""
 
         # In a real implementation, this would call the actual LLM
-        # We pass structured_prompt to ensure it's "used" in this demo stage
         return self._placeholder_llm_response(current_code, prompt, structured_prompt)
 
-    def _placeholder_llm_response(self, current_code, prompt, source_prompt=""):
+    def _placeholder_llm_response(self, current_code, prompt, source_prompt=''):
         """Generate placeholder LLM response for demonstration."""
-        # Use source_prompt if needed for tracing
         if source_prompt:
-            pass
+            logging.debug(f'Placeholder processing with source (len: {len(source_prompt)})')
 
         # Analyze prompt for common patterns
         prompt_lower = prompt.lower()
@@ -176,7 +175,7 @@ def new_feature():
         """Generate a code mutation using available LLM methods."""
         # Try ROS integration first
         if self.use_ros:
-            print('LLM Integration: Attempting ROS-based mutation generation...')
+            logging.info('LLM Integration: Attempting ROS-based mutation generation...')
 
             # Create comprehensive prompt for ROS LLM
             ros_prompt = f"""As Eva's self-evolution engine, modify this code:
@@ -194,11 +193,11 @@ Return ONLY the complete modified Python code in a code block, no explanations."
 
             response = self.generate_mutation_via_ros(ros_prompt, timeout)
             if response:
-                print('LLM Integration: Received response via ROS')
+                logging.info('LLM Integration: Received response via ROS')
                 return response
 
         # Fallback to direct method
-        print('LLM Integration: Using direct method (ROS unavailable or timed out)')
+        logging.info('LLM Integration: Using direct method (ROS unavailable or timed out)')
         return self.generate_mutation_via_direct(prompt, current_code, context)
 
     def cleanup(self):

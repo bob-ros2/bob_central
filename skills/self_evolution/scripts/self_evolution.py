@@ -169,9 +169,9 @@ class Evolver:
         # Add appropriate closing for try blocks
         if 'try:' in result and 'except' not in result:
             result += (
-                "\n    except Exception as e:\n"
-                "        logging.error(f'Error: {e}')\n"
-                "        raise"
+                '\n    except Exception as e:\n'
+                '        logging.error(f"Error: {e}")\n'
+                '        raise'
             )
 
         # Add optimization comment if performance mentioned
