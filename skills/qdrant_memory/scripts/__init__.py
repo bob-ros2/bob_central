@@ -18,26 +18,26 @@ except ImportError:
 
 class QdrantMemory:
     """Main Qdrant memory management class"""
-
+    
     def __init__(self, http_url: Optional[str] = None):
         """Initialize Qdrant client"""
         if not QDRANT_AVAILABLE:
             raise ImportError(
-                "qdrant-client package not installed. "
-                "Install with: pip install qdrant-client"
+                'qdrant-client package not installed. '
+                'Install with: pip install qdrant-client'
             )
-
+        
         self.http_url = http_url or os.environ.get(
-            "QDRANT_HTTP_API", "http://eva-qdrant:6333"
+            'QDRANT_HTTP_API', 'http://eva-qdrant:6333'
         )
         self.client = QdrantClient(url=self.http_url)
-
+    
     def _ensure_collection(self, collection: str, vector_size: int = 1) -> bool:
         """Ensure collection exists"""
         try:
             collections = self.client.get_collections().collections
             collection_names = [c.name for c in collections]
-
+            
             if collection not in collection_names:
                 self.client.create_collection(
                     collection_name=collection,
@@ -49,9 +49,9 @@ class QdrantMemory:
                 return True
             return True
         except Exception as e:
-            print(f"Error ensuring collection {collection}: {e}")
+            print(f'Error ensuring collection {collection}: {e}')
             return False
-
+    
     def save_text(
         self,
         collection: str,
@@ -60,27 +60,27 @@ class QdrantMemory:
     ) -> Optional[str]:
         """
         Save text to Qdrant
-
+        
         Args:
             collection: Collection name
             text: Text to save
             metadata: Optional metadata
-
+        
         Returns:
             Document ID or None if failed
         """
         try:
             if not self._ensure_collection(collection):
                 return None
-
+            
             doc_id = str(uuid.uuid4())
-
+            
             payload = {
-                "text": text,
-                "metadata": metadata or {},
-                "timestamp": datetime.now().isoformat()
+                'text': text,
+                'metadata': metadata or {},
+                'timestamp': datetime.now().isoformat()
             }
-
+            
             self.client.upsert(
                 collection_name=collection,
                 points=[
@@ -91,13 +91,13 @@ class QdrantMemory:
                     )
                 ]
             )
-
+            
             return doc_id
-
+            
         except Exception as e:
-            print(f"Error saving text: {e}")
+            print(f'Error saving text: {e}')
             return None
-
+    
     def save_with_embedding(
         self,
         collection: str,
@@ -107,13 +107,13 @@ class QdrantMemory:
     ) -> Optional[str]:
         """
         Save text with embedding
-
+        
         Args:
             collection: Collection name
             text: Text content
             embedding: Embedding vector
             metadata: Optional metadata
-
+        
         Returns:
             Document ID or None
         """
@@ -121,15 +121,15 @@ class QdrantMemory:
             vector_size = len(embedding)
             if not self._ensure_collection(collection, vector_size):
                 return None
-
+            
             doc_id = str(uuid.uuid4())
-
+            
             payload = {
-                "text": text,
-                "metadata": metadata or {},
-                "timestamp": datetime.now().isoformat()
+                'text': text,
+                'metadata': metadata or {},
+                'timestamp': datetime.now().isoformat()
             }
-
+            
             self.client.upsert(
                 collection_name=collection,
                 points=[
@@ -140,13 +140,13 @@ class QdrantMemory:
                     )
                 ]
             )
-
+            
             return doc_id
-
+            
         except Exception as e:
-            print(f"Error saving with embedding: {e}")
+            print(f'Error saving with embedding: {e}')
             return None
-
+    
     def load_text(
         self,
         collection: str,
@@ -154,11 +154,11 @@ class QdrantMemory:
     ) -> Optional[Dict[str, Any]]:
         """
         Load text by ID
-
+        
         Args:
             collection: Collection name
             doc_id: Document ID
-
+        
         Returns:
             Document data or None
         """
@@ -168,20 +168,20 @@ class QdrantMemory:
                 ids=[doc_id],
                 with_payload=True
             )
-
+            
             if points:
                 payload = points[0].payload or {}
                 return {
-                    "id": str(points[0].id),
-                    "text": payload.get("text", ""),
-                    "metadata": payload.get("metadata", {}),
-                    "timestamp": payload.get("timestamp", "")
+                    'id': str(points[0].id),
+                    'text': payload.get('text', ''),
+                    'metadata': payload.get('metadata', {}),
+                    'timestamp': payload.get('timestamp', '')
                 }
         except Exception as e:
-            print(f"Error loading text: {e}")
-
+            print(f'Error loading text: {e}')
+        
         return None
-
+    
     def search_similar(
         self,
         collection: str,
@@ -190,12 +190,12 @@ class QdrantMemory:
     ) -> List[Dict[str, Any]]:
         """
         Search for similar texts using embedding
-
+        
         Args:
             collection: Collection name
             query_embedding: Query embedding vector
             limit: Maximum results
-
+        
         Returns:
             List of similar documents
         """
@@ -205,32 +205,32 @@ class QdrantMemory:
                 query_vector=query_embedding,
                 limit=limit
             )
-
+            
             formatted = []
             for point in results:
                 payload = point.payload or {}
                 formatted.append({
-                    "id": str(point.id),
-                    "score": point.score,
-                    "text": payload.get("text", ""),
-                    "metadata": payload.get("metadata", {})
+                    'id': str(point.id),
+                    'score': point.score,
+                    'text': payload.get('text', ''),
+                    'metadata': payload.get('metadata', {})
                 })
-
+            
             return formatted
-
+            
         except Exception as e:
-            print(f"Error searching: {e}")
+            print(f'Error searching: {e}')
             return []
-
+    
     def list_collections(self) -> List[str]:
         """List all collections"""
         try:
             collections = self.client.get_collections().collections
             return [c.name for c in collections]
         except Exception as e:
-            print(f"Error listing collections: {e}")
+            print(f'Error listing collections: {e}')
             return []
-
+    
     def create_collection(
         self,
         collection: str,
@@ -238,11 +238,11 @@ class QdrantMemory:
     ) -> bool:
         """
         Create a new collection
-
+        
         Args:
             collection: Collection name
             vector_size: Vector size
-
+        
         Returns:
             Success status
         """
@@ -256,18 +256,18 @@ class QdrantMemory:
             )
             return True
         except Exception as e:
-            print(f"Error creating collection: {e}")
+            print(f'Error creating collection: {e}')
             return False
-
+    
     def delete_collection(self, collection: str) -> bool:
         """Delete a collection"""
         try:
             self.client.delete_collection(collection)
             return True
         except Exception as e:
-            print(f"Error deleting collection: {e}")
+            print(f'Error deleting collection: {e}')
             return False
-
+    
     def get_all_texts(
         self,
         collection: str,
@@ -275,18 +275,18 @@ class QdrantMemory:
     ) -> List[Dict[str, Any]]:
         """
         Get all texts from collection
-
+        
         Args:
             collection: Collection name
             limit: Maximum results
-
+        
         Returns:
             List of documents
         """
         try:
             all_points = []
             next_offset = None
-
+            
             while True:
                 result = self.client.scroll(
                     collection_name=collection,
@@ -294,27 +294,27 @@ class QdrantMemory:
                     offset=next_offset,
                     with_payload=True
                 )
-
+                
                 points, next_offset = result
-
+                
                 for point in points:
                     payload = point.payload or {}
                     all_points.append({
-                        "id": str(point.id),
-                        "text": payload.get("text", ""),
-                        "metadata": payload.get("metadata", {}),
-                        "timestamp": payload.get("timestamp", "")
+                        'id': str(point.id),
+                        'text': payload.get('text', ''),
+                        'metadata': payload.get('metadata', {}),
+                        'timestamp': payload.get('timestamp', '')
                     })
-
+                
                 if next_offset is None or len(all_points) >= limit:
                     break
-
+            
             return all_points[:limit]
-
+            
         except Exception as e:
-            print(f"Error getting all texts: {e}")
+            print(f'Error getting all texts: {e}')
             return []
-
+    
     def test_connection(self) -> bool:
         """Test Qdrant connection"""
         try:
@@ -322,7 +322,7 @@ class QdrantMemory:
             self.client.get_collections()
             return True
         except Exception as e:
-            print(f"Connection test failed: {e}")
+            print(f'Connection test failed: {e}')
             return False
 
 
