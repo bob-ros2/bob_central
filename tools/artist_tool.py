@@ -25,7 +25,7 @@ def draw_image(prompt: str) -> str:
 
     The image will be published to the robot's visual subsystem.
 
-    :param prompt: Detailed description of the image to generate.
+    :param prompt: Description of the image. Keep it under 70 tokens for best results.
     :return: A message indicating the prompt has been sent.
     """
     if not rclpy.ok():
@@ -43,7 +43,7 @@ def draw_image(prompt: str) -> str:
 
     node.destroy_node()
     return (f"Image prompt '{prompt}' sent to TTI subsystem. "
-            f"The result will be saved to '/tmp/eva_artist.jpg' after a few "
+            f"The result will be saved to '/tmp/eva/eva_artist.jpg' after a few "
             f"seconds. You can use your vision tools to inspect it there.")
 
 

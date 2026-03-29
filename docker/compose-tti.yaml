@@ -25,11 +25,11 @@ services:
       - ROS_DOMAIN_ID=50 # Synched with your setup
       - TTI_MODEL_TYPE=sdxl_turbo
       - TTI_MODELS_PATH=/models
-      - TTI_OUTPUT_PATH=/tmp/eva_artist.jpg
+      - TTI_OUTPUT_PATH=/tmp/eva/eva_artist.jpg
     # Launch the artist-only orchestrator (with correct GPU/Model paths)
     command: ros2 launch bob_launch generic.launch.py config:=/ros2_ws/src/bob_central/launch/orch_eva_tti.yaml
     volumes:
-      - /tmp/eva:/tmp # Shared folder for visuals (Eva self-inspection)
+      - /tmp/eva:/tmp/eva # Shared workspace for visuals (self-inspection)
       - eva-artist-models:/models # Dedicated persistent volume for models
       # - ./models:/models # Optional: Use local folder instead of docker volume
       - ~/.cache/huggingface/cache/huggingface/token:/root/.cache/huggingface/token # Map HF Token directly

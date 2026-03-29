@@ -17,6 +17,10 @@ RUN apt-get update && apt-get install -y \
     iputils-ping \
     dnsutils \
     netcat-openbsd \
+    cron \
+    procps \
+    psmisc \
+    openssh-client \
     && rm -rf /var/lib/apt/lists/*
 
 # -- Install Python Dependencies for Eva --
@@ -44,7 +48,7 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh && \
     colcon build --packages-select bob_llm bob_central bob_launch
 
 # -- Entrypoint Script --
-RUN echo "#!/bin/bash\nsource /opt/ros/${ROS_DISTRO}/setup.bash\nsource /ros2_ws/install/setup.bash\nexec \"\$@\"" > /ros_entrypoint.sh \
+RUN echo "#!/bin/bash\nservice cron start\nsource /opt/ros/\${ROS_DISTRO}/setup.bash\nsource /ros2_ws/install/setup.bash\nexec \"\$@\"" > /ros_entrypoint.sh \
     && chmod +x /ros_entrypoint.sh
 
 ENTRYPOINT ["/ros_entrypoint.sh"]

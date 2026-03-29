@@ -20,13 +20,32 @@ services:
     volumes:
       - ./nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
 
+  # -- GITEA: LOCAL CODE HUB (Eva's Sandbox) --
+  gitea:
+    image: gitea/gitea:latest
+    container_name: eva-gitea
+    networks:
+      - eva-net
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - GITEA__database__DB_TYPE=sqlite3
+    volumes:
+      - /tmp/eva/gitea_data:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "6060:3000"
+      - "622:22"
+    restart: always
+
   # -- CORE: EVA (Brain & Logic) --
   base:
     build:
       context: ../
       dockerfile: ./docker/Dockerfile.base
       args:
-        # Pass the desired ROS distribution (default: humble)
+        # Defaults to humble if ROS_DISTRO is not set in env
         ROS_DISTRO: ${ROS_DISTRO:-humble}
     container_name: eva-base
     networks:
@@ -35,7 +54,11 @@ services:
       - ../.env
     environment:
       - ROS_DOMAIN_ID=50 # Synched with your setup
+      - DISPLAY=$DISPLAY
+      - QT_X11_NO_MITSHM=1
     # Launch the brain-only orchestrator
     command: ros2 launch bob_launch generic.launch.py config:=/ros2_ws/src/bob_central/launch/orch_eva.yaml
     volumes:
-      - /tmp/eva:/tmp # Shared folder for visuals (Vision skill self-inspection)
+      - /tmp/eva:/tmp/eva # Shared workspace for logos, images, logs
+      - /tmp/eva/ssh:/root/.ssh # Persistent AI Identity (Keys)
+      - ..:/ros2_ws/src/bob_central # Persistent Source Code (Self-Evolution)

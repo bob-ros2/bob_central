@@ -5,7 +5,8 @@
 - &api_researcher   "${RESEARCHER_API_URL}"
 - &api_summarizer   "${SUMMARIZER_API_URL}"
 
-- &eva_ns "__ns:=/eva"
+- &eva_ns    "__ns:=/eva"
+- &tts_ns    "__ns:=/eva/tts"
 - &log_level "debug"
 
 # --- THE UNIFIED BRAIN-MESH ---
@@ -81,6 +82,6 @@
     - -r
     - "llm_prompt:=/eva/logic/internal/full_response_text"
     - -r
-    - "llm_response:=/bob/llm_stream" 
+    - "llm_response:=/bob/llm_stream"
     - -r
-    - *eva_ns
+    - *tts_ns
