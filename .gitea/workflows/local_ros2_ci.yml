@@ -1,0 +1,37 @@
+name: Local ROS 2 CI (Nucleus Only)
+
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - 'README.md'
+      - 'CHANGELOG.rst'
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  local-test:
+    runs-on: ros-humble
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build and Test (Local Optimized)
+        run: |
+          source /opt/ros/humble/setup.sh
+          # Create temporary workspace for testing
+          mkdir -p /tmp/ws/src
+          cp -r . /tmp/ws/src/bob_central
+          cd /tmp/ws
+          
+          # Install dependencies if simple enough
+          # For now, assume base image has everything we need
+          
+          echo "Executing colcon build..."
+          colcon build --packages-select bob_central
+          
+          echo "Executing linter tests..."
+          colcon test --packages-select bob_central --test-result-base build/bob_central/test_results
+          
+          echo "Generating test report..."
+          colcon test-result --verbose
