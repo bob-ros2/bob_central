@@ -12,41 +12,21 @@ on:
 jobs:
   local-test:
     runs-on: ros-humble
+    container:
+      image: ros:humble
     steps:
-      # We SKIP actions/checkout because it requires Node.js inside the container.
-      # Local act runners typically mount the repo directly into the workspace.
-      
-      - name: Verify and Prepare Local Workspace
+      - name: Install Node.js for Checkout Action
         run: |
-          echo "Initializing Node-free CI environment..."
-          # Check if we have the files
-          if [ ! -f "package.xml" ]; then
-            echo "ERROR: Code files not found in container! Act mount failed?"
-            ls -la
-            # Fallback: Try manual git clone if git is available
-            if command -v git &> /dev/null; then
-               echo "Attempting manual git clone..."
-               git clone . /tmp/manual_clone && cd /tmp/manual_clone
-            else
-               exit 1
-            fi
-          fi
-          
-          echo "Installing Test Dependencies (if missing)..."
-          if ! dpkg -l | grep -q "ros-humble-ament-cmake-test"; then
-            sudo apt-get update && sudo apt-get install -y \
-              ros-humble-ament-cmake-test \
-              ros-humble-ament-lint-auto \
-              ros-humble-ament-copyright \
-              ros-humble-ament-flake8 \
-              ros-humble-ament-pep257
-          fi
+          # The official checkout action requires node, which is missing in ROS images.
+          apt-get update && apt-get install -y nodejs
 
-      - name: Build and Test (Node-free)
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build and Test (Nucleus 0.3.0)
         run: |
           /bin/bash -c "source /opt/ros/humble/setup.sh && \
           mkdir -p /tmp/ws/src && \
-          # Copy current dir to workspace src
           cp -r . /tmp/ws/src/bob_central && \
           cd /tmp/ws && \
           echo 'Executing colcon build...' && \
