@@ -15,10 +15,12 @@ jobs:
     container:
       image: ros:humble
     steps:
-      - name: Install Node.js for Checkout Action
+      - name: Bootstrap Node.js 20 for Checkout Action
         run: |
-          # The official checkout action requires node, which is missing in ROS images.
-          apt-get update && apt-get install -y nodejs
+          # Official checkout v4 needs Node 20. Standard apt has Node 12.
+          apt-get update && apt-get install -y curl
+          curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+          apt-get install -y nodejs
 
       - name: Checkout repository
         uses: actions/checkout@v4
