@@ -45,9 +45,9 @@ def draw_image(prompt: str) -> str:
     publisher.publish(msg)
 
     node.destroy_node()
-    return (f'Image prompt \'{prompt}\' sent to TTI subsystem. '
-            f'The result will be saved to \'/tmp/eva/eva_artist.jpg\' after a few '
-            f'seconds. You can use your vision tools to inspect it there.')
+    return (f"Image prompt '{prompt}' sent to TTI subsystem. "
+            f"The result will be saved to '/tmp/eva/eva_artist.jpg' after a few "
+            f"seconds. You can use your vision tools to inspect it there.")
 
 
 if __name__ == '__main__':
