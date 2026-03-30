@@ -14,14 +14,25 @@ jobs:
     runs-on: ros-humble
     container:
       image: ros:humble
-      options: --network eva-net
     steps:
-      - name: Bootstrap Node.js 20 for Checkout Action
+      - name: Bootstrap Node.js 20 and Network
         run: |
-          # Official checkout v4 needs Node 20. Standard apt has Node 12.
-          apt-get update && apt-get install -y curl
+          # 1. Install dependencies
+          apt-get update && apt-get install -y curl iproute2
+          
+          # 2. Install Node 20
           curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
           apt-get install -y nodejs
+          
+          # 3. Dynamic Network Fix
+          # Map eva-gitea to the host gateway because Gitea is exposed on 6060 on the host
+          GATEWAY_IP=$(ip route show | grep default | awk '{print $3}')
+          echo "$GATEWAY_IP eva-gitea" >> /etc/hosts
+          echo "Mapped eva-gitea to host gateway: $GATEWAY_IP"
+          
+          # 4. Git Rewrite to handle the port mapping (act uses 3000 default)
+          # We tell git to use 6060 whenever it tries 3000 for this host
+          git config --global url."http://eva-gitea:6060/".insteadOf "http://eva-gitea:3000/"
 
       - name: Checkout repository
         uses: actions/checkout@v4
