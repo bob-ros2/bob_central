@@ -15,29 +15,36 @@ jobs:
     container:
       image: ros:humble
     steps:
-      - name: Bootstrap Node.js 20 and Network
+      - name: Bootstrap Node 20 and Strict Linters
         run: |
-          # 1. Install dependencies
+          # 1. Update and install core network tools
           apt-get update && apt-get install -y curl iproute2
           
-          # 2. Install Node 20
+          # 2. Install Node 20 for checkout
           curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
           apt-get install -y nodejs
           
-          # 3. Dynamic Network Fix
-          # Map eva-gitea to the host gateway because Gitea is exposed on 6060 on the host
+          # 3. INSTALLING THE "GHOST" LINTERS (The ones GitHub has by default)
+          # These are responsible for Q000, I100, and long lines.
+          apt-get install -y \
+            python3-flake8-quotes \
+            python3-flake8-import-order \
+            python3-flake8-blind-except \
+            python3-flake8-builtins \
+            python3-flake8-docstrings \
+            ros-humble-ament-flake8 \
+            ros-humble-ament-pep257 \
+            ros-humble-ament-copyright
+          
+          # 4. Network Fix for port mapping (3000 -> 6060)
           GATEWAY_IP=$(ip route show | grep default | awk '{print $3}')
           echo "$GATEWAY_IP eva-gitea" >> /etc/hosts
-          echo "Mapped eva-gitea to host gateway: $GATEWAY_IP"
-          
-          # 4. Git Rewrite to handle the port mapping (act uses 3000 default)
-          # We tell git to use 6060 whenever it tries 3000 for this host
           git config --global url."http://eva-gitea:6060/".insteadOf "http://eva-gitea:3000/"
 
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build and Test (Nucleus 0.3.0)
+      - name: Build and Test (Absolute Purity Mode)
         run: |
           /bin/bash -c "source /opt/ros/humble/setup.sh && \
           mkdir -p /tmp/ws/src && \
@@ -45,7 +52,7 @@ jobs:
           cd /tmp/ws && \
           echo 'Executing colcon build...' && \
           colcon build --packages-select bob_central && \
-          echo 'Executing linter tests...' && \
-          colcon test --packages-select bob_central && \
+          echo 'Executing linter tests with strict plugins...' && \
+          colcon test --packages-select bob_central --event-handlers console_direct+ && \
           echo 'Generating test report...' && \
           colcon test-result --verbose"
