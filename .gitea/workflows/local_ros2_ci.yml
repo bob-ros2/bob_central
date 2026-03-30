@@ -15,12 +15,19 @@ jobs:
     container:
       image: ros:humble
     steps:
-      - name: Bootstrap Node.js 20 for Checkout Action
+      - name: Bootstrap Node.js 20 and Network
         run: |
-          # Official checkout v4 needs Node 20. Standard apt has Node 12.
-          apt-get update && apt-get install -y curl
+          # 1. Install dependencies for node and network probing
+          apt-get update && apt-get install -y curl iproute2 iputils-ping
+          
+          # 2. Install Node 20
           curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
           apt-get install -y nodejs
+          
+          # 3. Fix DNS resolution for eva-gitea
+          # We know the IP is 192.168.32.7 from previous telemetry
+          echo "192.168.32.7 eva-gitea" >> /etc/hosts
+          echo "Network fix applied: eva-gitea mapped to 192.168.32.7"
 
       - name: Checkout repository
         uses: actions/checkout@v4
