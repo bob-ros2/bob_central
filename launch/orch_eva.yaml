@@ -42,9 +42,13 @@
     api_url: *api_orchestrator
     api_key: "${ORCHESTRATOR_API_KEY}"
     api_model: "deepseek-chat"
+    api_timeout: 180.0
     system_prompt_file: "//PKGSHARE:bob_central/prompts/orchestrator.txt"
     stream: true
     max_tool_calls: 50
+    max_tokens: 8000
+    max_history_length: 25
+    temperature: 0.3
     skill_dir: "/ros2_ws/src/bob_central/skills"
     tool_interfaces: 
        - "//PKGSHARE:bob_llm/config/skill_tools.py"
