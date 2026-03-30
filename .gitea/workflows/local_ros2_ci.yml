@@ -11,16 +11,28 @@ on:
 
 jobs:
   local-test:
-    runs-on: ubuntu-latest
-    container:
-      image: ros:humble
+    runs-on: ros-humble
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install Test Dependencies
+        run: |
+          # Ensure linter tools are present in the runner environment
+          if ! dpkg -l | grep -q "ros-humble-ament-cmake-test"; then
+            echo "Installing missing ROS 2 test dependencies..."
+            sudo apt-get update && sudo apt-get install -y \
+              ros-humble-ament-cmake-test \
+              ros-humble-ament-lint-auto \
+              ros-humble-ament-copyright \
+              ros-humble-ament-flake8 \
+              ros-humble-ament-pep257 \
+              ros-humble-ament-cmake-lint \
+              ros-humble-ament-xmllint
+          fi
+
       - name: Build and Test (Local Optimized)
         run: |
-          # Use shell with source support
           /bin/bash -c "source /opt/ros/humble/setup.sh && \
           mkdir -p /tmp/ws/src && \
           cp -r . /tmp/ws/src/bob_central && \
