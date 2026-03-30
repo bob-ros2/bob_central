@@ -13,8 +13,8 @@ jobs:
   local-test:
     runs-on: ros-humble
     container:
-     image: ros:humble
-     options: --network eva-net
+      image: ros:humble
+      options: --network eva-net
     steps:
       - name: Bootstrap Node.js 20 for Checkout Action
         run: |
