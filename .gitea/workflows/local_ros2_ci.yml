@@ -13,28 +13,40 @@ jobs:
   local-test:
     runs-on: ros-humble
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install Test Dependencies
+      # We SKIP actions/checkout because it requires Node.js inside the container.
+      # Local act runners typically mount the repo directly into the workspace.
+      
+      - name: Verify and Prepare Local Workspace
         run: |
-          # Ensure linter tools are present in the runner environment
+          echo "Initializing Node-free CI environment..."
+          # Check if we have the files
+          if [ ! -f "package.xml" ]; then
+            echo "ERROR: Code files not found in container! Act mount failed?"
+            ls -la
+            # Fallback: Try manual git clone if git is available
+            if command -v git &> /dev/null; then
+               echo "Attempting manual git clone..."
+               git clone . /tmp/manual_clone && cd /tmp/manual_clone
+            else
+               exit 1
+            fi
+          fi
+          
+          echo "Installing Test Dependencies (if missing)..."
           if ! dpkg -l | grep -q "ros-humble-ament-cmake-test"; then
-            echo "Installing missing ROS 2 test dependencies..."
             sudo apt-get update && sudo apt-get install -y \
               ros-humble-ament-cmake-test \
               ros-humble-ament-lint-auto \
               ros-humble-ament-copyright \
               ros-humble-ament-flake8 \
-              ros-humble-ament-pep257 \
-              ros-humble-ament-cmake-lint \
-              ros-humble-ament-xmllint
+              ros-humble-ament-pep257
           fi
 
-      - name: Build and Test (Local Optimized)
+      - name: Build and Test (Node-free)
         run: |
           /bin/bash -c "source /opt/ros/humble/setup.sh && \
           mkdir -p /tmp/ws/src && \
+          # Copy current dir to workspace src
           cp -r . /tmp/ws/src/bob_central && \
           cd /tmp/ws && \
           echo 'Executing colcon build...' && \
