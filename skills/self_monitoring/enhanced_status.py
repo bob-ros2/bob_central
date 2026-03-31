@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
+# Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
+# distributed under the License is distributed on an 'AS IS' BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
@@ -43,7 +43,7 @@ def get_cpu_info():
             pass
         
         # CPU-Modell
-        cpu_model = "Unknown"
+        cpu_model = 'Unknown'
         try:
             with open('/proc/cpuinfo', 'r') as f:
                 for line in f:
@@ -57,12 +57,12 @@ def get_cpu_info():
         cores = os.cpu_count() or 1
         
         return {
-            "load_percent": round(cpu_load, 1),
-            "model": cpu_model,
-            "cores": cores
+            'load_percent': round(cpu_load, 1),
+            'model': cpu_model,
+            'cores': cores
         }
     except Exception as e:
-        return {"load_percent": 0.0, "model": "Error", "cores": 1, "error": str(e)}
+        return {'load_percent': 0.0, 'model': 'Error', 'cores': 1, 'error': str(e)}
 
 def get_memory_info():
     """Hole Speicher-Informationen."""
@@ -84,14 +84,14 @@ def get_memory_info():
         free_gb = round(mem_free / 1024, 2)
         
         return {
-            "used_percent": used_percent,
-            "used_mb": mem_used,
-            "free_mb": mem_free,
-            "total_mb": mem_total,
-            "free_gb": free_gb
+            'used_percent': used_percent,
+            'used_mb': mem_used,
+            'free_mb': mem_free,
+            'total_mb': mem_total,
+            'free_gb': free_gb
         }
     except Exception as e:
-        return {"used_percent": 0.0, "used_mb": 0, "free_mb": 0, "total_mb": 0, "free_gb": 0, "error": str(e)}
+        return {'used_percent': 0.0, 'used_mb': 0, 'free_mb': 0, 'total_mb': 0, 'free_gb': 0, 'error': str(e)}
 
 def get_load_average():
     """Hole Load Average."""
@@ -110,7 +110,7 @@ def get_gpu_info():
     total_vram = 0
     used_vram = 0
     free_vram = 0
-    gpu_info_str = ""
+    gpu_info_str = ''
     
     # Versuche NVIDIA SMI
     try:
@@ -128,11 +128,11 @@ def get_gpu_info():
                         free = int(parts[3].strip())
                         
                         gpus.append({
-                            "name": name,
-                            "vram_total_mb": total,
-                            "vram_used_mb": used,
-                            "vram_free_mb": free,
-                            "detected_via": "nvidia-smi"
+                            'name': name,
+                            'vram_total_mb': total,
+                            'vram_used_mb': used,
+                            'vram_free_mb': free,
+                            'detected_via': 'nvidia-smi'
                         })
                         
                         total_vram += total
@@ -140,7 +140,7 @@ def get_gpu_info():
                         free_vram += free
                         
                         if gpu_info_str:
-                            gpu_info_str += ";"
+                            gpu_info_str += ';'
                         gpu_info_str += name
     except (subprocess.SubprocessError, FileNotFoundError):
         pass
@@ -148,67 +148,67 @@ def get_gpu_info():
     # Falls keine NVIDIA-GPUs, prüfe DRM
     if not gpus:
         try:
-            drm_path = "/sys/class/drm"
+            drm_path = '/sys/class/drm'
             if os.path.exists(drm_path):
                 for item in os.listdir(drm_path):
                     card_path = os.path.join(drm_path, item)
-                    if os.path.isdir(card_path) and item.startswith("card") and "-" not in item:
-                        modalias_path = os.path.join(card_path, "device", "modalias")
+                    if os.path.isdir(card_path) and item.startswith('card') and '-' not in item:
+                        modalias_path = os.path.join(card_path, 'device', 'modalias')
                         if os.path.exists(modalias_path):
                             with open(modalias_path, 'r') as f:
                                 modalias = f.read().strip()
                             
-                            if "v000010DE" in modalias:  # NVIDIA Vendor ID
-                                device_id = ""
+                            if 'v000010DE' in modalias:  # NVIDIA Vendor ID
+                                device_id = ''
                                 match = re.search(r'd0000([0-9A-Fa-f]{4})', modalias)
                                 if match:
                                     device_id = match.group(1)
                                 
-                                name = f"NVIDIA GPU (ID: {device_id})"
+                                name = f'NVIDIA GPU (ID: {device_id})'
                                 gpus.append({
-                                    "name": name,
-                                    "vram_total_mb": 0,
-                                    "vram_used_mb": 0,
-                                    "vram_free_mb": 0,
-                                    "detected_via": "DRM"
+                                    'name': name,
+                                    'vram_total_mb': 0,
+                                    'vram_used_mb': 0,
+                                    'vram_free_mb': 0,
+                                    'detected_via': 'DRM'
                                 })
                                 
                                 if gpu_info_str:
-                                    gpu_info_str += ";"
+                                    gpu_info_str += ';'
                                 gpu_info_str += name
         except Exception:
             pass
     
     return {
-        "count": len(gpus),
-        "info": gpu_info_str,
-        "total_vram_mb": total_vram,
-        "used_vram_mb": used_vram,
-        "free_vram_mb": free_vram,
-        "details": gpus
+        'count': len(gpus),
+        'info': gpu_info_str,
+        'total_vram_mb': total_vram,
+        'used_vram_mb': used_vram,
+        'free_vram_mb': free_vram,
+        'details': gpus
     }
 
 def main():
     """Hauptfunktion."""
     try:
         status = {
-            "cpu": get_cpu_info(),
-            "memory": get_memory_info(),
-            "load_average": get_load_average(),
-            "gpu": get_gpu_info()
+            'cpu': get_cpu_info(),
+            'memory': get_memory_info(),
+            'load_average': get_load_average(),
+            'gpu': get_gpu_info()
         }
         
         print(json.dumps(status, indent=2))
         
     except Exception as e:
         error_status = {
-            "error": str(e),
-            "cpu": {"load_percent": 0.0, "model": "Error", "cores": 1},
-            "memory": {"used_percent": 0.0, "used_mb": 0, "free_mb": 0, "total_mb": 0, "free_gb": 0},
-            "load_average": [0.0, 0.0, 0.0],
-            "gpu": {"count": 0, "info": "", "total_vram_mb": 0, "used_vram_mb": 0, "free_vram_mb": 0, "details": []}
+            'error': str(e),
+            'cpu': {'load_percent': 0.0, 'model': 'Error', 'cores': 1},
+            'memory': {'used_percent': 0.0, 'used_mb': 0, 'free_mb': 0, 'total_mb': 0, 'free_gb': 0},
+            'load_average': [0.0, 0.0, 0.0],
+            'gpu': {'count': 0, 'info': '', 'total_vram_mb': 0, 'used_vram_mb': 0, 'free_vram_mb': 0, 'details': []}
         }
         print(json.dumps(error_status, indent=2))
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
