@@ -43,7 +43,7 @@
     api_key: "${ORCHESTRATOR_API_KEY}"
     api_model: "deepseek-chat"
     api_timeout: 180.0
-    system_prompt_file: "//PKGSHARE:bob_central/prompts/orchestrator.txt"
+    system_prompt_file: "//PKGSHARE:bob_central/prompts/orchestrator.md"
     stream: true
     max_tool_calls: 50
     max_tokens: 8000
@@ -77,7 +77,7 @@
   output: screen
   parameters:
     api_url: *api_summarizer
-    system_prompt_file: "//PKGSHARE:bob_central/prompts/summarizer.txt"
+    system_prompt_file: "//PKGSHARE:bob_central/prompts/summarizer.md"
     stream: false
   arguments:
     - --ros-args
