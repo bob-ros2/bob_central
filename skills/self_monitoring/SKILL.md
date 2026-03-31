@@ -1,89 +1,72 @@
----
-name: Self Monitoring Skill
-version: 1.0.0
-description: Autonomous self-monitoring and maintenance skill for Eva
-author: Eva
-created: 2026-03-29
-updated: 2026-03-29
-category: system
-tags: [monitoring, autonomy, maintenance, logging]
-dependencies: []
-inputs:
-  - name: action
-    type: string
-    description: Action to perform (start, stop, status, log)
-    required: false
-    default: status
-outputs:
-  - name: result
-    type: string
-    description: Result of the operation
-  - name: log_path
-    type: string
-    description: Path to the log file
----
-
 # Self Monitoring Skill
 
-## Overview
-This skill enables autonomous self-monitoring and maintenance for Eva. It provides:
-- Regular system status checks
-- ROS node monitoring
-- Activity logging
-- Scheduled wake-ups via cron
-- Persistent logging in /tmp directory
+Dieses Skill überwacht den Systemzustand und erweitert das `get_system_status` Tool.
 
-## Functions
+## Erweiterte Funktionen
 
-### 1. start_monitoring()
-Starts the regular monitoring cycle via cron job.
-- Creates cron job for periodic checks (default: every 5 minutes)
-- Initializes log file in /tmp/eva_self_monitoring.log
-- Begins system status tracking
+### Enhanced System Status
+Das erweiterte Systemstatus-Tool liefert detaillierte Informationen über:
+- CPU: Last, Modell, Kerne
+- Speicher: Verwendung in %, MB, GB
+- Load Average: 1, 5, 15 Minuten
+- GPU: Anzahl, Typ, VRAM (wenn verfügbar)
 
-### 2. stop_monitoring()
-Stops the monitoring cycle.
-- Removes cron job
-- Finalizes log entries
-- Preserves log file
+### Verfügbare Skripte
 
-### 3. check_status()
-Performs a single status check.
-- System metrics (CPU, RAM, load)
-- ROS node status
-- Skill availability
-- Logs results to file
+1. **enhanced_status.py** - Python-Version mit zuverlässiger GPU-Erkennung
+2. **enhanced_status_v2.sh** - Bash-Version (experimentell)
+3. **extended_system_status.py** - Vollständige Python-Implementierung
 
-### 4. log_activity(activity, details)
-Logs specific activities with details.
-- Timestamped entries
-- Structured JSON format
-- Persistent storage in /tmp
-
-## Configuration
-- Log directory: /tmp/eva
-- Cron interval: */5 * * * * (every 5 minutes)
-- Log file: /tmp/eva/self_monitoring.log
-- Status file: /tmp/eva/status.json
-
-## Usage Examples
+## Verwendung
 
 ```bash
-# Start monitoring
-eva apply_skill self_monitoring --action start
-
-# Stop monitoring
-eva apply_skill self_monitoring --action stop
-
-# Check current status
-eva apply_skill self_monitoring --action status
-
-# Log specific activity
-eva apply_skill self_monitoring --action log --params '{"activity": "wake_up", "details": "Regular check"}'
+# Erweiterten Systemstatus abrufen
+python3 /ros2_ws/src/bob_central/skills/self_monitoring/enhanced_status.py
 ```
 
-## Implementation Details
-- Uses Python for monitoring scripts
-- JSON format for structured logging
-- Cron for scheduling
-- File-based persistence in /tmp
+## GPU-Erkennung
+
+Das Tool erkennt GPUs über:
+1. **nvidia-smi** (falls installiert) - Liefert detaillierte VRAM-Informationen
+2. **DRM-Schnittstelle** (/sys/class/drm) - Erkennt NVIDIA-GPUs ohne nvidia-smi
+
+## Integration mit get_system_status
+
+Das erweiterte Tool ist kompatibel mit dem bestehenden `get_system_status` Tool, 
+erweitert es aber um GPU-Informationen und detailliertere CPU/Speicher-Daten.
+
+## Beispiel-Ausgabe
+
+```json
+{
+  "cpu": {
+    "load_percent": 4.1,
+    "model": "13th Gen Intel(R) Core(TM) i9-13900K",
+    "cores": 32
+  },
+  "memory": {
+    "used_percent": 11.1,
+    "used_mb": 21434,
+    "free_mb": 145127,
+    "total_mb": 192983,
+    "free_gb": 141.73
+  },
+  "load_average": [1.85, 1.92, 2.01],
+  "gpu": {
+    "count": 1,
+    "info": "NVIDIA GPU (ID: 2684)",
+    "total_vram_mb": 0,
+    "used_vram_mb": 0,
+    "free_vram_mb": 0,
+    "details": [
+      {
+        "name": "NVIDIA GPU (ID: 2684)",
+        "vram_total_mb": 0,
+        "vram_used_mb": 0,
+        "vram_free_mb": 0,
+        "detected_via": "DRM"
+      }
+    ]
+  }
+}
+```

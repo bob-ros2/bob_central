@@ -24,6 +24,12 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/* \
     && git config --global --add safe.directory '*'
 
+# -- Install NVIDIA Utilities (nvidia-smi) --
+# Installiere nvidia-utils ohne spezifische Version für bessere Kompatibilität
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    nvidia-utils \
+    && rm -rf /var/lib/apt/lists/*
+
 # -- Install Python Dependencies for Eva --
 # Leverage Docker layer caching for requirements
 COPY requirements.txt /tmp/requirements.txt
