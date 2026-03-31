@@ -25,9 +25,10 @@ RUN apt-get update && apt-get install -y \
     && git config --global --add safe.directory '*'
 
 # -- Install NVIDIA Utilities (nvidia-smi) --
-# Installiere nvidia-utils ohne spezifische Version für bessere Kompatibilität
+# Default version for nvidia-utils (can be overridden via build-arg)
+ARG NVIDIA_VERSION=535
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    nvidia-utils \
+    nvidia-utils-${NVIDIA_VERSION}-server \
     && rm -rf /var/lib/apt/lists/*
 
 # -- Install Python Dependencies for Eva --
