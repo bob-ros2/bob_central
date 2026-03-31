@@ -21,8 +21,8 @@ Erweitert das get_system_status Tool um GPU-Informationen und weitere Details.
 
 import json
 import os
-import subprocess
 from pathlib import Path
+import subprocess
 
 import psutil
 
@@ -53,12 +53,13 @@ def get_gpu_info():
                         used = int(parts[2].strip())
                         free = int(parts[3].strip())
 
+                        vram_usage = round((used / total) * 100, 1) if total > 0 else 0
                         gpu_info['gpus'].append({
                             'name': name,
                             'vram_total_mb': total,
                             'vram_used_mb': used,
                             'vram_free_mb': free,
-                            'vram_usage_percent': round((used / total) * 100, 1) if total > 0 else 0
+                            'vram_usage_percent': vram_usage
                         })
 
                         gpu_info['total_vram_mb'] += total
@@ -202,3 +203,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
