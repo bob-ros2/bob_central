@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
-# Licensed under the Apache License, Version 2.0 (the 'License');
+# Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an 'AS IS' BASIS,
+# distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
@@ -93,7 +93,10 @@ def get_memory_info():
             'free_gb': free_gb
         }
     except Exception as e:
-        return {'used_percent': 0.0, 'used_mb': 0, 'free_mb': 0, 'total_mb': 0, 'free_gb': 0, 'error': str(e)}
+        return {
+            'used_percent': 0.0, 'used_mb': 0, 'free_mb': 0,
+            'total_mb': 0, 'free_gb': 0, 'error': str(e)
+        }
 
 
 def get_load_average():
@@ -118,9 +121,10 @@ def get_gpu_info():
 
     # Versuche NVIDIA SMI
     try:
-        result = subprocess.run(['nvidia-smi', '--query-gpu=name,memory.total,memory.used,memory.free',
-                               '--format=csv,noheader,nounits'],
-                              capture_output=True, text=True, timeout=5)
+        result = subprocess.run(
+            ['nvidia-smi', '--query-gpu=name,memory.total,memory.used,memory.free',
+             '--format=csv,noheader,nounits'],
+            capture_output=True, text=True, timeout=5)
         if result.returncode == 0:
             for line in result.stdout.strip().split('\n'):
                 if line:
@@ -209,9 +213,15 @@ def main():
         error_status = {
             'error': str(e),
             'cpu': {'load_percent': 0.0, 'model': 'Error', 'cores': 1},
-            'memory': {'used_percent': 0.0, 'used_mb': 0, 'free_mb': 0, 'total_mb': 0, 'free_gb': 0},
+            'memory': {
+                'used_percent': 0.0, 'used_mb': 0, 'free_mb': 0,
+                'total_mb': 0, 'free_gb': 0
+            },
             'load_average': [0.0, 0.0, 0.0],
-            'gpu': {'count': 0, 'info': '', 'total_vram_mb': 0, 'used_vram_mb': 0, 'free_vram_mb': 0, 'details': []}
+            'gpu': {
+                'count': 0, 'info': '', 'total_vram_mb': 0,
+                'used_vram_mb': 0, 'free_vram_mb': 0, 'details': []
+            }
         }
         print(json.dumps(error_status, indent=2))
 
