@@ -6,6 +6,7 @@ networks:
     external: true
 
 services:
+  # -- QDRANT: Long-Term Context & Knowledge --
   qdrant:
     image: qdrant/qdrant:latest
     container_name: eva-qdrant
@@ -15,5 +16,5 @@ services:
       - "6333:6333" # HTTP API
       - "6334:6334" # gRPC API
     volumes:
-      - /tmp/eva/qdrant_storage:/qdrant/storage/
+      - /volume1/ros/eva/qdrant:/qdrant/storage/
     restart: always

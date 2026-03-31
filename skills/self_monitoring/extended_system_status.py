@@ -1,7 +1,22 @@
 #!/usr/bin/env python3
+# Copyright 2026 Bob Ros
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
-Extended System Status Tool
-Erweitert das get_system_status Tool um GPU-Informationen und weitere Details
+Extended System Status Tool.
+
+Erweitert das get_system_status Tool um GPU-Informationen und weitere Details.
 """
 
 import os
@@ -12,7 +27,7 @@ import psutil
 from pathlib import Path
 
 def get_gpu_info():
-    """Hole GPU-Informationen von verschiedenen Quellen"""
+    """Hole GPU-Informationen von verschiedenen Quellen."""
     gpu_info = {
         "gpus": [],
         "total_vram_mb": 0,
@@ -90,7 +105,7 @@ def get_gpu_info():
     return gpu_info
 
 def get_cpu_info():
-    """Hole detaillierte CPU-Informationen"""
+    """Hole detaillierte CPU-Informationen."""
     cpu_info = {
         "model": "Unknown",
         "cores": psutil.cpu_count(logical=False),
@@ -111,7 +126,7 @@ def get_cpu_info():
     return cpu_info
 
 def get_memory_info():
-    """Hole detaillierte Speicher-Informationen"""
+    """Hole detaillierte Speicher-Informationen."""
     mem = psutil.virtual_memory()
     swap = psutil.swap_memory()
     
@@ -127,7 +142,7 @@ def get_memory_info():
     }
 
 def get_disk_info():
-    """Hole Festplatten-Informationen"""
+    """Hole Festplatten-Informationen."""
     disk_info = []
     for partition in psutil.disk_partitions():
         try:
@@ -147,7 +162,7 @@ def get_disk_info():
     return disk_info
 
 def get_extended_system_status():
-    """Hauptfunktion für erweiterten Systemstatus"""
+    """Hauptfunktion für erweiterten Systemstatus."""
     try:
         # Lade-Average
         load_avg = os.getloadavg()
@@ -172,7 +187,7 @@ def get_extended_system_status():
         return {"error": str(e)}
 
 def main():
-    """Hauptfunktion für Kommandozeilenaufruf"""
+    """Hauptfunktion für Kommandozeilenaufruf."""
     status = get_extended_system_status()
     print(json.dumps(status, indent=2))
 

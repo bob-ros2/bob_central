@@ -5,9 +5,6 @@ networks:
   eva-net:
     external: true
 
-# Base Logic uses host mode for seamless ROS 2 (DDS) discovery
-# This makes topics visible across the entire host network
-
 services:
   # -- GATEWAY: API SECURE PROXY --
   api-gateway:
@@ -19,24 +16,6 @@ services:
       - /volume1/ros/secrets/deepseek.env
     volumes:
       - ./nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
-
-  # -- GITEA: LOCAL CODE HUB (Eva's Sandbox) --
-  gitea:
-    image: gitea/gitea:latest
-    container_name: eva-gitea
-    networks:
-      - eva-net
-    environment:
-      - USER_UID=1000
-      - USER_GID=1000
-      - GITEA__database__DB_TYPE=sqlite3
-    volumes:
-      - /tmp/eva/gitea_data:/data
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
-    ports:
-      - "6060:3000"
-      - "622:22"
     restart: always
 
   # -- CORE: EVA (Brain & Logic) --
@@ -45,7 +24,6 @@ services:
       context: ../
       dockerfile: ./docker/Dockerfile.base
       args:
-        # Defaults to humble if ROS_DISTRO is not set in env
         ROS_DISTRO: ${ROS_DISTRO:-humble}
     container_name: eva-base
     networks:
@@ -53,28 +31,22 @@ services:
     env_file:
       - ../.env
     environment:
-      - ROS_DOMAIN_ID=50 # Synched with your setup
+      - ROS_DOMAIN_ID=50
       - DISPLAY=$DISPLAY
       - QT_X11_NO_MITSHM=1
-    # Launch the brain-only orchestrator
-    command: ros2 launch bob_launch generic.launch.py config:=/ros2_ws/src/bob_central/launch/orch_eva.yaml
+    # Automatically generate SSH identity if missing before launching
+    command: >
+      /bin/bash -c "
+      if [ ! -f /root/.ssh/id_rsa ]; then
+        echo 'Initializing Eva SSH Identity in /volume1/ros/eva/ssh...'
+        mkdir -p /root/.ssh
+        ssh-keygen -t rsa -b 4096 -f /root/.ssh/id_rsa -N ''
+        chmod 700 /root/.ssh && chmod 600 /root/.ssh/id_rsa && chmod 644 /root/.ssh/id_rsa.pub
+      fi
+      exec ros2 launch bob_launch generic.launch.py config:=/ros2_ws/src/bob_central/launch/orch_eva.yaml
+      "
     volumes:
-      - /tmp/eva:/tmp/eva # Shared workspace for logos, images, logs
-      - /tmp/eva/ssh:/root/.ssh # Persistent AI Identity (Keys)
+      - /volume1/ros/eva:/volume1/ros/eva # Unified persistent home
+      - /volume1/ros/eva/ssh:/root/.ssh # Persistent AI Identity (Keys)
       - ..:/ros2_ws/src/bob_central # Persistent Source Code (Self-Evolution)
-
-  # -- RUNNER: LOCAL ACTIONS (Eva's CI) --
-  act-runner:
-    image: gitea/act_runner:latest
-    container_name: eva-runner
-    networks:
-      - eva-net
-    volumes:
-      - /tmp/eva/runner_data:/data
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      - GITEA_INSTANCE_URL=http://eva-gitea:3000
-      - GITEA_RUNNER_REGISTRATION_TOKEN=2B0G4dCfvHXL4OP4CJ7qYDspzw1tepeFjzfIGCzb
-      - GITEA_RUNNER_NAME=eva-nucleus-runner
-      - GITEA_RUNNER_LABELS=ubuntu-latest:docker://catthehacker/ubuntu:act-latest,ubuntu-22.04:docker://catthehacker/ubuntu:act-22.04,ros-humble:docker://ros:humble
-    restart: always
+    restart: on-failure

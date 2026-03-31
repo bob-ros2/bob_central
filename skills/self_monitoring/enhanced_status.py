@@ -1,17 +1,31 @@
 #!/usr/bin/env python3
+# Copyright 2026 Bob Ros
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
-Enhanced System Status - Python Version
-Kompatibel mit dem get_system_status Tool, aber mit GPU-Informationen
+Enhanced System Status - Python Version.
+
+Kompatibel mit dem get_system_status Tool, aber mit GPU-Informationen.
 """
 
 import os
-import sys
 import json
 import subprocess
 import re
 
 def get_cpu_info():
-    """Hole CPU-Informationen"""
+    """Hole CPU-Informationen."""
     try:
         # CPU-Last
         cpu_load = 0.0
@@ -51,7 +65,7 @@ def get_cpu_info():
         return {"load_percent": 0.0, "model": "Error", "cores": 1, "error": str(e)}
 
 def get_memory_info():
-    """Hole Speicher-Informationen"""
+    """Hole Speicher-Informationen."""
     try:
         result = subprocess.run(['free', '-m'], capture_output=True, text=True, timeout=2)
         mem_total = 0
@@ -80,7 +94,7 @@ def get_memory_info():
         return {"used_percent": 0.0, "used_mb": 0, "free_mb": 0, "total_mb": 0, "free_gb": 0, "error": str(e)}
 
 def get_load_average():
-    """Hole Load Average"""
+    """Hole Load Average."""
     try:
         with open('/proc/loadavg', 'r') as f:
             load_data = f.read().strip().split()
@@ -91,7 +105,7 @@ def get_load_average():
     return [0.0, 0.0, 0.0]
 
 def get_gpu_info():
-    """Hole GPU-Informationen"""
+    """Hole GPU-Informationen."""
     gpus = []
     total_vram = 0
     used_vram = 0
@@ -175,7 +189,7 @@ def get_gpu_info():
     }
 
 def main():
-    """Hauptfunktion"""
+    """Hauptfunktion."""
     try:
         status = {
             "cpu": get_cpu_info(),

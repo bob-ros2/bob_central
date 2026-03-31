@@ -1,0 +1,68 @@
+# -- Gitea Ecosystem (Eva's Code Base) --
+name: eva-gitea
+
+networks:
+  eva-net:
+    external: true
+
+services:
+  # -- GITEA DB: MariaDB (LinuxServer optimized for NAS/PUID/PGID) --
+  gitea-db:
+    image: lscr.io/linuxserver/mariadb:latest
+    container_name: eva-gitea-db
+    networks:
+      - eva-net
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - MYSQL_ROOT_PASSWORD=gitea_root_secret
+      - MYSQL_DATABASE=gitea
+      - MYSQL_USER=gitea
+      - MYSQL_PASSWORD=gitea_secret_password
+    volumes:
+      - /volume1/ros/eva/db:/config
+    restart: always
+
+  # -- GITEA: LOCAL CODE HUB --
+  gitea:
+    image: gitea/gitea:latest
+    container_name: eva-gitea
+    networks:
+      - eva-net
+    depends_on:
+      - gitea-db
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - GITEA__database__DB_TYPE=mysql
+      - GITEA__database__HOST=eva-gitea-db:3306
+      - GITEA__database__NAME=gitea
+      - GITEA__database__USER=gitea
+      - GITEA__database__PASSWD=gitea_secret_password
+      - GITEA__security__INSTALL_LOCK=true
+    volumes:
+      - /volume1/ros/eva/gitea:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "6060:3000"
+      - "622:22"
+    restart: always
+
+  # -- RUNNER: LOCAL ACTIONS (Eva's CI) --
+  act-runner:
+    image: gitea/act_runner:latest
+    container_name: eva-runner
+    networks:
+      - eva-net
+    depends_on:
+      - gitea
+    volumes:
+      - /volume1/ros/eva/runner:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - GITEA_INSTANCE_URL=http://eva-gitea:3000
+      - GITEA_RUNNER_REGISTRATION_TOKEN=2B0G4dCfvHXL4OP4CJ7qYDspzw1tepeFjzfIGCzb
+      - GITEA_RUNNER_NAME=eva-nucleus-runner
+      - GITEA_RUNNER_LABELS=ubuntu-latest:docker://catthehacker/ubuntu:act-latest,ubuntu-22.04:docker://catthehacker/ubuntu:act-22.04,ros-humble:docker://ros:humble
+    restart: always
