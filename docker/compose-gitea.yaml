@@ -40,6 +40,7 @@ services:
       - GITEA__database__USER=gitea
       - GITEA__database__PASSWD=gitea_secret_password
       - GITEA__security__INSTALL_LOCK=true
+      - GITEA__server__ROOT_URL=http://bob2:6060/
     volumes:
       - /volume1/ros/eva/gitea:/data
       - /etc/timezone:/etc/timezone:ro
@@ -62,7 +63,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - GITEA_INSTANCE_URL=http://eva-gitea:3000
-      - GITEA_RUNNER_REGISTRATION_TOKEN=2B0G4dCfvHXL4OP4CJ7qYDspzw1tepeFjzfIGCzb
+      - GITEA_RUNNER_REGISTRATION_TOKEN=DrzBSszEQKOAtnGE3Baxc5kfco44Ygz8G3yiIL6L
       - GITEA_RUNNER_NAME=eva-nucleus-runner
       - GITEA_RUNNER_LABELS=ubuntu-latest:docker://catthehacker/ubuntu:act-latest,ubuntu-22.04:docker://catthehacker/ubuntu:act-22.04,ros-humble:docker://ros:humble
     restart: always
