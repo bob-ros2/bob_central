@@ -42,10 +42,12 @@ def publish_to_events_topic(config_data):
         node = Node('dashboard_loader_node_file')
         publisher = node.create_publisher(String, '/eva/streamer/events', 10)
 
-        # Wait for connections (optional but safer)
-        # We give it a short moment to find the nviz subscriber
-        for _ in range(10):
+        # Wait for connections (discovery)
+        # We give it more time to find the nviz subscriber across container boundaries
+        print('Waiting for nviz subscriber (discovery)...')
+        for _ in range(30):
             if publisher.get_subscription_count() > 0:
+                print(f'Subscriber found! Connection count: {publisher.get_subscription_count()}')
                 break
             rclpy.spin_once(node, timeout_sec=0.1)
 
@@ -53,8 +55,11 @@ def publish_to_events_topic(config_data):
         msg.data = json.dumps(config_data)
         publisher.publish(msg)
 
-        # Ensure the message is sent
-        rclpy.spin_once(node, timeout_sec=0.5)
+        # CRITICAL: Wait and spin after publishing to ensure delivery
+        # Especially important for VOLATILE DURABILITY across containers
+        print('Message sent. Spinning to ensure delivery...')
+        for _ in range(15):
+            rclpy.spin_once(node, timeout_sec=0.2)
 
         print('Successfully published configuration to /eva/streamer/events')
         node.destroy_node()
