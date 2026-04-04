@@ -40,7 +40,7 @@ except ImportError:
 def apply_skill(action='status', params=None):
     """
     Apply the self_monitoring skill.
-    
+
     :param action: Action name (start, stop, check, status, log)
     :param params: Optional parameters for the action
     :return: Result dictionary

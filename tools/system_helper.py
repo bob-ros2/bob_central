@@ -34,7 +34,7 @@ def get_system_status():
 def scan_workspace(path='.'):
     """
     Return a list of folders (potential packages) in the specified workspace directory.
-    
+
     Default search is the current working directory.
     """
     if not os.path.exists(path):

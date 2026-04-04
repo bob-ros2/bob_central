@@ -15,8 +15,8 @@
 
 """Save current stream dashboard configuration to Qdrant."""
 
-from datetime import datetime
 import argparse
+from datetime import datetime
 import hashlib
 import json
 import os
@@ -37,7 +37,7 @@ except ImportError:
 def get_current_stream_dashboard_config():
     """
     Get current stream dashboard configuration for /eva/streamer/ namespace.
-    
+
     This is the configuration we just set up.
     """
     config = [
@@ -100,35 +100,17 @@ def main():
     parser = argparse.ArgumentParser(
         description='Save stream dashboard configuration'
     )
+
     parser.add_argument(
         '--name',
         default='streamer_dashboard',
         help='Unique name for the dashboard'
     )
+
     parser.add_argument(
         '--description',
         default='Stream dashboard namespace',
         help='Description of the dashboard'
-    )
-    parser.add_argument(
-        '--tags',
-        default='streamer,live,twitch',
-        help='Comma-separated tags'
-    )
-    parser.add_argument(
-        '--config',
-        help='JSON configuration (optional)'
-    )
-    parser.add_argument(
-        '--host',
-        default=os.environ.get('QDRANT_HOST', 'eva-qdrant'),
-        help='Qdrant host'
-    )
-    parser.add_argument(
-        '--port',
-        type=int,
-        default=int(os.environ.get('QDRANT_PORT', '6333')),
-        help='Qdrant port'
     )
 
     args = parser.parse_args()
@@ -137,53 +119,29 @@ def main():
         print('ERROR: qdrant_client is not installed.')
         return 1
 
-    # Get configuration
-    if args.config:
-        try:
-            config_json = args.config
-            json.loads(config_json)
-        except json.JSONDecodeError as e:
-            print(f'ERROR: Invalid JSON: {e}')
-            return 1
-    else:
-        config_json = get_current_stream_dashboard_config()
+    config_json = get_current_stream_dashboard_config()
 
     try:
-        # Connect to Qdrant
-        client = QdrantClient(host=args.host, port=args.port)
+        client = QdrantClient(
+            host=os.environ.get('QDRANT_HOST', 'eva-qdrant'),
+            port=int(os.environ.get('QDRANT_PORT', '6333'))
+        )
 
-        # Collection setup
-        collections = client.get_collections()
-        names = [c.name for c in collections.collections]
-
-        if 'eva_nviz_dashboards' not in names:
-            client.create_collection(
-                collection_name='eva_nviz_dashboards',
-                vectors_config=models.VectorParams(
-                    size=384, distance=models.Distance.COSINE
-                )
-            )
-
-        # Generate ID
         dashboard_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, args.name))
 
-        # Payload
-        tags = [t.strip() for t in args.tags.split(',') if t.strip()]
         payload = {
             'name': args.name,
             'description': args.description,
-            'tags': tags,
             'config_json': config_json,
             'created_at': datetime.now().isoformat()
         }
 
-        # Simplified Vector
-        text = f'{args.name} {args.description} {' '.join(tags)}'
+        # Vector generation with correct f-string quoting
+        text = f"{args.name} {args.description}"
         v_hash = hashlib.sha256(text.encode()).hexdigest()
         vector = [float(int(v_hash[i:i+2], 16)) / 255.0 for i in range(0, 64, 2)]
         vector = (vector * (384 // len(vector)) + vector[:384 % len(vector)])[:384]
 
-        # Upsert
         client.upsert(
             collection_name='eva_nviz_dashboards',
             points=[
@@ -195,12 +153,10 @@ def main():
             ]
         )
 
-        print(f'\n✅ SUCCESS: Saved {args.name}')
-        print(f'  Namespace: /eva/streamer/')
         return 0
 
     except Exception as e:
-        print(f'ERROR: Failed to save: {e}')
+        print(f'ERROR: {e}')
         return 1
 
 
