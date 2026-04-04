@@ -18,44 +18,44 @@ Since Qdrant connectivity may not always be available, this skill now includes s
 
 ### Save current dashboard to file:
 ```python
-execute_skill_script("nviz_dashboard", "scripts/save_to_file.py", "--name debug_dashboard --output /root/eva/dashboards/debug.json")
+execute_skill_script('nviz_dashboard', 'scripts/save_to_file.py', '--name debug_dashboard --output /root/eva/dashboards/debug.json')
 ```
 
 ### Load dashboard from file:
 ```python
-execute_skill_script("nviz_dashboard", "scripts/load_from_file.py", "--input /root/eva/dashboards/debug.json --apply true")
+execute_skill_script('nviz_dashboard', 'scripts/load_from_file.py', '--input /root/eva/dashboards/debug.json --apply true')
 ```
 
 ### Quick save current configuration:
 ```python
-execute_skill_script("nviz_dashboard", "scripts/quick_save.py", "--name current_config")
+execute_skill_script('nviz_dashboard', 'scripts/quick_save.py', '--name current_config')
 ```
 
 ### Quick load configuration:
 ```python
-execute_skill_script("nviz_dashboard", "scripts/quick_load.py", "--name current_config")
+execute_skill_script('nviz_dashboard', 'scripts/quick_load.py', '--name current_config')
 ```
 
 ## Usage
 
 ### Save current dashboard configuration to Qdrant:
 ```python
-execute_skill_script("nviz_dashboard", "scripts/save_dashboard.py", "--name twitch_stream --description 'Dashboard for Twitch streaming' --config /path/to/config.json")
+execute_skill_script('nviz_dashboard', 'scripts/save_dashboard.py', "--name twitch_stream --description 'Dashboard for Twitch streaming' --config /path/to/config.json")
 ```
 
 ### Load and apply a dashboard from Qdrant:
 ```python
-execute_skill_script("nviz_dashboard", "scripts/load_dashboard.py", "--name twitch_stream")
+execute_skill_script('nviz_dashboard', 'scripts/load_dashboard.py', '--name twitch_stream')
 ```
 
 ### List all saved dashboards in Qdrant:
 ```python
-execute_skill_script("nviz_dashboard", "scripts/list_dashboards.py", "")
+execute_skill_script('nviz_dashboard', 'scripts/list_dashboards.py', '')
 ```
 
 ### Delete a dashboard from Qdrant:
 ```python
-execute_skill_script("nviz_dashboard", "scripts/delete_dashboard.py", "--name twitch_stream")
+execute_skill_script('nviz_dashboard', 'scripts/delete_dashboard.py', '--name twitch_stream')
 ```
 
 ## Dashboard Configuration Structure
@@ -120,7 +120,7 @@ A typical dashboard configuration for nviz includes terminals that monitor speci
 - **Purpose**: Development and troubleshooting
 
 ## How to Apply Dashboard Configurations
-Dashboard configurations are applied by publishing to the `/eva/events` topic. The nviz node listens to this topic and dynamically creates/updates terminal windows based on the configuration.
+Dashboard configurations are applied by publishing to the '/eva/streamer/events' topic. The nviz node (running in the /eva/streamer namespace) listens to this topic and dynamically creates/updates terminal windows based on the configuration.
 
 ## Parameters
 
@@ -152,17 +152,17 @@ Dashboard configurations are applied by publishing to the `/eva/events` topic. T
 - Loads from `/root/eva/dashboards/{name}.json` and applies it
 
 ## Requirements
-- Qdrant service running at `eva-qdrant:6333` (for Qdrant storage)
-- ROS 2 environment with nviz node
-- Access to `/eva/events` topic for applying configurations
-- Directory `/root/eva/dashboards/` for file-based storage
+- Qdrant service running at 'eva-qdrant:6333' (for Qdrant storage)
+- ROS 2 environment with nviz node (running in '/eva/streamer/' namespace)
+- Access to '/eva/streamer/events' topic for applying configurations
+- Directory '/root/eva/dashboards/' for file-based storage
 
 ## Technical Details
 The skill uses Qdrant vector database to store dashboard configurations as JSON documents with metadata. Each dashboard configuration includes:
 - Name and description
 - Creation timestamp
 - Tags for categorization
-- JSON configuration array for `/eva/events` topic
+- JSON configuration array for '/eva/streamer/events' topic
 - Optional metadata (author, version, etc.)
 
 Dashboards are stored in the `eva_nviz_dashboards` collection with the following schema:

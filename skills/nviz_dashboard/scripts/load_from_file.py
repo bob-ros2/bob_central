@@ -40,7 +40,7 @@ def publish_to_events_topic(config_data):
         # Publish to ROS topic
         cmd = [
             'ros2', 'topic', 'pub', '--once',
-            '/eva/events', 'std_msgs/msg/String',
+            '/eva/streamer/events', 'std_msgs/msg/String',
             f'data: "{config_json}"'
         ]
 
