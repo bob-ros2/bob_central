@@ -22,6 +22,7 @@ from qdrant_client.http import models
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+
 def main():
     parser = argparse.ArgumentParser(description='List nviz dashboard configurations')
     parser.add_argument('--tags', default="", help='Comma-separated tags to filter by')
@@ -145,6 +146,7 @@ def main():
         if args.json:
             print(json.dumps({'error': str(e), 'dashboards': [], 'count': 0}))
         return 1
+
 
 if __name__ == '__main__':
     sys.exit(main())

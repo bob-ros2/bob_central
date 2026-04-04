@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,17 +12,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Generate an image based on a textual description (prompt).      The image will be published to the robot's visual subsystem.      :param prompt: Description of the image. Keep it under 70 tokens for best results.     :return: A message indicating the prompt has been sent.
-"""
+
+"""Generate images based on textual descriptions."""
 
 import time
+
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 
+
 def draw_image(prompt: str) -> str:
-    
+    """
+    Generate an image based on a textual description (prompt).
+
+    The image will be published to the robot's visual subsystem.
+    :param prompt: Description of the image. Keep it under 70 tokens for best results.
+    :return: A message indicating the prompt has been sent.
+    """
     if not rclpy.ok():
         rclpy.init()
 
@@ -39,6 +47,7 @@ def draw_image(prompt: str) -> str:
     return (f"Image prompt '{prompt}' sent to TTI subsystem. "
             f"The result will be saved to '/root/eva/media/eva_artist.jpg' after a few "
             f'seconds. You can use your vision tools to inspect it there.')
+
 
 if __name__ == '__main__':
     # Test

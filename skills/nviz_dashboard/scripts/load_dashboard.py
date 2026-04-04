@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Apply dashboard configuration by publishing to /eva/events topic.  In a real implementation, this would use ROS 2 to publish the configuration.
-"""
+"""Apply dashboard configuration by publishing to /eva/events topic.  In a real implementation, this would use ROS 2 to publish the configuration."""
 import argparse
 import json
 import os
@@ -25,8 +23,9 @@ from qdrant_client import QdrantClient
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+
 def apply_dashboard_config(config_json: str):
-    
+
     print(f'Configuration to apply:\n{config_json}')
 
     # In production, this would publish to ROS
@@ -42,6 +41,7 @@ def apply_dashboard_config(config_json: str):
     print('NOTE: In production, this would publish to /eva/events ROS topic')
 
     return True
+
 
 def main():
     parser = argparse.ArgumentParser(description='Load nviz dashboard configuration')
@@ -142,6 +142,7 @@ def main():
     except Exception as e:
         print(f'ERROR: Failed to load dashboard: {e}')
         return 1
+
 
 if __name__ == '__main__':
     sys.exit(main())

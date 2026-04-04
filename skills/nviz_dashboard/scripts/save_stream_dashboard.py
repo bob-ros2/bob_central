@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Get current stream dashboard configuration for /eva/streamer/ namespace.      This is the configuration we just set up.
-"""
+"""Get current stream dashboard configuration for /eva/streamer/ namespace.      This is the configuration we just set up."""
 from datetime import datetime
 import argparse
 import hashlib
@@ -32,8 +30,9 @@ try:
 except ImportError:
     QDRANT_AVAILABLE = False
 
+
 def get_current_stream_dashboard_config():
-    
+
     config = [
         {
             'action': 'add',
@@ -87,6 +86,7 @@ def get_current_stream_dashboard_config():
     ]
 
     return json.dumps(config, indent=2)
+
 
 def main():
     parser = argparse.ArgumentParser(description='Save stream dashboard configuration')
@@ -202,6 +202,7 @@ def main():
     except Exception as e:
         print(f'ERROR: Failed to save dashboard: {e}')
         return 1
+
 
 if __name__ == '__main__':
     sys.exit(main())

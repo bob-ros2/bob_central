@@ -22,6 +22,7 @@ from qdrant_client.http import models
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+
 def main():
     parser = argparse.ArgumentParser(description='Delete nviz dashboard configuration')
     parser.add_argument('--name', required=True, help='Name of the dashboard to delete')
@@ -112,6 +113,7 @@ def main():
     except Exception as e:
         print(f'ERROR: Failed to delete dashboard: {e}')
         return 1
+
 
 if __name__ == '__main__':
     sys.exit(main())

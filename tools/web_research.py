@@ -11,16 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Search the web using SearXNG.      Useful for answering questions about current events, news, and real-time.      :param query: The search query string.     :param num_results: Number of results to return (default 3).     :return: A JSON string containing the search results or an error message.
-"""
+
+"""Search the web using SearXNG."""
+
 import json
 import os
 
 import requests
 
+
 def search_web(query: str, num_results: int = 3) -> str:
-    
+    """
+    Search the web using SearXNG.
+
+    Useful for answering questions about current events, news, and real-time.
+    :param query: The search query string.
+    :param num_results: Number of results to return (default 3).
+    :return: A JSON string containing the search results or an error message.
+    """
     searxng_url = os.environ.get(
         'MASTER_SEARXNG_URL',
         'http://api-gateway:8080/search'
@@ -52,6 +60,7 @@ def search_web(query: str, num_results: int = 3) -> str:
 
     except Exception as e:
         return json.dumps({'status': 'error', 'message': str(e)})
+
 
 if __name__ == '__main__':
     # Test

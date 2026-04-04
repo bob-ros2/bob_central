@@ -27,6 +27,7 @@ except ImportError:
     QDRANT_AVAILABLE = False
     print('WARNING: qdrant_client not available. Install with: pip install qdrant-client')
 
+
 def main():
     parser = argparse.ArgumentParser(description='Save nviz dashboard configuration')
     parser.add_argument('--name', required=True, help='Unique name for the dashboard')
@@ -126,6 +127,7 @@ def main():
     except Exception as e:
         print(f'ERROR: Failed to save dashboard: {e}')
         return 1
+
 
 if __name__ == '__main__':
     sys.exit(main())

@@ -26,8 +26,9 @@ except ImportError:
     print('ERROR: qdrant_client not installed. Install with: pip install qdrant-client')
     exit(1)
 
+
 class NvizDashboardClient:
-    
+
     COLLECTION_NAME = 'eva_nviz_dashboards'
 
     def __init__(self, host: str = None, port: int = None):
@@ -247,6 +248,7 @@ class NvizDashboardClient:
         except Exception as e:
             print(f'ERROR: Failed to search dashboards: {e}')
             return []
+
 
 if __name__ == '__main__':
     # Test the client
