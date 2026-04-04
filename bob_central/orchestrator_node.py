@@ -30,7 +30,7 @@ from std_msgs.msg import String
 class OrchestratorNode(Node):
     """
     Central Orchestration Node for Bob's Brain-Mesh.
-
+    
     Handles high-level intent routing and manages specialized LLM agents.
     """
 
@@ -73,7 +73,7 @@ class OrchestratorNode(Node):
     def user_query_callback(self, msg):
         """
         Receive a query from the user. Analyze it and route to specialists.
-
+        
         Inject real-world time to give the AI context.
         """
         query = msg.data
@@ -111,7 +111,7 @@ class OrchestratorNode(Node):
     def specialist_response_callback(self, msg):
         """
         Receive a response from a specialist agent. Forward to the user.
-
+        
         We now bundle the original query to give the summarizer context.
         """
         try:

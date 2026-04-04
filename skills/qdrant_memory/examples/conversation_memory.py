@@ -59,7 +59,7 @@ def main():
         ('user', 'Gibt es ein Beispiel für den Start von Turtlesim?'),
         (
             'assistant',
-            'Sicher! "ros2 run turtlesim turtlesim_node" und "ros2 run turtlesim '
+            'Sicher! 'ros2 run turtlesim turtlesim_node' und "ros2 run turtlesim '
             'turtle_teleop_key".'
         )
     ]
@@ -99,16 +99,16 @@ def main():
         print(f'   [{role.upper()}]: {text}')
 
     # Demonstrate search in history
-    print('\n5. Searching in whole history for keyword "Turtlesim"...')
+    print('\n5. Searching in whole history for keyword 'Turtlesim'...')
     # Simple keyword search (in production, use vector search)
     turtlesim_entries = [
         d for d in all_docs
         if 'turtlesim' in d['text'].lower()
     ]
 
-    print(f'   Found {len(turtlesim_entries)} entries mentioning "Turtlesim":')
+    print(f'   Found {len(turtlesim_entries)} entries mentioning 'Turtlesim':')
     for d in turtlesim_entries:
-        print(f'   - Found at {d["timestamp"]}: "{d["text"][:50]}..."')
+        print(f'   - Found at {d['timestamp']}: '{d['text'][:50]}...'')
 
     print('\n=== Conversation Memory Example Completed ===')
     return 0

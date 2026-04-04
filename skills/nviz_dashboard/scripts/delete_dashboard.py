@@ -82,8 +82,8 @@ def main():
 
         # Show dashboard info
         name = payload.get('name', args.name)
-        description = payload.get('description', "")
-        created_at = payload.get('created_at', "")
+        description = payload.get('description', '')
+        created_at = payload.get('created_at', '')
 
         print(f'Dashboard to delete:')
         print(f'  Name: {name}')

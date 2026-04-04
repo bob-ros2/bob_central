@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Apply dashboard configuration by publishing to /eva/events topic.  In a real implementation, this would use ROS 2 to publish the configuration.
-"""
+"""Apply dashboard configuration by publishing to /eva/events topic.  In a real implementation, this would use ROS 2 to publish the configuration."""
 import argparse
 import json
 import os
@@ -97,9 +95,9 @@ def main():
         # Extract configuration
         config_json = payload.get('config_json', '[]')
         name = payload.get('name', args.name)
-        description = payload.get('description', "")
+        description = payload.get('description', '')
         tags = payload.get('tags', [])
-        created_at = payload.get('created_at', "")
+        created_at = payload.get('created_at', '')
 
         print(f"SUCCESS: Loaded dashboard '{name}'")
         print(f'  Description: {description}')

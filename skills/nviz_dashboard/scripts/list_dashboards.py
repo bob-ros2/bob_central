@@ -25,7 +25,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def main():
     parser = argparse.ArgumentParser(description='List nviz dashboard configurations')
-    parser.add_argument('--tags', default="", help='Comma-separated tags to filter by')
+    parser.add_argument('--tags', default='', help='Comma-separated tags to filter by')
     parser.add_argument('--limit', type=int, default=20, help='Maximum number of results')
     parser.add_argument('--host', default=os.environ.get('QDRANT_HOST', 'eva-qdrant'),
                        help='Qdrant host')
@@ -121,10 +121,10 @@ def main():
             for i, point in enumerate(dashboards, 1):
                 payload = point.payload
                 name = payload.get('name', 'Unnamed')
-                description = payload.get('description', "")
+                description = payload.get('description', '')
                 tags_list = payload.get('tags', [])
-                created_at = payload.get('created_at', "")
-                config_length = len(payload.get('config_json', ""))
+                created_at = payload.get('created_at', '')
+                config_length = len(payload.get('config_json', ''))
 
                 print(f'{i}. {name}')
                 if description:

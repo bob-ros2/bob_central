@@ -57,9 +57,9 @@ def read_file(path: str, start_line: int = 1, end_line: int = 800) -> str:
 def write_file(path: str, content: str, overwrite: bool = True) -> str:
     """
     Write content to a file.
-
+    
     Creates directories if they don't exist.
-Use this to save your code creations or modify settings.
+    Use this to save your code creations or modify settings.
     """
     if os.path.exists(path) and not overwrite:
         return f"Error: File '{path}' already exists and overwrite is False."
@@ -76,7 +76,7 @@ Use this to save your code creations or modify settings.
 def list_dir(path: str = '.') -> str:
     """
     List files and directories at the specified path.
-
+    
     Defaults to the current working directory.
     """
     if not os.path.exists(path):
@@ -85,7 +85,7 @@ def list_dir(path: str = '.') -> str:
     try:
         items = os.listdir(path)
         result = [
-            f'{"[DIR] " if os.path.isdir(os.path.join(path, i)) else "      "}{i}'
+            f'{'[DIR] ' if os.path.isdir(os.path.join(path, i)) else '      '}{i}'
             for i in items
         ]
         result.sort()
@@ -97,7 +97,7 @@ def list_dir(path: str = '.') -> str:
 def run_command(command: str, timeout: float = 120.0) -> str:
     """
     Execute a shell command on the host (Linux).
-
+    
     Allows running compilers (e.g. g++), build tools (colcon), or git.
     """
     try:
@@ -125,10 +125,10 @@ def run_command(command: str, timeout: float = 120.0) -> str:
 def search_text(directory: str, query: str, pattern: str = '*') -> str:
     """
     Search for a string recursively in a directory using grep-like logic.
-
+    
     :param directory: Where to start searching.
-:param query: The text to find.
-:param pattern: File glob pattern (e.g. '*.py').
+    :param query: The text to find.
+    :param pattern: File glob pattern (e.g. '*.py').
     """
     try:
         # We use the built-in 'grep' command for high performance

@@ -47,7 +47,7 @@ logging.basicConfig(
 
 
 class Evolver:
-    """Manages the evolution of Eva's code."""def __init__(self):."""Initialize the Evolver and ensure the persistent directory exists."""
+    """Manages the evolution of Eva's code."""def __init__(self):.'''Initialize the Evolver and ensure the persistent directory exists.'''
         if not os.path.exists(EVA_ROOT):
             os.makedirs(EVA_ROOT)
         self.tasks = self._load_tasks()
@@ -447,10 +447,10 @@ if __name__ == '__main__':
             print(json.dumps(res_cli, indent=2))
 
         else:
-            print("""#!/usr/bin/env python3
+            print('''#!/usr/bin/env python3
 
 Self Evolution CLI Usage:
 init <task_id> <description> <target_file> <test_cmd>
 iterate <task_id> [mutation_prompt]
 status [task_id]
-mutate <task_id> <mutation_prompt>""")
+mutate <task_id> <mutation_prompt>''')

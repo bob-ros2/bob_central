@@ -35,7 +35,7 @@ import torch
 class TTInode(Node):
     """
     Text-To-Image (TTI) Generation Node.
-
+    
     Interprets textual prompts and generates qualitative imagery.
     """
 

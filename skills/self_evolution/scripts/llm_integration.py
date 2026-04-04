@@ -23,7 +23,7 @@ from std_msgs.msg import String
 
 
 class LLMIntegration:
-    """Handle integration with Eva's LLM system for code mutation."""def __init__(self, use_ros=True):."""Initialize LLM integration."""
+    """Handle integration with Eva's LLM system for code mutation."""def __init__(self, use_ros=True):.'''Initialize LLM integration.'''
         self.use_ros = use_ros
         self.llm_response = None
         self.response_received = threading.Event()
@@ -90,7 +90,7 @@ class LLMIntegration:
     def generate_mutation_via_direct(self, prompt, current_code, context):
         """Generate code mutation using direct LLM call (fallback)."""
         # Create a structured prompt for the LLM
-        structured_prompt = f"""You are Eva's self-evolution engine.
+        structured_prompt = f''"You are Eva's self-evolution engine.
 
 Your task is to improve the following code based on the mutation prompt: {prompt[:100]}...
 
@@ -118,7 +118,7 @@ Your task is to improve the following code based on the mutation prompt: {prompt
 6. Maintain backward compatibility unless explicitly requested otherwise
 7. Ensure the code is syntactically correct and follows Python best practices
 
-## MODIFIED CODE:"""
+## MODIFIED CODE:"''
         # In a real implementation, this would call the actual LLM
         return self._placeholder_llm_response(current_code, prompt, structured_prompt)
 
@@ -132,10 +132,10 @@ Your task is to improve the following code based on the mutation prompt: {prompt
 
         if 'performance' in prompt_lower or 'faster' in prompt_lower:
             # Add performance optimization comment
-            return f"""{current_code}
+            return f'''{current_code}
 
 # Performance optimization added based on mutation prompt
-# TODO: Implement actual performance improvements here"""
+# TODO: Implement actual performance improvements here'''
         elif 'bug' in prompt_lower or 'fix' in prompt_lower or 'error' in prompt_lower:
             # Add error handling
             lines = current_code.split('\n')
@@ -146,32 +146,32 @@ Your task is to improve the following code based on the mutation prompt: {prompt
                 if line.strip().startswith('def ') and '):' in line:
                     enhanced_lines.append('    try:')
             enhanced_code = '\n'.join(enhanced_lines)
-            return f"""{enhanced_code}
+            return f''"{enhanced_code}
 
 except Exception as e:
 logging.error(f'Error in function: {{e}}')
-raise"""
+raise"''
         elif 'feature' in prompt_lower or 'add' in prompt_lower:
             # Add a placeholder feature
-            return f"""{current_code}
+            return f''"{current_code}
 
 # New feature placeholder added
 
 
 def new_feature():
     \'\'\'Feature added based on mutation prompt.\'\'\'
-    pass"""
+    pass"''
         else:
             # Default: add optimization comment
-            return f"""{current_code}
+            return f'''{current_code}
 
-# Code optimized based on mutation prompt: {prompt[:50]}..."""def generate_code_mutation(self, prompt, current_code, context=None, timeout=30):."""Generate a code mutation using available LLM methods."""
+# Code optimized based on mutation prompt: {prompt[:50]}...'''def generate_code_mutation(self, prompt, current_code, context=None, timeout=30):.'''Generate a code mutation using available LLM methods.'''
         # Try ROS integration first
         if self.use_ros:
             logging.info('LLM Integration: Attempting ROS-based mutation generation...')
 
             # Create comprehensive prompt for ROS LLM
-            ros_prompt = f"""As Eva's self-evolution engine, modify this code:
+            ros_prompt = f''"As Eva's self-evolution engine, modify this code:
 
 Current code:
 ```python
@@ -182,7 +182,7 @@ Mutation request: {prompt}
 
 Context: {context if context else 'General code improvement'}
 
-Return ONLY the complete modified Python code in a code block, no explanations."""
+Return ONLY the complete modified Python code in a code block, no explanations."''
             response = self.generate_mutation_via_ros(ros_prompt, timeout)
             if response:
                 logging.info('LLM Integration: Received response via ROS')
@@ -215,12 +215,12 @@ if __name__ == '__main__':
     # Test the LLM integration
     llm = get_llm_integration()
 
-    test_code_str = """def calculate_sum(numbers):
+    test_code_str = '''def calculate_sum(numbers):
 
 result = 0
 for num in numbers:
 result += num
-return result"""
+return result'''
     test_prompt_str = 'Optimize this function for performance'
     test_context_str = 'Function calculates sum of numbers'
 

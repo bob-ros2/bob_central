@@ -15,8 +15,8 @@
 
 """Save current stream dashboard configuration to Qdrant."""
 
-import argparse
 from datetime import datetime
+import argparse
 import hashlib
 import json
 import os
@@ -37,7 +37,7 @@ except ImportError:
 def get_current_stream_dashboard_config():
     """
     Get current stream dashboard configuration for /eva/streamer/ namespace.
-
+    
     This is the configuration we just set up.
     """
     config = [
@@ -178,7 +178,7 @@ def main():
         }
 
         # Simplified Vector
-        text = f'{args.name} {args.description} {" ".join(tags)}'
+        text = f'{args.name} {args.description} {' '.join(tags)}'
         v_hash = hashlib.sha256(text.encode()).hexdigest()
         vector = [float(int(v_hash[i:i+2], 16)) / 255.0 for i in range(0, 64, 2)]
         vector = (vector * (384 // len(vector)) + vector[:384 % len(vector)])[:384]

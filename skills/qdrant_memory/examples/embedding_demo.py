@@ -62,9 +62,9 @@ def main():
             metadata={'id': i, 'topic': 'demo'}
         )
         if doc_id:
-            print(f'   ✓ Saved "{text[:30]}..." (ID: {doc_id})')
+            print(f'   ✓ Saved '{text[:30]}...' (ID: {doc_id})')
         else:
-            print(f'   ✗ Failed to save "{text}"')
+            print(f'   ✗ Failed to save '{text}'')
 
     # 3. Search similar with a dummy query vector
     # Query vector close to dogs (0.2)
@@ -74,7 +74,7 @@ def main():
 
     print(f'   Found {len(results)} matches:')
     for match in results:
-        print(f'   - Score {match["score"]:.4f}: "{match["text"]}"')
+        print(f'   - Score {match['score']:.4f}: '{match['text']}'')
 
     # 4. Search closer to sun (0.9)
     query_vector_sun = [0.88] * vector_size
@@ -83,7 +83,7 @@ def main():
 
     print(f'   Found {len(results_sun)} match:')
     for match in results_sun:
-        print(f'   - Score {match["score"]:.4f}: "{match["text"]}"')
+        print(f'   - Score {match['score']:.4f}: '{match['text']}'')
 
     # 5. Optional: Clean up
     print(f"\n5. Cleaning up (deleting collection '{collection}')...")

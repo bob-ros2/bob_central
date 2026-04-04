@@ -24,9 +24,9 @@ import requests
 def search_web(query: str, num_results: int = 3) -> str:
     """
     Search the web using SearXNG.
-
+    
     Useful for answering questions about current events, news, and real-time.
-
+    
     :param query: The search query string.
     :param num_results: Number of results to return (default 3).
     :return: A JSON string containing the search results or an error message.

@@ -14,9 +14,9 @@
 # limitations under the License.
 
 """Apply skill interface for the self_monitoring skill."""
+from pathlib import Path
 import argparse
 import json
-from pathlib import Path
 import sys
 
 # Add script directory to sys.path
@@ -40,10 +40,10 @@ except ImportError:
 def apply_skill(action='status', params=None):
     """
     Apply the self_monitoring skill.
-
+    
     :param action: Action name (start, stop, check, status, log)
-:param params: Optional parameters for the action
-:return: Result dictionary
+    :param params: Optional parameters for the action
+    :return: Result dictionary
     """
     if params is None:
         params = {}

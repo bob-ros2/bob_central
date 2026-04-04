@@ -25,9 +25,9 @@ from std_msgs.msg import String
 def draw_image(prompt: str) -> str:
     """
     Generate an image based on a textual description (prompt).
-
+    
     The image will be published to the robot's visual subsystem.
-
+    
     :param prompt: Description of the image. Keep it under 70 tokens.
     :return: A message indicating the prompt has been sent.
     """
@@ -46,7 +46,7 @@ def draw_image(prompt: str) -> str:
 
     node.destroy_node()
     return (
-        f'Image prompt "{prompt}" sent to TTI subsystem. '
+        f'Image prompt '{prompt}' sent to TTI subsystem. '
         f'The result will be saved /root/eva/media/eva_artist.jpg.'
         'You can use your vision tools to inspect it there.'
     )

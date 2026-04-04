@@ -62,16 +62,16 @@ def main():
     for i, t in enumerate(texts):
         doc_id = save_text(test_col, t, metadata={'idx': i, 'origin': 'demo'})
         if doc_id:
-            print(f'   ✓ Saved: "{t}" (ID: {doc_id})')
+            print(f'   ✓ Saved: '{t}' (ID: {doc_id})')
         else:
-            print(f'   ✗ Failed to save: "{t}"')
+            print(f'   ✗ Failed to save: '{t}'')
 
     # 5. List all texts in collection
     print('\n4. Retrieving all texts from collection...')
     docs = get_all_texts(test_col)
     print(f'   Found {len(docs)} documents:')
     for doc in docs:
-        print(f'   - [{doc["id"][:8]}] {doc["text"]}')
+        print(f'   - [{doc['id'][:8]}] {doc['text']}')
 
     # 6. Optional: Clean up
     print(f"\n5. Cleaning up (deleting collection '{test_col}')...")

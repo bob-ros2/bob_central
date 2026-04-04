@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Simple Evolver script for testing."""def calculate_sum(numbers):."""Calculate the sum of a list of numbers."""
+"""Simple Evolver script for testing."""def calculate_sum(numbers):.'''Calculate the sum of a list of numbers.'''
     result = 0
     for num in numbers:
         result += num

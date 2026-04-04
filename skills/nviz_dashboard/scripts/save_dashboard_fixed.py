@@ -31,8 +31,8 @@ except ImportError:
 def main():
     parser = argparse.ArgumentParser(description='Save nviz dashboard configuration')
     parser.add_argument('--name', required=True, help='Unique name for the dashboard')
-    parser.add_argument('--description', default="", help='Description of the dashboard')
-    parser.add_argument('--tags', default="", help='Comma-separated tags')
+    parser.add_argument('--description', default='', help='Description of the dashboard')
+    parser.add_argument('--tags', default='', help='Comma-separated tags')
     parser.add_argument('--config', help='JSON configuration (if not provided, tries to get current)')
     parser.add_argument('--host', default=os.environ.get('QDRANT_HOST', 'eva-qdrant'),
                        help='Qdrant host')
