@@ -1,8 +1,10 @@
 server {
     listen 8080;
 
-    # Streaming and Timeout optimizations for slow inference
+    # Global Streaming optimizations
+    tcp_nodelay on;
     proxy_buffering off;
+    proxy_request_buffering off;
     proxy_cache off;
     proxy_set_header Connection "";
     proxy_http_version 1.1;
@@ -12,10 +14,12 @@ server {
     keepalive_timeout 600s;
 
     location /v1/ {
-        # Streaming Security: Disable ALL buffering layers
+        # Security & Speed: Disable ALL buffering layers
         proxy_buffering off;
+        proxy_request_buffering off;
         proxy_cache off;
         proxy_set_header X-Accel-Buffering no;
+        proxy_ignore_headers "Expires" "Cache-Control" "Set-Cookie";
         gzip off;
 
         # Inject the API Key from the environment variable (if needed)
