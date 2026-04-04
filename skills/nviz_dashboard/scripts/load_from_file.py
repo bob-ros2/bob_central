@@ -34,14 +34,15 @@ def publish_to_events_topic(config_data):
     :return: True if successful, False otherwise.
     """
     try:
-        # Convert config to JSON string
-        config_json = json.dumps(config_data)
+        # Double-dump to ensure it is safely escaped for the ROS 'data' string field
+        # This prevents quotes within the JSON from breaking the command
+        config_json_escaped = json.dumps(json.dumps(config_data))
 
         # Publish to ROS topic
         cmd = [
             'ros2', 'topic', 'pub', '--once',
             '/eva/streamer/events', 'std_msgs/msg/String',
-            f'data: "{config_json}"'
+            f'data: {config_json_escaped}'
         ]
 
         result = subprocess.run(cmd, capture_output=True, text=True, check=False)
