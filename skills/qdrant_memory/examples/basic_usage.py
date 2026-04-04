@@ -62,7 +62,7 @@ def main():
     for i, t in enumerate(texts):
         doc_id = save_text(test_col, t, metadata={'idx': i, 'origin': 'demo'})
         if doc_id:
-            print(f'   ✓ Saved: '{t}' (ID: {doc_id})')
+            print(f'   ✓ Saved: "{t}" (ID: {doc_id})')
         else:
             print(f'   ✗ Failed to save: '{t}'')
 

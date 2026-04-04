@@ -96,39 +96,43 @@ def get_current_stream_dashboard_config():
 
 
 def main():
-    """Main execution entry point."""
+    """Execute the main entry point to save the dashboard."""
     parser = argparse.ArgumentParser(
         description='Save stream dashboard configuration'
     )
-
     parser.add_argument(
         '--name',
         default='streamer_dashboard',
         help='Unique name for the dashboard'
     )
-
     parser.add_argument(
         '--description',
         default='Stream dashboard namespace',
         help='Description of the dashboard'
     )
+    parser.add_argument(
+        '--host',
+        default=os.environ.get('QDRANT_HOST', 'eva-qdrant'),
+        help='Qdrant host'
+    )
+    parser.add_argument(
+        '--port',
+        type=int,
+        default=int(os.environ.get('QDRANT_PORT', '6333')),
+        help='Qdrant port'
+    )
 
     args = parser.parse_args()
 
     if not QDRANT_AVAILABLE:
-        print('ERROR: qdrant_client is not installed.')
+        print('ERROR: qdrant_client info')
         return 1
 
     config_json = get_current_stream_dashboard_config()
 
     try:
-        client = QdrantClient(
-            host=os.environ.get('QDRANT_HOST', 'eva-qdrant'),
-            port=int(os.environ.get('QDRANT_PORT', '6333'))
-        )
-
+        client = QdrantClient(host=args.host, port=args.port)
         dashboard_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, args.name))
-
         payload = {
             'name': args.name,
             'description': args.description,
@@ -136,27 +140,26 @@ def main():
             'created_at': datetime.now().isoformat()
         }
 
-        # Vector generation with correct f-string quoting
-        text = f"{args.name} {args.description}"
-        v_hash = hashlib.sha256(text.encode()).hexdigest()
-        vector = [float(int(v_hash[i:i+2], 16)) / 255.0 for i in range(0, 64, 2)]
-        vector = (vector * (384 // len(vector)) + vector[:384 % len(vector)])[:384]
+        # Vector generation
+        name_desc = f"{args.name} {args.description}"
+        h_val = hashlib.sha256(name_desc.encode()).hexdigest()
+        vec = [float(int(h_val[i:i + 2], 16)) / 255.0 for i in range(0, 64, 2)]
+        vec = (vec * (384 // len(vec)) + vec[:384 % len(vec)])[:384]
 
         client.upsert(
             collection_name='eva_nviz_dashboards',
             points=[
                 models.PointStruct(
                     id=dashboard_id,
-                    vector=vector,
+                    vector=vec,
                     payload=payload
                 )
             ]
         )
-
+        print(f'Saves {args.name}')
         return 0
-
     except Exception as e:
-        print(f'ERROR: {e}')
+        print(f'ERROR: {str(e)}')
         return 1
 
 

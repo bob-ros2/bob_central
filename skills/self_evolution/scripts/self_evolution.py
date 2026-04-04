@@ -47,7 +47,10 @@ logging.basicConfig(
 
 
 class Evolver:
-    """Manages the evolution of Eva's code."""def __init__(self):.'''Initialize the Evolver and ensure the persistent directory exists.'''
+    """Manages the evolution of Eva's code."""
+
+    def __init__(self):
+        """Initialize the Evolver and ensure the persistent directory exists."""
         if not os.path.exists(EVA_ROOT):
             os.makedirs(EVA_ROOT)
         self.tasks = self._load_tasks()
@@ -166,7 +169,7 @@ class Evolver:
         if 'try:' in result and 'except' not in result:
             result += (
                 '\n    except Exception as e:\n'
-                '        logging.error(f'Error: {e}')\n'
+                '        logging.error(f"Error: {e}")\n'
                 '        raise'
             )
 

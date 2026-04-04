@@ -35,8 +35,6 @@ def main():
         print('✗ Qdrant connection failed. Make sure Qdrant is running.')
         return 1
 
-    # In a real scenario, use a real embedding model (e.g. sentencetransformers)
-    # This demo uses dummy vectors of size 128
     vector_size = 128
     collection = 'test_embeddings'
 
@@ -62,19 +60,18 @@ def main():
             metadata={'id': i, 'topic': 'demo'}
         )
         if doc_id:
-            print(f'   ✓ Saved '{text[:30]}...' (ID: {doc_id})')
+            print(f"   ✓ Saved '{text[:30]}' (ID: {doc_id})")
         else:
-            print(f'   ✗ Failed to save '{text}'')
+            print(f"   ✗ Failed to save '{text}'")
 
     # 3. Search similar with a dummy query vector
-    # Query vector close to dogs (0.2)
     query_vector = [0.22] * vector_size
     print('\n3. Searching for documents similar to dummy query vector...')
     results = search_similar(collection, query_vector, limit=2)
 
     print(f'   Found {len(results)} matches:')
     for match in results:
-        print(f'   - Score {match['score']:.4f}: '{match['text']}'')
+        print(f"   - Score {match['score']:.4f}: '{match['text']}'")
 
     # 4. Search closer to sun (0.9)
     query_vector_sun = [0.88] * vector_size
@@ -83,7 +80,7 @@ def main():
 
     print(f'   Found {len(results_sun)} match:')
     for match in results_sun:
-        print(f'   - Score {match['score']:.4f}: '{match['text']}'')
+        print(f"   - Score {match['score']:.4f}: '{match['text']}'")
 
     # 5. Optional: Clean up
     print(f"\n5. Cleaning up (deleting collection '{collection}')...")

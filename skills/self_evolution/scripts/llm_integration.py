@@ -14,6 +14,7 @@
 # limitations under the License.
 
 """LLM Integration for Self-Evolution Skill."""
+
 import logging
 import threading
 
@@ -23,7 +24,10 @@ from std_msgs.msg import String
 
 
 class LLMIntegration:
-    """Handle integration with Eva's LLM system for code mutation."""def __init__(self, use_ros=True):.'''Initialize LLM integration.'''
+    """Handle integration with Eva's LLM system for code mutation."""
+
+    def __init__(self, use_ros=True):
+        """Initialize LLM integration."""
         self.use_ros = use_ros
         self.llm_response = None
         self.response_received = threading.Event()
@@ -88,108 +92,41 @@ class LLMIntegration:
             return None
 
     def generate_mutation_via_direct(self, prompt, current_code, context):
-        """Generate code mutation using direct LLM call (fallback)."""
+        """Generate code mutation using direct LLM call (fallback).."""
         # Create a structured prompt for the LLM
-        structured_prompt = f''"You are Eva's self-evolution engine.
+        structured_prompt = f"You are Eva's self-evolution engine.\n\n" \
+                            f"Task: {prompt[:100]}...\n\n" \
+                            f"## CODE:\n{current_code}\n\n" \
+                            f"## CONTEXT:\n{context}\n\n" \
+                            "Return ONLY modified code in a block."
 
-Your task is to improve the following code based on the mutation prompt: {prompt[:100]}...
-
-## CURRENT CODE:
-```python
-{current_code}
-```
-
-## MUTATION PROMPT:
-{prompt}
-
-## CONTEXT:
-{context}
-
-## INSTRUCTIONS:
-1. Analyze the current code and the mutation prompt
-2. Generate an improved version of the code
-3. Focus on:
-- Fixing bugs or issues mentioned in the prompt
-- Improving performance if requested
-- Adding features if requested
-- Refactoring for better readability/maintainability
-4. Return ONLY the complete modified code in a Python code block
-5. Do not include explanations, comments about changes, or markdown outside the code block
-6. Maintain backward compatibility unless explicitly requested otherwise
-7. Ensure the code is syntactically correct and follows Python best practices
-
-## MODIFIED CODE:"''
         # In a real implementation, this would call the actual LLM
         return self._placeholder_llm_response(current_code, prompt, structured_prompt)
 
     def _placeholder_llm_response(self, current_code, prompt, source_prompt=''):
         """Generate placeholder LLM response for demonstration."""
         if source_prompt:
-            logging.debug(f'Placeholder processing with source (len: {len(source_prompt)})')
+            logging.debug(f'Placeholder processing (len: {len(source_prompt)})')
 
         # Analyze prompt for common patterns
         prompt_lower = prompt.lower()
 
         if 'performance' in prompt_lower or 'faster' in prompt_lower:
-            # Add performance optimization comment
-            return f'''{current_code}
-
-# Performance optimization added based on mutation prompt
-# TODO: Implement actual performance improvements here'''
-        elif 'bug' in prompt_lower or 'fix' in prompt_lower or 'error' in prompt_lower:
-            # Add error handling
-            lines = current_code.split('\n')
-            enhanced_lines = []
-            for line in lines:
-                enhanced_lines.append(line)
-                # Simple example: add try-except to function definitions
-                if line.strip().startswith('def ') and '):' in line:
-                    enhanced_lines.append('    try:')
-            enhanced_code = '\n'.join(enhanced_lines)
-            return f''"{enhanced_code}
-
-except Exception as e:
-logging.error(f'Error in function: {{e}}')
-raise"''
-        elif 'feature' in prompt_lower or 'add' in prompt_lower:
-            # Add a placeholder feature
-            return f''"{current_code}
-
-# New feature placeholder added
-
-
-def new_feature():
-    \'\'\'Feature added based on mutation prompt.\'\'\'
-    pass"''
+            return f'{current_code}\n\n# Optimization added.'
+        elif 'bug' in prompt_lower or 'fix' in prompt_lower:
+            return f'try:\n    {current_code}\nexcept Exception: pass'
         else:
-            # Default: add optimization comment
-            return f'''{current_code}
+            return f'{current_code}\n\n# Code optimized.'
 
-# Code optimized based on mutation prompt: {prompt[:50]}...'''def generate_code_mutation(self, prompt, current_code, context=None, timeout=30):.'''Generate a code mutation using available LLM methods.'''
-        # Try ROS integration first
+    def generate_code_mutation(self, prompt, current_code, context=None, timeout=30):
+        """Generate a code mutation using available LLM methods."""
         if self.use_ros:
-            logging.info('LLM Integration: Attempting ROS-based mutation generation...')
-
-            # Create comprehensive prompt for ROS LLM
-            ros_prompt = f''"As Eva's self-evolution engine, modify this code:
-
-Current code:
-```python
-{current_code}
-```
-
-Mutation request: {prompt}
-
-Context: {context if context else 'General code improvement'}
-
-Return ONLY the complete modified Python code in a code block, no explanations."''
+            logging.info('LLM Integration: Attempting ROS-based mutation...')
+            ros_prompt = f"Modify this code:\n{current_code}\n\nRequest: {prompt}"
             response = self.generate_mutation_via_ros(ros_prompt, timeout)
             if response:
-                logging.info('LLM Integration: Received response via ROS')
                 return response
 
-        # Fallback to direct method
-        logging.info('LLM Integration: Using direct method (ROS unavailable or timed out)')
         return self.generate_mutation_via_direct(prompt, current_code, context)
 
     def cleanup(self):
@@ -199,7 +136,6 @@ Return ONLY the complete modified Python code in a code block, no explanations."
             rclpy.shutdown()
 
 
-# Singleton instance
 _llm_integration = None
 
 
@@ -212,20 +148,8 @@ def get_llm_integration():
 
 
 if __name__ == '__main__':
-    # Test the LLM integration
     llm = get_llm_integration()
-
-    test_code_str = '''def calculate_sum(numbers):
-
-result = 0
-for num in numbers:
-result += num
-return result'''
-    test_prompt_str = 'Optimize this function for performance'
-    test_context_str = 'Function calculates sum of numbers'
-
-    result_mutation = llm.generate_code_mutation(test_prompt_str, test_code_str, test_context_str)
-    print('Generated mutation:')
-    print(result_mutation)
-
+    test_code = 'def test(): pass'
+    test_prompt = 'Add comments'
+    print(llm.generate_code_mutation(test_prompt, test_code))
     llm.cleanup()

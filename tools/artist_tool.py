@@ -47,9 +47,9 @@ def draw_image(prompt: str) -> str:
     node.destroy_node()
 
     return (
-        f"Image prompt '{prompt}' sent to TTI subsystem. "
-        "The result will be saved /root/eva/media/eva_artist.jpg."
-        "You can use your vision tools to inspect it there."
+        f'Image prompt "{prompt}" sent to TTI subsystem. '
+        'The result will be saved /root/eva/media/eva_artist.jpg.'
+        'You can use your vision tools to inspect it there.'
     )
 
 
