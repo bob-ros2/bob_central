@@ -14,11 +14,11 @@
 # limitations under the License.
 
 """Self Monitoring Script for Eva."""
-from datetime import datetime
-from pathlib import Path
 import argparse
+from datetime import datetime
 import json
 import os
+from pathlib import Path
 import subprocess
 import sys
 

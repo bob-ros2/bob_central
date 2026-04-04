@@ -94,11 +94,11 @@ class LLMIntegration:
     def generate_mutation_via_direct(self, prompt, current_code, context):
         """Generate code mutation using direct LLM call (fallback).."""
         # Create a structured prompt for the LLM
-        structured_prompt = f"You are Eva's self-evolution engine.\n\n" \
-                            f"Task: {prompt[:100]}...\n\n" \
-                            f"## CODE:\n{current_code}\n\n" \
-                            f"## CONTEXT:\n{context}\n\n" \
-                            "Return ONLY modified code in a block."
+        structured_prompt = f'You are Eva\'s self-evolution engine.\n\n' \
+                            f'Task: {prompt[:100]}...\n\n' \
+                            f'## CODE:\n{current_code}\n\n' \
+                            f'## CONTEXT:\n{context}\n\n' \
+                            'Return ONLY modified code in a block.'
 
         # In a real implementation, this would call the actual LLM
         return self._placeholder_llm_response(current_code, prompt, structured_prompt)
@@ -122,7 +122,7 @@ class LLMIntegration:
         """Generate a code mutation using available LLM methods."""
         if self.use_ros:
             logging.info('LLM Integration: Attempting ROS-based mutation...')
-            ros_prompt = f"Modify this code:\n{current_code}\n\nRequest: {prompt}"
+            ros_prompt = f'Modify this code:\n{current_code}\n\nRequest: {prompt}'
             response = self.generate_mutation_via_ros(ros_prompt, timeout)
             if response:
                 return response

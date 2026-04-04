@@ -450,10 +450,10 @@ if __name__ == '__main__':
             print(json.dumps(res_cli, indent=2))
 
         else:
-            print('''#!/usr/bin/env python3
+            print("""#!/usr/bin/env python3
 
 Self Evolution CLI Usage:
 init <task_id> <description> <target_file> <test_cmd>
 iterate <task_id> [mutation_prompt]
 status [task_id]
-mutate <task_id> <mutation_prompt>''')
+mutate <task_id> <mutation_prompt>""")

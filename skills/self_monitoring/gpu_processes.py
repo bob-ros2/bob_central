@@ -13,182 +13,61 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-GPU Process Monitoring Script for Eva's Self Monitoring Skill.
+"""Identify GPU processes and their memory usage."""
 
-Lists all processes running on NVIDIA GPUs using nvidia-smi.
-"""
-from datetime import datetime
 import json
 import subprocess
 import sys
 
 
 def get_gpu_processes():
-    """Get detailed information about processes running on NVIDIA GPUs."""
+    """Execute nvidia-smi to get GPU process information."""
     try:
-        # Run nvidia-smi to get process information
+        # Standard query for GPU processes
+        cmd = [
+            'nvidia-smi',
+            '--query-compute-apps=pid,process_name,used_memory',
+            '--format=csv,noheader,nounits'
+        ]
         result = subprocess.run(
-            ['nvidia-smi', '--query-compute-apps=pid,process_name,used_memory,gpu_uuid,gpu_bus_id',
-             '--format=csv,noheader'],
+            cmd,
             capture_output=True,
             text=True,
-            timeout=10
+            check=True
         )
 
-        if result.returncode != 0:
-            # Try alternative command
-            result = subprocess.run(
-                ['nvidia-smi', 'pmon', '-c', '1'],
-                capture_output=True,
-                text=True,
-                timeout=10
-            )
-
-            if result.returncode != 0:
-                return {
-                    'status': 'error',
-                    'error': 'nvidia-smi command failed',
-                    'stderr': result.stderr
-                }
-
-            # Parse pmon output
-            return parse_pmon_output(result.stdout)
-
-        # Parse CSV output
-        return parse_csv_output(result.stdout)
-
-    except FileNotFoundError:
-        return {
-            'status': 'error',
-            'error': 'nvidia-smi not found. NVIDIA drivers may not be installed.'
-        }
-    except subprocess.TimeoutExpired:
-        return {
-            'status': 'error',
-            'error': 'nvidia-smi command timed out'
-        }
-    except Exception as e:
-        return {
-            'status': 'error',
-            'error': str(e)
-        }
-
-
-def parse_csv_output(csv_text):
-    """Parse nvidia-smi CSV output."""
-    processes = []
-    lines = csv_text.strip().split('\n')
-
-    for line in lines:
-        if not line.strip():
-            continue
-
-        parts = [p.strip() for p in line.split(',')]
-        if len(parts) >= 5:
-            try:
-                process_info = {
+        processes = []
+        for line in result.stdout.strip().split('\n'):
+            if not line:
+                continue
+            parts = [p.strip() for p in line.split(',')]
+            if len(parts) >= 3:
+                processes.append({
                     'pid': int(parts[0]),
-                    'process_name': parts[1],
-                    'used_memory': parts[2],
-                    'gpu_uuid': parts[3],
-                    'gpu_bus_id': parts[4]
-                }
-                processes.append(process_info)
-            except (ValueError, IndexError):
-                continue
+                    'name': parts[1],
+                    'memory_mib': int(parts[2])
+                })
 
-    # Get additional GPU info
-    gpu_info = get_gpu_info()
-
-    return {
-        'status': 'success',
-        'timestamp': datetime.now().isoformat(),
-        'process_count': len(processes),
-        'processes': processes,
-        'gpu_info': gpu_info
-    }
-
-
-def parse_pmon_output(pmon_text):
-    """Parse nvidia-smi pmon output."""
-    processes = []
-    lines = pmon_text.strip().split('\n')
-
-    # Skip header lines
-    for line in lines[2:]:  # Skip first two header lines
-        if not line.strip() or line.startswith('#') or 'gpu' in line.lower():
-            continue
-
-        parts = line.split()
-        if len(parts) >= 4:
-            try:
-                process_info = {
-                    'gpu_id': parts[0],
-                    'pid': int(parts[1]),
-                    'type': parts[2],  # C (compute) or G (graphics)
-                    'process_name': parts[3],
-                    'used_memory': parts[4] if len(parts) > 4 else 'N/A',
-                    'gpu_util': parts[5] if len(parts) > 5 else 'N/A',
-                    'mem_util': parts[6] if len(parts) > 6 else 'N/A'
-                }
-                processes.append(process_info)
-            except (ValueError, IndexError):
-                continue
-
-    return {
-        'status': 'success',
-        'timestamp': datetime.now().isoformat(),
-        'process_count': len(processes),
-        'processes': processes,
-        'note': 'Data from nvidia-smi pmon command'
-    }
-
-
-def get_gpu_info():
-    """Get general GPU information."""
-    try:
-        result = subprocess.run(
-            ['nvidia-smi', '--query-gpu=name,memory.total,memory.used,memory.free,utilization.gpu,temperature.gpu',
-             '--format=csv,noheader'],
-            capture_output=True,
-            text=True,
-            timeout=5
-        )
-
-        if result.returncode == 0:
-            lines = result.stdout.strip().split('\n')
-            gpus = []
-
-            for i, line in enumerate(lines):
-                parts = [p.strip() for p in line.split(',')]
-                if len(parts) >= 6:
-                    gpu_info = {
-                        'gpu_id': i,
-                        'name': parts[0],
-                        'memory_total': parts[1],
-                        'memory_used': parts[2],
-                        'memory_free': parts[3],
-                        'gpu_utilization': parts[4],
-                        'temperature': parts[5]
-                    }
-                    gpus.append(gpu_info)
-
-            return gpus
-    except Exception:
-        pass
-
-    return []
+        return processes
+    except Exception as e:
+        print(f'ERROR: Failed to get GPU processes: {e}')
+        return []
 
 
 def main():
-    """Run the main function."""
-    result = get_gpu_processes()
-    print(json.dumps(result, indent=2))
+    """Execute the main entry point to list GPU processes."""
+    processes = get_gpu_processes()
+    if not processes:
+        print('No GPU processes found or nvidia-smi failed.')
+        return 0
 
-    if result.get('status') == 'error':
-        sys.exit(1)
+    print(f"{'PID':<10} {'PROCESS NAME':<40} {'MEMORY (MiB)':<15}")
+    print('-' * 65)
+    for p in processes:
+        print(f"{p['pid']:<10} {p['name']:<40} {p['memory_mib']:<15}")
+
+    return 0
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

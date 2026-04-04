@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,8 +12,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from datetime import datetime
+
+"""Save an nviz dashboard configuration to Qdrant."""
+
 import argparse
+from datetime import datetime
+import hashlib
 import json
 import os
 import sys
@@ -30,103 +35,100 @@ except ImportError:
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Save nviz dashboard configuration')
-    parser.add_argument('--name', required=True, help='Unique name for the dashboard')
-    parser.add_argument('--description', default='', help='Description of the dashboard')
-    parser.add_argument('--tags', default='', help='Comma-separated tags')
-    parser.add_argument('--config', help='JSON configuration (if not provided, tries to get current)')
-    parser.add_argument('--host', default=os.environ.get('QDRANT_HOST', 'eva-qdrant'),
-                       help='Qdrant host')
-    parser.add_argument('--port', type=int, default=int(os.environ.get('QDRANT_PORT', '6333')),
-                       help='Qdrant port')
+    """Execute the main entry point to save a dashboard."""
+    parser = argparse.ArgumentParser(
+        description='Save an nviz dashboard'
+    )
+    parser.add_argument(
+        '--name',
+        required=True,
+        help='Unique name for the dashboard'
+    )
+    parser.add_argument(
+        '--description',
+        default='',
+        help='Description of the dashboard'
+    )
+    parser.add_argument(
+        '--tags',
+        default='',
+        help='Comma-separated tags'
+    )
+    parser.add_argument(
+        '--config',
+        required=True,
+        help='JSON configuration string'
+    )
+    parser.add_argument(
+        '--host',
+        default=os.environ.get('QDRANT_HOST', 'eva-qdrant'),
+        help='Qdrant host'
+    )
+    parser.add_argument(
+        '--port',
+        type=int,
+        default=int(os.environ.get('QDRANT_PORT', '6333')),
+        help='Qdrant port'
+    )
 
     args = parser.parse_args()
 
     if not QDRANT_AVAILABLE:
-        print('ERROR: qdrant_client is not installed. Cannot save dashboard.')
-        print('Install with: pip install qdrant-client')
+        print('ERROR: qdrant_client info')
         return 1
 
-    # Parse tags
-    tags = [tag.strip() for tag in args.tags.split(',') if tag.strip()] if args.tags else []
-
-    # Get configuration
-    if args.config:
-        try:
-            config_json = args.config
-            # Validate JSON
-            json.loads(config_json)
-        except json.JSONDecodeError as e:
-            print(f'ERROR: Invalid JSON configuration: {e}')
-            return 1
-    else:
-        # Try to get current configuration
-        print('WARNING: No config provided. Using empty configuration.')
-        config_json = '[]'
+    try:
+        json.loads(args.config)
+    except json.JSONDecodeError as e:
+        print(f'ERROR: Invalid JSON: {e}')
+        return 1
 
     try:
-        # Connect to Qdrant
         client = QdrantClient(host=args.host, port=args.port)
-
-        # Check if collection exists
         collections = client.get_collections()
-        collection_names = [c.name for c in collections.collections]
+        names = [c.name for c in collections.collections]
 
-        if 'eva_nviz_dashboards' not in collection_names:
-            print('Creating collection: eva_nviz_dashboards')
+        if 'eva_nviz_dashboards' not in names:
             client.create_collection(
                 collection_name='eva_nviz_dashboards',
-                vectors_config=models.VectorParams(size=384, distance=models.Distance.COSINE)
+                vectors_config=models.VectorParams(
+                    size=384,
+                    distance=models.Distance.COSINE
+                )
             )
 
-        # Generate ID from name
         dashboard_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, args.name))
-
-        # Prepare payload
+        tags = [t.strip() for t in args.tags.split(',') if t.strip()]
         payload = {
             'name': args.name,
             'description': args.description,
             'tags': tags,
-            'config_json': config_json,
-            'created_at': datetime.now().isoformat(),
-            'metadata': {
-                'version': '1.0',
-                'source': 'nviz_dashboard_skill'
-            }
+            'config_json': args.config,
+            'created_at': datetime.now().isoformat()
         }
 
-        # Create a simple vector from name+description for search
-        text_for_vector = f"{args.name} {args.description} {' '.join(tags)}"
-        import hashlib
-        vector_hash = hashlib.sha256(text_for_vector.encode()).hexdigest()
-        vector = [float(int(vector_hash[i:i+2], 16)) / 255.0 for i in range(0, 64, 2)]
-        # Ensure vector has 384 dimensions
-        if len(vector) < 384:
-            vector = vector * (384 // len(vector)) + vector[:384 % len(vector)]
-        else:
-            vector = vector[:384]
+        # Vector generation
+        name_desc = f"{args.name} {args.description}"
+        h_val = hashlib.sha256(name_desc.encode()).hexdigest()
+        vec = [float(int(h_val[i:i + 2], 16)) / 255.0 for i in range(0, 64, 2)]
+        vec = (vec * (384 // len(vec)) + vec[:384 % len(vec)])[:384]
 
-        # Upsert the point
         client.upsert(
             collection_name='eva_nviz_dashboards',
             points=[
                 models.PointStruct(
                     id=dashboard_id,
-                    vector=vector,
+                    vector=vec,
                     payload=payload
                 )
             ]
         )
 
-        print(f"SUCCESS: Dashboard '{args.name}' saved with ID: {dashboard_id}")
-        print(f'  Description: {args.description}')
-        print(f"  Tags: {', '.join(tags) if tags else 'None'}")
-        print(f'  Config length: {len(config_json)} characters')
-
+        print(f"Dashboard '{args.name}' saved successfully.")
         return 0
 
     except Exception as e:
-        print(f'ERROR: Failed to save dashboard: {e}')
+        print(f'ERROR: {e}')
         return 1
 
 

@@ -13,77 +13,61 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Apply skill interface for the self_monitoring skill."""
-from pathlib import Path
+"""Apply a skill folder configuration autonomously."""
+
 import argparse
-import json
+from pathlib import Path
+import shutil
 import sys
 
-# Add script directory to sys.path
-SCRIPT_DIR = Path(__file__).parent.resolve()
-sys.path.insert(0, str(SCRIPT_DIR))
 
-try:
-    from self_monitor import (
-        log_activity,
-        perform_check,
-        setup_logging,
-        show_status,
-        start_monitoring,
-        stop_monitoring
-    )
-except ImportError:
-    print(json.dumps({'status': 'error', 'message': 'Failed to import self_monitor'}))
-    sys.exit(1)
-
-
-def apply_skill(action='status', params=None):
+def apply_skill(skill_path, target_dir):
     """
-    Apply the self_monitoring skill.
+    Copy a skill folder to the target directory.
 
-    :param action: Action name (start, stop, check, status, log)
-    :param params: Optional parameters for the action
-    :return: Result dictionary
+    :param skill_path: Path to the skill folder.
+    :param target_dir: Path to the target directory.
+    :return: Whether the application was successful.
     """
-    if params is None:
-        params = {}
+    skill_dir = Path(skill_path)
+    if not skill_dir.is_dir():
+        print(f"ERROR: Skill '{skill_path}' not found.")
+        return False
 
-    setup_logging()
-
-    if action == 'start':
-        return start_monitoring()
-    if action == 'stop':
-        return stop_monitoring()
-    if action == 'check':
-        return perform_check()
-    if action == 'status':
-        return show_status()
-    if action == 'log':
-        activity = params.get('activity', 'manual_log')
-        details = params.get('details', {})
-        return log_activity(activity, details)
-
-    return {'status': 'error', 'message': f'Unknown action: {action}'}
+    dest = Path(target_dir) / skill_dir.name
+    try:
+        if dest.is_dir():
+            shutil.rmtree(dest)
+        shutil.copytree(skill_dir, dest)
+        return True
+    except Exception as e:
+        print(f'ERROR: Failed to apply skill: {e}')
+        return False
 
 
 def main():
-    """CLI wrapper for the skill application."""
-    parser = argparse.ArgumentParser(description='Apply self_monitoring skill')
-    parser.add_argument('--action', default='status',
-                        choices=['start', 'stop', 'check', 'status', 'log'],
-                        help='Action to perform')
-    parser.add_argument('--params', type=json.loads, default='{}',
-                        help='JSON parameters for the action')
+    """Execute the main entry point to apply a skill."""
+    parser = argparse.ArgumentParser(
+        description='Apply skill to Eva'
+    )
+    parser.add_argument(
+        '--skill',
+        required=True,
+        help='Skill path'
+    )
+    parser.add_argument(
+        '--target',
+        default='/root/eva/skills',
+        help='Target skills directory'
+    )
 
     args = parser.parse_args()
 
-    try:
-        result = apply_skill(args.action, args.params)
-        print(json.dumps(result, indent=2))
-    except Exception as exc:
-        print(json.dumps({'status': 'error', 'message': str(exc)}))
-        sys.exit(1)
+    if apply_skill(args.skill, args.target):
+        print(f"Skill '{args.skill}' applied successfully.")
+        return 0
+    return 1
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
