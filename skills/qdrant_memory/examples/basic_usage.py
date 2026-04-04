@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Example showing basic Qdrant Memory Skill usage."""
+"""Basic usage example for Qdrant Memory Skill."""
 
 import os
 import sys
@@ -22,65 +22,49 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from scripts import (  # noqa: E402
-    create_collection, delete_collection, get_all_texts, list_collections,
-    save_text, test_connection
+    create_collection, delete_collection, list_collections,
+    save_text, search_text, test_connection
 )
 
 
 def main():
-    """Demonstrate basic usage of Qdrant Memory Skill."""
-    print('=== Qdrant Memory Skill - Basic Usage Example ===\n')
+    """Demonstrate basic search with Qdrant Memory Skill."""
+    print('=== Qdrant Memory Skill - Basic Usage ===\n')
 
-    # 1. Test connection
     if not test_connection():
-        print('✗ Qdrant connection failed. Make sure Qdrant is running.')
+        print('✗ Qdrant connection failed.')
         return 1
-    print('✓ Connected to Qdrant\n')
 
-    # 2. List existing collections
-    print('1. Listing collections...')
-    cols = list_collections()
-    for col in cols:
-        print(f' - {col}')
+    collection = 'test_collection'
 
-    # 3. Create a test collection
-    test_col = 'test_basics'
-    print(f"\n2. Creating collection '{test_col}'...")
-    if create_collection(test_col, vector_size=1):
-        print(f"✓ Collection '{test_col}' ready")
-    else:
-        print(f"✗ Failed to create collection '{test_col}'")
+    # 1. Prepare collection
+    if collection not in list_collections():
+        print(f"Creating collection '{collection}'...")
+        create_collection(collection, 128)
 
-    # 4. Save some simple text
-    print('\n3. Saving sample texts...')
+    # 2. Add texts
     texts = [
-        'Die Sonne scheint heute sehr hell.',
-        'Roboter sind faszinierende Maschinen.',
-        'Eva ist ein intelligenter Bot-Assistent.'
+        'Die Hauptstadt von Deutschland ist Berlin.',
+        'Der Mount Everest ist der höchste Berg der Welt.',
+        'Python ist eine vielseitige Programmiersprache.'
     ]
 
-    for i, t in enumerate(texts):
-        doc_id = save_text(test_col, t, metadata={'idx': i, 'origin': 'demo'})
+    for t in texts:
+        doc_id = save_text(collection, t)
         if doc_id:
-            print(f'   ✓ Saved: "{t}" (ID: {doc_id})')
-        else:
-            print(f'   ✗ Failed to save: '{t}'')
+            print(f"   ✓ Saved: '{t}' (ID: {doc_id})")
 
-    # 5. List all texts in collection
-    print('\n4. Retrieving all texts from collection...')
-    docs = get_all_texts(test_col)
-    print(f'   Found {len(docs)} documents:')
-    for doc in docs:
-        print(f'   - [{doc['id'][:8]}] {doc['text']}')
+    # 3. Search
+    query = 'Wo liegt Berlin?'
+    print(f"\nSearching for: '{query}'")
+    results = search_text(collection, query, limit=1)
 
-    # 6. Optional: Clean up
-    print(f"\n5. Cleaning up (deleting collection '{test_col}')...")
-    if delete_collection(test_col):
-        print('✓ Clean up successful')
-    else:
-        print('✗ Failed to delete collection')
+    for match in results:
+        print(f"   Result: '{match['text']}' (Score: {match['score']:.4f})")
 
-    print('\n=== Basic Usage Example Completed ===')
+    # 4. Clean up
+    delete_collection(collection)
+    print('\nDone.')
     return 0
 
 

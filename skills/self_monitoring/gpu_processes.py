@@ -15,7 +15,6 @@
 
 """Identify GPU processes and their memory usage."""
 
-import json
 import subprocess
 import sys
 

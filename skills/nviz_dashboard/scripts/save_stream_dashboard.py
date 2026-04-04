@@ -141,7 +141,7 @@ def main():
         }
 
         # Vector generation
-        name_desc = f"{args.name} {args.description}"
+        name_desc = f'{args.name} {args.description}'
         h_val = hashlib.sha256(name_desc.encode()).hexdigest()
         vec = [float(int(h_val[i:i + 2], 16)) / 255.0 for i in range(0, 64, 2)]
         vec = (vec * (384 // len(vec)) + vec[:384 % len(vec)])[:384]

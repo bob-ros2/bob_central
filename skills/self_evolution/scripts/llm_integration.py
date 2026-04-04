@@ -94,7 +94,7 @@ class LLMIntegration:
     def generate_mutation_via_direct(self, prompt, current_code, context):
         """Generate code mutation using direct LLM call (fallback).."""
         # Create a structured prompt for the LLM
-        structured_prompt = f'You are Eva\'s self-evolution engine.\n\n' \
+        structured_prompt = f"You are Eva's self-evolution engine.\n\n" \
                             f'Task: {prompt[:100]}...\n\n' \
                             f'## CODE:\n{current_code}\n\n' \
                             f'## CONTEXT:\n{context}\n\n' \

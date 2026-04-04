@@ -18,7 +18,6 @@
 import json
 import os
 import subprocess
-from pathlib import Path
 
 
 def get_disk_usage(path='/'):

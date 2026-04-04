@@ -21,7 +21,6 @@ import sys
 
 
 def save_twitch_dashboard():
-
     # Load the example configuration
     with open(os.path.join(os.path.dirname(__file__), 'twitch_stream_dashboard.json'), 'r') as f:
         config_json = f.read()
@@ -31,7 +30,10 @@ def save_twitch_dashboard():
         sys.executable,
         os.path.join(os.path.dirname(os.path.dirname(__file__)), 'scripts', 'save_dashboard.py'),
         '--name', 'twitch_stream',
-        '--description', 'Dashboard for Twitch streaming with EVA status, system info, and action log',
+        '--description', (
+            'Dashboard for Twitch streaming with EVA status, '
+            'system info, and action log'
+        ),
         '--tags', 'streaming,twitch,live,monitoring',
         '--config', config_json
     ]

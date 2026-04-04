@@ -25,7 +25,6 @@ sys.path.append('/usr/local/lib/python3.10/dist-packages')
 
 try:
     from qdrant_client import QdrantClient
-    from qdrant_client.http import models
     QDRANT_AVAILABLE = True
 except ImportError:
     QDRANT_AVAILABLE = False
