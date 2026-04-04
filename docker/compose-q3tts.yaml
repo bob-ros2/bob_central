@@ -43,7 +43,7 @@ services:
     ipc: host
     command: >
       ros2 run bob_q3tts tts --ros-args 
-      -r text:=/bob/llm_stream 
+      -r text:=/eva/llm_stream 
       -r __ns:=/eva/tts
       -p 'sentence_delimiters:=[". ", "! ", "? "]'
       -p 'substitute:=[

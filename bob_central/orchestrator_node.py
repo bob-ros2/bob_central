@@ -39,6 +39,20 @@ class OrchestratorNode(Node):
         super().__init__('orchestrator')
         self.get_logger().info('Orchestrator starting up...')
 
+        # Configuration from Environment Variables
+        import os
+        self.reject_if_busy = os.getenv('ORCHESTRATOR_REJECT_IF_BUSY', 'true').lower() == 'true'
+        self.enable_queuing = os.getenv('ORCHESTRATOR_ENABLE_QUEUING', 'false').lower() == 'true'
+        self.reject_msg = os.getenv(
+            'ORCHESTRATOR_REJECT_MSG',
+            'System is busy processing a previous request.')
+
+        # State Management
+        self.is_busy = False
+        self.query_queue = []
+        self.last_user_query = 'Unknown'
+        self.is_detailed = False
+
         # Subscriptions
         # User input (terminal, voice, etc.)
         self.sub_user_query = self.create_subscription(
@@ -65,20 +79,54 @@ class OrchestratorNode(Node):
         self.pub_timed_query = self.create_publisher(
             String, 'user_query_timed', 10)
 
-        self.get_logger().info('Orchestrator ready to route intents.')
+        # Feedback topic for rejected queries
+        self.pub_rejected = self.create_publisher(
+            String, 'rejected_queries', 10)
 
-        self.last_user_query = 'Unknown'
-        self.is_detailed = False
+        mode = (
+            'REJECT' if self.reject_if_busy else
+            'QUEUE' if self.enable_queuing else 'PASS-THROUGH')
+        self.get_logger().info(f'Orchestrator ready. Mode: {mode}')
 
     def user_query_callback(self, msg):
         """
-        Receive a query from the user. Analyze it and route to specialists.
+        Receive a query from the user.
 
-        Inject real-world time to give the AI context.
+        Analyze it and route to specialists.
+        Handle concurrency via rejection or queuing.
         """
         query = msg.data
+
+        # Concurrency Check
+        if self.is_busy:
+            if self.reject_if_busy:
+                self.get_logger().warn(f'Rejecting query (Busy): {query[:30]}...')
+                reject_info = {
+                    'status': 'rejected',
+                    'reason': 'busy',
+                    'message': self.reject_msg,
+                    'original_query': query
+                }
+                reject_msg = String()
+                reject_msg.data = json.dumps(reject_info)
+                self.pub_rejected.publish(reject_msg)
+                return
+            elif self.enable_queuing:
+                self.get_logger().info(f'Queuing query: {query[:30]}...')
+                self.query_queue.append(msg)
+                return
+            else:
+                self.get_logger().info('Allowing parallel processing (Risk of race conditions)')
+
+        # Mark as busy
+        self.is_busy = True
+        self.process_query(msg)
+
+    def process_query(self, msg):
+        """Handle the actual routing and timing injection."""
+        query = msg.data
         self.last_user_query = query  # Store for the summarizer
-        self.get_logger().debug(f'Received user query: {query}')
+        self.get_logger().debug(f'Processing query: {query}')
 
         # Simple Intent/Verbosity Detection
         details_keywords = [
@@ -86,33 +134,38 @@ class OrchestratorNode(Node):
         self.is_detailed = any(k in query.lower() for k in details_keywords)
 
         self.get_logger().info(
-            f'New query received (Detailed={self.is_detailed}): {query[:50]}...')
+            f'Dispatching query (Detailed={self.is_detailed}): {query[:50]}...')
 
         # Get current time
         now = datetime.now()
         time_str = now.strftime('%Y-%m-%d %H:%M:%S')
         day_of_week = now.strftime('%A')
 
-        # Prefix the user's message with the exact time
-        sys_ctx = (f'[System Context: Current Real Time is '
-                   f'{day_of_week}, {time_str}] ')
+        # Prefix the user's message with exact time and verbosity preference
+        if self.is_detailed:
+            verbosity = 'DETAILED (Be thorough, explain facts, tell stories if requested)'
+        else:
+            verbosity = 'CONCISE (Be brief, max 2-3 sentences for fast speech)'
+
+        sys_ctx = (f'[System Context: Current Real Time is {day_of_week}, {time_str}. '
+                   f'Verbosity Preference: {verbosity}] ')
         enriched_query = sys_ctx + query
 
         routing_data = {
             'role': 'user',
             'content': enriched_query
         }
-        # We ONLY push it to user_query_timed for the router to handle
-        # This prevents the LLM from receiving the message twice.
+
         timed_msg = String()
         timed_msg.data = json.dumps(routing_data)
         self.pub_timed_query.publish(timed_msg)
 
     def specialist_response_callback(self, msg):
         """
-        Receive a response from a specialist agent. Forward to the user.
+        Receive a response from a specialist agent.
 
-        We now bundle the original query to give the summarizer context.
+        Forward to the user.
+        Release the busy-lock and handle queued queries.
         """
         try:
             data = json.loads(msg.data)
@@ -139,6 +192,16 @@ class OrchestratorNode(Node):
             response_msg = String()
             response_msg.data = json.dumps(bundled_data)
             self.pub_user_response.publish(response_msg)
+
+        # RELEASE LOCK
+        self.is_busy = False
+        self.get_logger().info('Processing finished. System ready.')
+
+        # Handle Query Queue if enabled
+        if self.enable_queuing and self.query_queue:
+            next_msg = self.query_queue.pop(0)
+            self.get_logger().info('Processing next item from queue...')
+            self.user_query_callback(next_msg)
 
 
 def main(args=None):

@@ -94,8 +94,7 @@ graph TD
             CLIENT["/eva/bob_chat_client"]
             
             subgraph "Namespace: /eva/tts"
-                VGATE["/tts/voice_gate"]
-                TTS["/tts/tts (Coqui)"]
+                TTS["/tts/tts (Q3TTS)"]
             end
 
             subgraph "Namespace: /eva/streamer"
@@ -125,9 +124,8 @@ graph TD
     BRAIN -- "/eva/llm_stream" --> CLIENT
     BRAIN -- "/eva/llm_tool_calls" --> CLIENT
     
-    %% To TTS Pipeline
-    LOGIC -- ".../full_response_text" --> VGATE
-    VGATE -- "/bob/llm_stream" --> TTS
+    %% To TTS Pipeline (Direct Stream)
+    BRAIN -- "/eva/llm_stream" --> TTS
     TTS -- ".../audio_raw" --> MIXER
 
     %% Inference / Proxy
