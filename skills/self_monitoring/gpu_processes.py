@@ -18,7 +18,6 @@ GPU Process Monitoring Script for Eva's Self Monitoring Skill.
 
 Lists all processes running on NVIDIA GPUs using nvidia-smi.
 """
-
 import json
 import subprocess
 import sys

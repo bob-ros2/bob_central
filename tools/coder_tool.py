@@ -19,7 +19,6 @@ Eva's Coder Toolset.
 Provides absolute filesystem and shell power.
 Allows the AI to act as a true software engineer on the host system.
 """
-
 import os
 import shlex
 import subprocess

@@ -14,7 +14,6 @@
 # limitations under the License.
 
 """Apply skill interface for the self_monitoring skill."""
-
 import argparse
 import json
 from pathlib import Path

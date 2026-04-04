@@ -18,7 +18,6 @@ Enhanced System Status - Python Version.
 
 Kompatibel mit dem get_system_status Tool, aber mit GPU-Informationen.
 """
-
 import json
 import os
 import re

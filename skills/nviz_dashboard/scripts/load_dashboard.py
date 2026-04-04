@@ -12,10 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Load and apply nviz dashboard configuration from Qdrant.
-"""
-
+"""Load and apply nviz dashboard configuration from Qdrant.."""
 import argparse
 import sys
 import os
@@ -29,10 +26,9 @@ import uuid
 
 
 def apply_dashboard_config(config_json: str):
-    """
-    Apply dashboard configuration by publishing to /eva/events topic.
-    In a real implementation, this would use ROS 2 to publish the configuration.
-    """
+    """Apply dashboard configuration by publishing to /eva/events topic.
+
+In a real implementation, this would use ROS 2 to publish the configuration."""
     print(f"Configuration to apply:\n{config_json}")
 
     # In production, this would publish to ROS

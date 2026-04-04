@@ -13,11 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test script for self-evolution skill."""
-
-
-def calculate_sum(numbers):
-    """Calculate the sum of a list of numbers."""
+"""Test script for self-evolution skill."""def calculate_sum(numbers):."""Calculate the sum of a list of numbers."""
     result = 0
     for num in numbers:
         result += num

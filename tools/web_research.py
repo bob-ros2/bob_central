@@ -14,7 +14,6 @@
 # limitations under the License.
 
 """Web Research Tool for Eva."""
-
 import json
 import os
 

@@ -12,10 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Save current stream dashboard configuration to Qdrant for /eva/streamer/ namespace.
-"""
-
+"""Save current stream dashboard configuration to Qdrant for /eva/streamer/ namespace.."""
 import argparse
 import sys
 import os
@@ -35,10 +32,9 @@ except ImportError:
 
 
 def get_current_stream_dashboard_config():
-    """
-    Get current stream dashboard configuration for /eva/streamer/ namespace.
-    This is the configuration we just set up.
-    """
+    """Get current stream dashboard configuration for /eva/streamer/ namespace.
+
+This is the configuration we just set up."""
     config = [
         {
             "action": "add",

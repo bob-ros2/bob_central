@@ -12,10 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Qdrant client helper for nviz dashboard storage.
-"""
-
+"""Qdrant client helper for nviz dashboard storage.."""
 import os
 import json
 import uuid
@@ -33,7 +30,6 @@ except ImportError:
 
 class NvizDashboardClient:
     """Client for managing nviz dashboards in Qdrant."""
-
     COLLECTION_NAME = "eva_nviz_dashboards"
 
     def __init__(self, host: str = None, port: int = None):

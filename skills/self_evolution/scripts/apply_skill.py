@@ -14,7 +14,6 @@
 # limitations under the License.
 
 """Apply Self-Evolution skill actions."""
-
 import argparse
 import json
 

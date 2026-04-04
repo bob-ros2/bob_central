@@ -12,10 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Example usage of the nviz_dashboard skill.
-"""
-
+"""Example usage of the nviz_dashboard skill.."""
 import json
 import os
 import subprocess
@@ -24,7 +21,6 @@ import sys
 # Example 1: Save the current Twitch stream dashboard
 def save_twitch_dashboard():
     """Save the Twitch stream dashboard configuration."""
-
     # Load the example configuration
     with open(os.path.join(os.path.dirname(__file__), "twitch_stream_dashboard.json"), "r") as f:
         config_json = f.read()
@@ -51,7 +47,6 @@ def save_twitch_dashboard():
 # Example 2: List all dashboards
 def list_all_dashboards():
     """List all saved dashboards."""
-
     cmd = [
         sys.executable,
         os.path.join(os.path.dirname(os.path.dirname(__file__)), "scripts", "list_dashboards.py")
@@ -69,7 +64,6 @@ def list_all_dashboards():
 # Example 3: Load and apply a dashboard
 def load_twitch_dashboard():
     """Load and apply the Twitch stream dashboard."""
-
     cmd = [
         sys.executable,
         os.path.join(os.path.dirname(os.path.dirname(__file__)), "scripts", "load_dashboard.py"),
@@ -89,7 +83,6 @@ def load_twitch_dashboard():
 # Example 4: Create a minimal monitoring dashboard
 def save_minimal_monitoring_dashboard():
     """Save a minimal monitoring dashboard."""
-
     minimal_config = [
         {
             "action": "add",

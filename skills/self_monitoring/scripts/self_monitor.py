@@ -14,7 +14,6 @@
 # limitations under the License.
 
 """Self Monitoring Script for Eva."""
-
 import argparse
 from datetime import datetime
 import json

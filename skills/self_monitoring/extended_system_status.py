@@ -18,7 +18,6 @@ Extended System Status Tool.
 
 Erweitert das get_system_status Tool um GPU-Informationen und weitere Details.
 """
-
 import json
 import os
 from pathlib import Path

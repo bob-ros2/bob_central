@@ -14,7 +14,6 @@
 # limitations under the License.
 
 """Artist Tool for Eva."""
-
 import time
 
 import rclpy

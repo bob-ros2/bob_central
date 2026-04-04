@@ -14,7 +14,6 @@
 # limitations under the License.
 
 """System Helper Tools for Eva."""
-
 import os
 
 import psutil
