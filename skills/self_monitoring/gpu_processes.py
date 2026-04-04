@@ -26,7 +26,6 @@ from datetime import datetime
 
 def get_gpu_processes():
     """Get detailed information about processes running on NVIDIA GPUs."""
-
     try:
         # Run nvidia-smi to get process information
         result = subprocess.run(
