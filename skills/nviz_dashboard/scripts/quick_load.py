@@ -60,14 +60,14 @@ def publish_to_events_topic(config_data):
 
 def main():
     """Parse arguments and load the dashboard configuration."""
-    parser = argparse.ArgumentParser(description="Quick load dashboard configuration from file")
+    parser = argparse.ArgumentParser(description='Quick load dashboard configuration from file')
     parser.add_argument(
-        "--name", required=True,
-        help="Name of the dashboard to load"
+        '--name', required=True,
+        help='Name of the dashboard to load'
     )
     parser.add_argument(
-        "--apply", type=bool, default=True,
-        help="Apply configuration after loading"
+        '--apply', type=bool, default=True,
+        help='Apply configuration after loading'
     )
 
     args = parser.parse_args()

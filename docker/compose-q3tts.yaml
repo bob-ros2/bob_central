@@ -4,13 +4,6 @@ name: eva-tts
 services:
   q3tts:
     image: ghcr.io/bob-ros2/bob-q3tts:latest
-    build:
-      context: .
-      args:
-        - ROS_DISTRO=humble
-        - USER_UID=${USER_UID:-1000}
-        - USER_GID=${USER_GID:-1000}
-        - USERNAME=${USERNAME:-rosuser}
     runtime: nvidia
     environment:
       - NVIDIA_VISIBLE_DEVICES=all

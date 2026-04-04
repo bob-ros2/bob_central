@@ -3,7 +3,7 @@
 # Eva Stack Management Script
 # This script bundles all docker-compose files for easier management.
 
-# Get the directory where the script is located
+# Get the absolute directory where the script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 

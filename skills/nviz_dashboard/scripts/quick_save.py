@@ -28,9 +28,9 @@ import sys
 
 def main():
     """Parse arguments and save current dashboard configuration."""
-    parser = argparse.ArgumentParser(description="Quick save current dashboard configuration")
-    parser.add_argument("--name", required=True, help="Name for the dashboard")
-    parser.add_argument("--description", default="", help="Description of the dashboard")
+    parser = argparse.ArgumentParser(description='Quick save current dashboard configuration')
+    parser.add_argument('--name', required=True, help='Name for the dashboard')
+    parser.add_argument('--description', default='', help='Description of the dashboard')
 
     args = parser.parse_args()
 

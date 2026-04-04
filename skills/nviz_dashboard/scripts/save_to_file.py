@@ -27,11 +27,11 @@ import sys
 
 def main():
     """Parse arguments and save current dashboard configuration to a file."""
-    parser = argparse.ArgumentParser(description="Save dashboard configuration to file")
-    parser.add_argument("--name", required=True, help="Name for the dashboard")
-    parser.add_argument("--output", help="Output file path")
-    parser.add_argument("--description", default="", help="Description of the dashboard")
-    parser.add_argument("--config", help="Path to config file")
+    parser = argparse.ArgumentParser(description='Save dashboard configuration to file')
+    parser.add_argument('--name', required=True, help='Name for the dashboard')
+    parser.add_argument('--output', help='Output file path')
+    parser.add_argument('--description', default='', help='Description of the dashboard')
+    parser.add_argument('--config', help='Path to config file')
 
     args = parser.parse_args()
 
