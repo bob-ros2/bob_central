@@ -55,10 +55,12 @@ def read_file(path: str, start_line: int = 1, end_line: int = 800) -> str:
 
 
 def write_file(path: str, content: str, overwrite: bool = True) -> str:
-    """Write content to a file.
+    """
+    Write content to a file.
 
     Creates directories if they don't exist.
-    Use this to save your code creations or modify settings."""
+    Use this to save your code creations or modify settings.
+    """
     if os.path.exists(path) and not overwrite:
         return f"Error: File '{path}' already exists and overwrite is False."
 
@@ -72,9 +74,11 @@ def write_file(path: str, content: str, overwrite: bool = True) -> str:
 
 
 def list_dir(path: str = '.') -> str:
-    """List files and directories at the specified path.
+    """
+    List files and directories at the specified path.
 
-    Defaults to the current working directory."""
+    Defaults to the current working directory.
+    """
     if not os.path.exists(path):
         return f"Error: Path '{path}' not found."
 
