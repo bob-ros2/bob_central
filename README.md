@@ -22,15 +22,46 @@ The system handles:
 ## Architecture & Docker
 `bob_central` is strictly **Docker-First**, emphasizing security, absolute process isolation, and portability.
 
-### Container Ecosystem & Network
-* **`api-gateway` (Nginx)**: Secure entry point that proxies LLM traffic and injects runtime authentication.
-* **`eva-base`**: The core execution environment for orchestration, logic, and self-evolution modules.
-* **`eva-summarizer`**: Focused inference layer for logic and voice-gate summarization (optimized on Qwen-14B).
-* **`eva-memory` (Qdrant)**: High-performance Vector Database for semantic search and long-term embedding storage.
-* **Network Isolation**: All internal communication happens over a dedicated Docker bridge network (`eva-net`).
+### The Docker Ecosystem
+To manage the complex set of services, a master management script is provided in the `docker/` directory.
+
+**Quick Management:**
+```bash
+./docker/manage.sh up      # Start the entire ecosystem
+./docker/manage.sh down    # Stop all services
+./docker/manage.sh build   # Rebuild local images
+```
+
+#### Compose Stacks
+| File | Description |
+|:---|:---|
+| `compose-base.yaml` | Core logic (`eva-base`) and API Gateway (`eva-api-gate`). |
+| `compose-nviz.yaml` | Visual dashboard streamer (`eva-nviz-streamer`). |
+| `compose-tti.yaml` | Image generation engine (`eva-artist`). |
+| `compose-gitea.yaml` | Local Git infrastructure and CI runner. |
+| `compose-inference.yaml` | LLM inference servers (Summarizer & Vision). |
+| `compose-q3tts.yaml` | Text-to-Speech service. |
+| `compose-qdrant.yaml` | Vector database for memory. |
+| `compose-tbot.yaml` | Integrated Telegram bot for remote control. |
+
+#### Internal Images (Built from this Repo)
+| Image | Dockerfile | Description |
+|:---|:---|:---|
+| `eva-base` | `Dockerfile.base` | The primary orchestration and tool execution environment. |
+| `eva-artist` | `Dockerfile.tti` | SDXL-based image generation engine. |
+| `eva-tbot` | `Dockerfile.tbot` | Telegram bot interface for remote interaction. |
+
+#### External Services & Headless Specialists
+| Service | Image / Source | Repository / Docs |
+|:---|:---|:---|
+| **Gitea** | `gitea/gitea` | [Install with Docker](https://docs.gitea.com/installation/install-with-docker) |
+| **Qdrant** | `qdrant/qdrant` | [Vector DB Documentation](https://qdrant.tech/) |
+| **Llama.cpp** | `llama.cpp:server` | [llama.cpp HTTP Server](https://github.com/ggml-org/llama.cpp/tree/master/tools/server) |
+| **TTS Engine** | `bob-q3tts` | [bob-q3tts Repository](https://github.com/bob-ros2/bob-q3tts) |
+| **Nviz Streamer** | `bob-nviz` | [bob-nviz Repository](https://github.com/bob-ros2/bob-nviz) |
 
 ### Security Features
-* **Credential Isolation**: Pure separation of code and secrets.
+* **Credential Isolation**: Pure separation of code and secrets via environment variables and volume mounts.
 * **`/root/eva` Sandbox**: All temporary files and generated assets are locked into a dedicated host volume, preventing unauthorized filesystem access.
 
 ## System Architecture
