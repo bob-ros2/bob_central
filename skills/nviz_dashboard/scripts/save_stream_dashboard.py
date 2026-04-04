@@ -11,7 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Get current stream dashboard configuration for /eva/streamer/ namespace.      This is the configuration we just set up."""
+"""
+Get current stream dashboard configuration for /eva/streamer/ namespace.      This is the configuration we just set up.
+"""
 from datetime import datetime
 import argparse
 import hashlib
@@ -91,14 +93,31 @@ def get_current_stream_dashboard_config():
 def main():
     parser = argparse.ArgumentParser(description='Save stream dashboard configuration')
     parser.add_argument('--name', default='streamer_dashboard', help='Unique name for the dashboard')
-    parser.add_argument('--description', default='Stream dashboard for /eva/streamer/ namespace with 4 terminals',
-                       help='Description of the dashboard')
-    parser.add_argument('--tags', default='streamer,namespace,live,twitch', help='Comma-separated tags')
-    parser.add_argument('--config', help='JSON configuration (if not provided, uses current stream setup)')
-    parser.add_argument('--host', default=os.environ.get('QDRANT_HOST', 'eva-qdrant'),
-                       help='Qdrant host')
-    parser.add_argument('--port', type=int, default=int(os.environ.get('QDRANT_PORT', '6333')),
-                       help='Qdrant port')
+    parser.add_argument(
+        '--description',
+        default='Stream dashboard for /eva/streamer/ namespace',
+        help='Description of the dashboard'
+    )
+    parser.add_argument(
+        '--tags',
+        default='streamer,live,twitch',
+        help='Comma-separated tags'
+    )
+    parser.add_argument(
+        '--config',
+        help='JSON configuration (if not provided, uses current)'
+    )
+    parser.add_argument(
+        '--host',
+        default=os.environ.get('QDRANT_HOST', 'eva-qdrant'),
+        help='Qdrant host'
+    )
+    parser.add_argument(
+        '--port',
+        type=int,
+        default=int(os.environ.get('QDRANT_PORT', '6333')),
+        help='Qdrant port'
+    )
 
     args = parser.parse_args()
 

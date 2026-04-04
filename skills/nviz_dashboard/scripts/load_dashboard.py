@@ -11,7 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Apply dashboard configuration by publishing to /eva/events topic.  In a real implementation, this would use ROS 2 to publish the configuration."""
+"""
+Apply dashboard configuration by publishing to /eva/events topic.  In a real implementation, this would use ROS 2 to publish the configuration.
+"""
 import argparse
 import json
 import os

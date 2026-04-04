@@ -58,9 +58,11 @@ class NvizDashboardClient:
         except Exception as e:
             print(f'WARNING: Could not ensure collection: {e}')
 
-    def save_dashboard(self, name: str, config_json: str,
-                      description: str = "", tags: List[str] = None,
-                      metadata: Dict[str, Any] = None) -> bool:
+    def save_dashboard(
+        self, name: str, config_json: str,
+        description: str = '', tags: List[str] = None,
+        metadata: Dict[str, Any] = None
+    ) -> bool:
         """Save a dashboard configuration to Qdrant."""
         try:
             # Generate ID from name

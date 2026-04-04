@@ -26,9 +26,9 @@ def create_vision_prompt(prompt_text, image_path, role='user'):
     Create the JSON format for a multimodal bob_llm request.
 
     :param prompt_text: Text-Prompt for the LLM.
-    :param image_path: Path to the image file.
-    :param role: Role of the message (default: 'user').
-    :return: JSON-String in bob_llm format.
+:param image_path: Path to the image file.
+:param role: Role of the message (default: 'user').
+:return: JSON-String in bob_llm format.
     """
     # Check if the file exists
     if not os.path.exists(image_path):

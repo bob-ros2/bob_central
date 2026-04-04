@@ -16,8 +16,9 @@ import os
 
 import psutil
 
+
 def get_system_status():
-    
+
     cpu_percent = psutil.cpu_percent(interval=None)
     mem = psutil.virtual_memory()
     load_avg = os.getloadavg()
@@ -28,6 +29,7 @@ def get_system_status():
         'memory_free_gb': f'{mem.available / (1024**3):.2f} GB',
         'load_average': load_avg
     }
+
 
 def scan_workspace(path='.'):
     """

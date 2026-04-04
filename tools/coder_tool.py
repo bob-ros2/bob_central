@@ -59,7 +59,7 @@ def write_file(path: str, content: str, overwrite: bool = True) -> str:
     Write content to a file.
 
     Creates directories if they don't exist.
-    Use this to save your code creations or modify settings.
+Use this to save your code creations or modify settings.
     """
     if os.path.exists(path) and not overwrite:
         return f"Error: File '{path}' already exists and overwrite is False."
@@ -95,9 +95,11 @@ def list_dir(path: str = '.') -> str:
 
 
 def run_command(command: str, timeout: float = 120.0) -> str:
-    """Execute a shell command on the host (Linux).
+    """
+    Execute a shell command on the host (Linux).
 
-    Allows running compilers (e.g. g++), build tools (colcon), or git."""
+    Allows running compilers (e.g. g++), build tools (colcon), or git.
+    """
     try:
         # Standard safety: No interactive shells, use shlex
         args = shlex.split(command)
@@ -121,11 +123,13 @@ def run_command(command: str, timeout: float = 120.0) -> str:
 
 
 def search_text(directory: str, query: str, pattern: str = '*') -> str:
-    """Search for a string recursively in a directory using grep-like logic.
+    """
+    Search for a string recursively in a directory using grep-like logic.
 
     :param directory: Where to start searching.
-    :param query: The text to find.
-    :param pattern: File glob pattern (e.g. '*.py')."""
+:param query: The text to find.
+:param pattern: File glob pattern (e.g. '*.py').
+    """
     try:
         # We use the built-in 'grep' command for high performance
         cmd = ['grep', '-rn', '--include', pattern, query, directory]

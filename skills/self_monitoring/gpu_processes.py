@@ -23,6 +23,7 @@ import subprocess
 import sys
 from datetime import datetime
 
+
 def get_gpu_processes():
     """Get detailed information about processes running on NVIDIA GPUs."""
     try:
@@ -73,6 +74,7 @@ def get_gpu_processes():
             'error': str(e)
         }
 
+
 def parse_csv_output(csv_text):
     """Parse nvidia-smi CSV output."""
     processes = []
@@ -107,6 +109,7 @@ def parse_csv_output(csv_text):
         'gpu_info': gpu_info
     }
 
+
 def parse_pmon_output(pmon_text):
     """Parse nvidia-smi pmon output."""
     processes = []
@@ -140,6 +143,7 @@ def parse_pmon_output(pmon_text):
         'processes': processes,
         'note': 'Data from nvidia-smi pmon command'
     }
+
 
 def get_gpu_info():
     """Get general GPU information."""
@@ -176,6 +180,7 @@ def get_gpu_info():
 
     return []
 
+
 def main():
     """Run the main function."""
     result = get_gpu_processes()
@@ -183,6 +188,7 @@ def main():
 
     if result.get('status') == 'error':
         sys.exit(1)
+
 
 if __name__ == '__main__':
     main()

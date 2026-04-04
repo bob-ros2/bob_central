@@ -27,8 +27,8 @@ def draw_image(prompt: str) -> str:
     Generate an image based on a textual description (prompt).
 
     The image will be published to the robot's visual subsystem.
-    :param prompt: Description of the image. Keep it under 70 tokens for best results.
-    :return: A message indicating the prompt has been sent.
+:param prompt: Description of the image. Keep it under 70 tokens for best results.
+:return: A message indicating the prompt has been sent.
     """
     if not rclpy.ok():
         rclpy.init()
