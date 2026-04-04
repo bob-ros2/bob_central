@@ -1,26 +1,23 @@
-#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
-# Licensed under the Apache License, Version 2.0 (the 'License');
+# Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an 'AS IS' BASIS,
+# distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""System Helper Tools for Eva."""
+"""Return a simple system status summary useful for an LLM."""
 import os
 
 import psutil
 
-
 def get_system_status():
-    """Return a simple system status summary useful for an LLM."""
+    
     cpu_percent = psutil.cpu_percent(interval=None)
     mem = psutil.virtual_memory()
     load_avg = os.getloadavg()
@@ -31,7 +28,6 @@ def get_system_status():
         'memory_free_gb': f'{mem.available / (1024**3):.2f} GB',
         'load_average': load_avg
     }
-
 
 def scan_workspace(path='.'):
     """

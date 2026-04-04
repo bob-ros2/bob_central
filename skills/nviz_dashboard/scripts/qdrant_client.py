@@ -1,23 +1,22 @@
-#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
-# Licensed under the Apache License, Version 2.0 (the 'License');
+# Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an 'AS IS' BASIS,
+# distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Qdrant client helper for nviz dashboard storage.."""
-import os
-import json
-import uuid
-from typing import Dict, List, Optional, Any
+"""Client for managing nviz dashboards in Qdrant."""
 from datetime import datetime
+from typing import Dict, List, Optional, Any
+import json
+import os
+import uuid
 
 try:
     from qdrant_client import QdrantClient
@@ -27,9 +26,8 @@ except ImportError:
     print('ERROR: qdrant_client not installed. Install with: pip install qdrant-client')
     exit(1)
 
-
 class NvizDashboardClient:
-    """Client for managing nviz dashboards in Qdrant."""
+    
     COLLECTION_NAME = 'eva_nviz_dashboards'
 
     def __init__(self, host: str = None, port: int = None):
@@ -249,7 +247,6 @@ class NvizDashboardClient:
         except Exception as e:
             print(f'ERROR: Failed to search dashboards: {e}')
             return []
-
 
 if __name__ == '__main__':
     # Test the client

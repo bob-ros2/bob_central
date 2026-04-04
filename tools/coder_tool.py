@@ -1,44 +1,34 @@
-#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
-# Licensed under the Apache License, Version 2.0 (the 'License');
+# Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an 'AS IS' BASIS,
+# distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""
-Eva's Coder Toolset.
-
-Provides absolute filesystem and shell power.
-Allows the AI to act as a true software engineer on the host system.
-"""
+"""Register the tool with bob_llm."""
+from typing import Any, List
 import os
 import shlex
 import subprocess
-from typing import Any, List
 
 from bob_llm.tool_utils import register as default_register, Tool
 import rclpy
 
-
 class _NodeContext:
     node: rclpy.node.Node = None
 
-
 def register(module: Any, node: Any = None) -> List[Tool]:
-    """Register the tool with bob_llm."""
+    
     _NodeContext.node = node
     node.get_logger().info(
         "[Coder Tools] Eva's engineering hands are now active.")
     return default_register(module, node)
-
 
 def read_file(path: str, start_line: int = 1, end_line: int = 800) -> str:
     """Read the content of a file (1-indexed, inclusive)."""
@@ -60,7 +50,6 @@ def read_file(path: str, start_line: int = 1, end_line: int = 800) -> str:
     except Exception as e:
         return f'Error reading file: {str(e)}'
 
-
 def write_file(path: str, content: str, overwrite: bool = True) -> str:
     """
     Write content to a file.
@@ -79,7 +68,6 @@ def write_file(path: str, content: str, overwrite: bool = True) -> str:
     except Exception as e:
         return f'Error writing file: {str(e)}'
 
-
 def list_dir(path: str = '.') -> str:
     """
     List files and directories at the specified path.
@@ -92,14 +80,13 @@ def list_dir(path: str = '.') -> str:
     try:
         items = os.listdir(path)
         result = [
-            f'{'[DIR] ' if os.path.isdir(os.path.join(path, i)) else '      '}{i}'
+            f'{"[DIR] " if os.path.isdir(os.path.join(path, i)) else "      "}{i}'
             for i in items
         ]
         result.sort()
         return f'Contents of {os.path.abspath(path)}:\n' + '\n'.join(result)
     except Exception as e:
         return f'Error listing directory: {str(e)}'
-
 
 def run_command(command: str, timeout: float = 120.0) -> str:
     """
@@ -127,7 +114,6 @@ def run_command(command: str, timeout: float = 120.0) -> str:
         return output
     except Exception as e:
         return f'Command failed: {str(e)}'
-
 
 def search_text(directory: str, query: str, pattern: str = '*') -> str:
     """

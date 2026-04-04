@@ -1,24 +1,22 @@
-#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
-# Licensed under the Apache License, Version 2.0 (the 'License');
+# Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an 'AS IS' BASIS,
+# distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Save current nviz dashboard configuration to Qdrant.."""
-import argparse
-import sys
-import os
-import json
-import uuid
 from datetime import datetime
+import argparse
+import json
+import os
+import sys
+import uuid
 
 # Try to import qdrant_client
 try:
@@ -28,7 +26,6 @@ try:
 except ImportError:
     QDRANT_AVAILABLE = False
     print('WARNING: qdrant_client not available. Install with: pip install qdrant-client')
-
 
 def main():
     parser = argparse.ArgumentParser(description='Save nviz dashboard configuration')
@@ -129,7 +126,6 @@ def main():
     except Exception as e:
         print(f'ERROR: Failed to save dashboard: {e}')
         return 1
-
 
 if __name__ == '__main__':
     sys.exit(main())

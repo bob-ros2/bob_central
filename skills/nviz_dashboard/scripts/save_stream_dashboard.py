@@ -1,24 +1,26 @@
-#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
-# Licensed under the Apache License, Version 2.0 (the 'License');
+# Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an 'AS IS' BASIS,
+# distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Save current stream dashboard configuration to Qdrant for /eva/streamer/ namespace.."""
-import argparse
-import sys
-import os
-import json
-import uuid
+"""
+Get current stream dashboard configuration for /eva/streamer/ namespace.      This is the configuration we just set up.
+"""
 from datetime import datetime
+import argparse
+import hashlib
+import json
+import os
+import sys
+import uuid
 
 # Ensure qdrant_client is in path
 sys.path.append('/usr/local/lib/python3.10/dist-packages')
@@ -30,11 +32,8 @@ try:
 except ImportError:
     QDRANT_AVAILABLE = False
 
-
 def get_current_stream_dashboard_config():
-    """Get current stream dashboard configuration for /eva/streamer/ namespace.
-
-This is the configuration we just set up."""
+    
     config = [
         {
             'action': 'add',
@@ -88,7 +87,6 @@ This is the configuration we just set up."""
     ]
 
     return json.dumps(config, indent=2)
-
 
 def main():
     parser = argparse.ArgumentParser(description='Save stream dashboard configuration')
@@ -166,8 +164,7 @@ def main():
         }
 
         # Create a simple vector from name+description for search
-        text_for_vector = f"{args.name} {args.description} {' '.join(tags)}"
-        import hashlib
+        text_for_vector = f'{args.name} {args.description} {" ".join(tags)}'
         vector_hash = hashlib.sha256(text_for_vector.encode()).hexdigest()
         vector = [float(int(vector_hash[i:i+2], 16)) / 255.0 for i in range(0, 64, 2)]
         # Ensure vector has 384 dimensions
@@ -205,7 +202,6 @@ def main():
     except Exception as e:
         print(f'ERROR: Failed to save dashboard: {e}')
         return 1
-
 
 if __name__ == '__main__':
     sys.exit(main())
