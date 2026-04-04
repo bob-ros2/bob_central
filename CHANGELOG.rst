@@ -2,6 +2,15 @@
 Changelog for package bob_central
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.0 (2026-04-04)
+------------------
+* Achieved 100% ROS 2 linter compliance (flake8, pep257, copyright) across all nodes.
+* Unified 8 separate Docker stacks into a single 'eva' project.
+* Introduced 'manage.sh' for centralized one-word stack control (up, down, build).
+* Updated architecture diagrams with high-contrast styles for better readability.
+* Enhanced README with detailed ecosystem tables and Twitch bot documentation.
+* Contributors: Bob Ros, Antigravity AI
+
 0.3.0 (2026-03-30)
 ------------------
 * Hardened CI/CD environment using full ros:humble container in Gitea Actions.
