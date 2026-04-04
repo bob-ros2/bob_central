@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,9 +26,10 @@ def search_web(query: str, num_results: int = 3) -> str:
     Search the web using SearXNG.
 
     Useful for answering questions about current events, news, and real-time.
-:param query: The search query string.
-:param num_results: Number of results to return (default 3).
-:return: A JSON string containing the search results or an error message.
+
+    :param query: The search query string.
+    :param num_results: Number of results to return (default 3).
+    :return: A JSON string containing the search results or an error message.
     """
     searxng_url = os.environ.get(
         'MASTER_SEARXNG_URL',
@@ -56,7 +58,10 @@ def search_web(query: str, num_results: int = 3) -> str:
         if not results:
             return json.dumps({'status': 'no results found'})
 
-        return json.dumps({'status': 'success', 'results': results}, ensure_ascii=False)
+        return json.dumps(
+            {'status': 'success', 'results': results},
+            ensure_ascii=False
+        )
 
     except Exception as e:
         return json.dumps({'status': 'error', 'message': str(e)})

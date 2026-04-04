@@ -27,8 +27,9 @@ def draw_image(prompt: str) -> str:
     Generate an image based on a textual description (prompt).
 
     The image will be published to the robot's visual subsystem.
-:param prompt: Description of the image. Keep it under 70 tokens for best results.
-:return: A message indicating the prompt has been sent.
+
+    :param prompt: Description of the image. Keep it under 70 tokens.
+    :return: A message indicating the prompt has been sent.
     """
     if not rclpy.ok():
         rclpy.init()
@@ -44,9 +45,11 @@ def draw_image(prompt: str) -> str:
     publisher.publish(msg)
 
     node.destroy_node()
-    return (f"Image prompt '{prompt}' sent to TTI subsystem. "
-            f"The result will be saved to '/root/eva/media/eva_artist.jpg' after a few "
-            f'seconds. You can use your vision tools to inspect it there.')
+    return (
+        f'Image prompt "{prompt}" sent to TTI subsystem. '
+        f'The result will be saved /root/eva/media/eva_artist.jpg.'
+        'You can use your vision tools to inspect it there.'
+    )
 
 
 if __name__ == '__main__':

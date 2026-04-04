@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,11 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Get current stream dashboard configuration for /eva/streamer/ namespace.      This is the configuration we just set up.
-"""
-from datetime import datetime
+
+"""Save current stream dashboard configuration to Qdrant."""
+
 import argparse
+from datetime import datetime
 import hashlib
 import json
 import os
@@ -34,7 +35,11 @@ except ImportError:
 
 
 def get_current_stream_dashboard_config():
+    """
+    Get current stream dashboard configuration for /eva/streamer/ namespace.
 
+    This is the configuration we just set up.
+    """
     config = [
         {
             'action': 'add',
@@ -91,11 +96,18 @@ def get_current_stream_dashboard_config():
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Save stream dashboard configuration')
-    parser.add_argument('--name', default='streamer_dashboard', help='Unique name for the dashboard')
+    """Main execution entry point."""
+    parser = argparse.ArgumentParser(
+        description='Save stream dashboard configuration'
+    )
+    parser.add_argument(
+        '--name',
+        default='streamer_dashboard',
+        help='Unique name for the dashboard'
+    )
     parser.add_argument(
         '--description',
-        default='Stream dashboard for /eva/streamer/ namespace',
+        default='Stream dashboard namespace',
         help='Description of the dashboard'
     )
     parser.add_argument(
@@ -105,7 +117,7 @@ def main():
     )
     parser.add_argument(
         '--config',
-        help='JSON configuration (if not provided, uses current)'
+        help='JSON configuration (optional)'
     )
     parser.add_argument(
         '--host',
@@ -122,77 +134,56 @@ def main():
     args = parser.parse_args()
 
     if not QDRANT_AVAILABLE:
-        print('ERROR: qdrant_client is not installed. Cannot save dashboard.')
-        print('Install with: pip install qdrant-client')
+        print('ERROR: qdrant_client is not installed.')
         return 1
-
-    # Parse tags
-    tags = [tag.strip() for tag in args.tags.split(',') if tag.strip()] if args.tags else []
 
     # Get configuration
     if args.config:
         try:
             config_json = args.config
-            # Validate JSON
             json.loads(config_json)
         except json.JSONDecodeError as e:
-            print(f'ERROR: Invalid JSON configuration: {e}')
+            print(f'ERROR: Invalid JSON: {e}')
             return 1
     else:
-        # Use current stream setup configuration
         config_json = get_current_stream_dashboard_config()
-        print('Using current stream dashboard configuration for /eva/streamer/ namespace')
 
     try:
         # Connect to Qdrant
         client = QdrantClient(host=args.host, port=args.port)
 
-        # Check if collection exists
+        # Collection setup
         collections = client.get_collections()
-        collection_names = [c.name for c in collections.collections]
+        names = [c.name for c in collections.collections]
 
-        if 'eva_nviz_dashboards' not in collection_names:
-            print('Creating collection: eva_nviz_dashboards')
+        if 'eva_nviz_dashboards' not in names:
             client.create_collection(
                 collection_name='eva_nviz_dashboards',
-                vectors_config=models.VectorParams(size=384, distance=models.Distance.COSINE)
+                vectors_config=models.VectorParams(
+                    size=384, distance=models.Distance.COSINE
+                )
             )
 
-        # Generate ID from name
+        # Generate ID
         dashboard_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, args.name))
 
-        # Prepare payload
+        # Payload
+        tags = [t.strip() for t in args.tags.split(',') if t.strip()]
         payload = {
             'name': args.name,
             'description': args.description,
             'tags': tags,
             'config_json': config_json,
-            'created_at': datetime.now().isoformat(),
-            'metadata': {
-                'version': '2.0',
-                'namespace': '/eva/streamer/',
-                'source': 'nviz_dashboard_skill',
-                'topics': {
-                    'config': '/eva/streamer/events',
-                    'main': '/eva/llm_stream',
-                    'system': '/eva/streamer/in1',
-                    'actions': '/eva/streamer/in0',
-                    'chat': '/eva/streamer/in2'
-                }
-            }
+            'created_at': datetime.now().isoformat()
         }
 
-        # Create a simple vector from name+description for search
-        text_for_vector = f'{args.name} {args.description} {" ".join(tags)}'
-        vector_hash = hashlib.sha256(text_for_vector.encode()).hexdigest()
-        vector = [float(int(vector_hash[i:i+2], 16)) / 255.0 for i in range(0, 64, 2)]
-        # Ensure vector has 384 dimensions
-        if len(vector) < 384:
-            vector = vector * (384 // len(vector)) + vector[:384 % len(vector)]
-        else:
-            vector = vector[:384]
+        # Simplified Vector
+        text = f'{args.name} {args.description} {" ".join(tags)}'
+        v_hash = hashlib.sha256(text.encode()).hexdigest()
+        vector = [float(int(v_hash[i:i+2], 16)) / 255.0 for i in range(0, 64, 2)]
+        vector = (vector * (384 // len(vector)) + vector[:384 % len(vector)])[:384]
 
-        # Upsert the point
+        # Upsert
         client.upsert(
             collection_name='eva_nviz_dashboards',
             points=[
@@ -204,22 +195,12 @@ def main():
             ]
         )
 
-        print(f"\n✅ SUCCESS: Stream dashboard '{args.name}' saved with ID: {dashboard_id}")
-        print(f'  Description: {args.description}')
-        print(f"  Tags: {', '.join(tags) if tags else 'None'}")
+        print(f'\n✅ SUCCESS: Saved {args.name}')
         print(f'  Namespace: /eva/streamer/')
-        print(f'  Config length: {len(config_json)} characters')
-        print(f'\n  Topics configured:')
-        print(f'    - Config: /eva/streamer/events')
-        print(f'    - Main content: /eva/llm_stream')
-        print(f'    - System status: /eva/streamer/in1')
-        print(f'    - Action log: /eva/streamer/in0')
-        print(f'    - Chat preview: /eva/streamer/in2')
-
         return 0
 
     except Exception as e:
-        print(f'ERROR: Failed to save dashboard: {e}')
+        print(f'ERROR: Failed to save: {e}')
         return 1
 
 
