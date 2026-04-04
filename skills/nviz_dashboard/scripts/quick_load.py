@@ -58,8 +58,9 @@ def publish_to_events_topic(config_data):
 
         # CRITICAL: Wait and spin after publishing to ensure delivery
         # Especially important for VOLATILE DURABILITY across containers
-        print('Message sent. Spinning to ensure delivery...')
-        for _ in range(15):
+        # 2 seconds should be enough according to the technician.
+        print('Message sent. Spinning for 2s to ensure delivery...')
+        for _ in range(10):
             rclpy.spin_once(node, timeout_sec=0.2)
 
         print('Successfully published configuration to /eva/streamer/events')
