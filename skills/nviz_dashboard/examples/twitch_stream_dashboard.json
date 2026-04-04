@@ -1,0 +1,47 @@
+[
+  {
+    "action": "add",
+    "type": "String",
+    "id": "eva_status",
+    "title": "EVA Status Dashboard",
+    "topic": "/eva/llm_stream",
+    "area": [50, 50, 400, 300],
+    "mode": "default",
+    "font_size": 16,
+    "text_color": [255, 255, 255, 255],
+    "bg_color": [0, 0, 0, 150]
+  },
+  {
+    "action": "add",
+    "type": "String",
+    "id": "system_info",
+    "title": "System Info",
+    "topic": "/eva/system_status",
+    "area": [500, 50, 300, 200],
+    "mode": "append_newline",
+    "font_size": 16,
+    "text_color": [200, 255, 200, 255],
+    "bg_color": [0, 0, 50, 150]
+  },
+  {
+    "action": "add",
+    "type": "String",
+    "id": "eva_actions",
+    "title": "EVA Actions",
+    "topic": "/eva/action_log",
+    "area": [50, 400, 750, 150],
+    "mode": "append_newline",
+    "font_size": 14,
+    "text_color": [255, 200, 100, 255],
+    "bg_color": [30, 30, 30, 180]
+  },
+  {
+    "action": "add",
+    "type": "Bitmap",
+    "id": "eva_heart",
+    "area": [800, 20, 16, 16],
+    "topic": "/ui/eva_heart",
+    "depth": 1,
+    "color": [255, 50, 50, 255]
+  }
+]

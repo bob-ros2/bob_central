@@ -1,0 +1,51 @@
+# -- Twitch Bot Image (Tbot) --
+ARG ROS_DISTRO=humble
+FROM ros:${ROS_DISTRO}-ros-base
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV SHELL=/bin/bash
+
+# -- Install System & ROS Dependencies --
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    python3-colcon-common-extensions \
+    vim \
+    git \
+    curl \
+    ros-${ROS_DISTRO}-topic-tools \
+    && rm -rf /var/lib/apt/lists/*
+
+# -- ROS 2 Workspace Setup --
+WORKDIR /ros2_ws
+RUN mkdir -p /ros2_ws/src
+
+# 1. Clone Repositories
+# Repos: bob_launch, bob_topic_tools, tioros
+RUN git clone https://github.com/bob-ros2/bob_launch /ros2_ws/src/bob_launch && \
+    git clone https://github.com/bob-ros2/bob_topic_tools /ros2_ws/src/bob_topic_tools && \
+    git clone https://github.com/bob-ros2/tioros /ros2_ws/src/tioros
+
+# 2. Install Python Requirements for the cloned repos (if any)
+RUN if [ -f /ros2_ws/src/bob_launch/requirements.txt ]; then pip3 install --no-cache-dir -r /ros2_ws/src/bob_launch/requirements.txt; fi && \
+    if [ -f /ros2_ws/src/bob_topic_tools/requirements.txt ]; then pip3 install --no-cache-dir -r /ros2_ws/src/bob_topic_tools/requirements.txt; fi && \
+    if [ -f /ros2_ws/src/tioros/requirements.txt ]; then pip3 install --no-cache-dir -r /ros2_ws/src/tioros/requirements.txt; fi
+
+# 3. Create a config directory and copy the launch files
+RUN mkdir -p /ros2_ws/src/tbot_config
+COPY tbot_launch.yaml /ros2_ws/src/tbot_config/tbot_launch.yaml
+COPY tbot_whitelist.yaml /ros2_ws/src/tbot_config/tbot_whitelist.yaml
+
+# -- Build the Workspace --
+RUN . /opt/ros/${ROS_DISTRO}/setup.sh && \
+    colcon build --packages-select bob_launch bob_topic_tools tioros
+
+# -- Entrypoint Script --
+RUN echo "#!/bin/bash\nsource /opt/ros/\${ROS_DISTRO}/setup.bash\nsource /ros2_ws/install/setup.bash\nexec \"\$@\"" > /ros_entrypoint.sh \
+    && chmod +x /ros_entrypoint.sh
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+
+# Default Command: Launch the tbot system
+# Setting CWD to config dir so relative paths in launch (like whitelist) work
+WORKDIR /ros2_ws/src/tbot_config
+CMD ["ros2", "launch", "bob_launch", "generic.launch.py", "config:=/ros2_ws/src/tbot_config/tbot_launch.yaml"]

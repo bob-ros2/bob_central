@@ -61,7 +61,7 @@ class TTInode(Node):
 
         self.declare_parameter(
             'output_path',
-            os.environ.get('TTI_OUTPUT_PATH', '/tmp/eva_artist.jpg'),
+            os.environ.get('TTI_OUTPUT_PATH', '/root/eva/media/eva_artist.jpg'),
             ParameterDescriptor(description='Output file path.')
         )
 

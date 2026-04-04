@@ -31,7 +31,7 @@ This skill enables Eva to evolve her own source code or configuration through an
 ### 1. init_task(task_id, description, target_file, test_cmd)
 Initializes a new evolution task.
 - Creates a new git branch in the Gitea sandbox.
-- Registers the task in `/tmp/eva/tasks.json`.
+- Registers the task in `/root/eva/tasks.json`.
 - Sets the baseline (original file and test result).
 
 ### 2. iterate(task_id)
@@ -45,8 +45,8 @@ Performs one iteration of evolution.
 Retrieves the current state of a task and its leaderboard (best versions).
 
 ## Configuration
-- Persistent Root: `/tmp/eva/`
-- Tasks Journal: `/tmp/eva/tasks.json`
+- Persistent Root: `/root/eva/`
+- Tasks Journal: `/root/eva/tasks.json`
 - Sandbox Remote: `sandbox` (Gitea)
 
 ## Implementation Details

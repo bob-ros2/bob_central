@@ -1,0 +1,50 @@
+# Twitch Chat Bot Template
+- &twitch_ns "__ns:=${TWITCH_NS:-/eva/tbot}"
+
+# Chatbot from tioros
+- name: bot
+  package: tioros
+  executable: chatbot
+  output: screen
+  arguments:
+    - --ros-args
+    - -p
+    - 'channel:=${TWITCH_CHAT_CHANNEL:-"bobassi"}'
+    - -p
+    - 'credentials:=${TWITCH_CHAT_CREDENTIALS:-"no_credentials"}'
+    - -r
+    - "chat:=chat_raw"
+    - -r
+    - *twitch_ns
+
+
+- name: filter
+  package: bob_topic_tools
+  executable: filter
+  output: screen
+  arguments:
+    - --ros-args
+    - -p
+    - "white_list:=tbot_whitelist.yaml"
+    - -p
+    - "substitute:=['^[^ ]+ [^ ]+ ([^ ]+) (.*)', '\\1: \\2', 'event_join [^ ]+ ([^ ]+)$', '\\1: just joined the channel']"
+    - -r
+    - "topic_in:=chat_raw"
+    - -r
+    - "topic_out:=chat_filtered"
+    - -r
+    - *twitch_ns
+
+
+- name: throttle
+  package: topic_tools
+  executable: throttle
+  output: screen
+  arguments:
+    - messages
+    - chat_filtered
+    - '0.1'
+    - /eva/user_query
+    - --ros-args
+    - -r
+    - *twitch_ns

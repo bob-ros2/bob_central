@@ -1,0 +1,33 @@
+# -- Eva Twitch Chat Bot (Tbot) --
+name: eva-tbot
+
+networks:
+  eva-net:
+    external: true
+
+secrets:
+  twitch_credentials:
+    file: /volume1/ros/secrets/credentials_bobassi.json
+
+services:
+  # -- TBOT: Twitch Interaction & Filtering --
+  tbot:
+    build:
+      context: .
+      dockerfile: Dockerfile.tbot
+    container_name: eva-tbot
+    networks:
+      - eva-net
+    environment:
+      - ROS_DOMAIN_ID=50
+      - TWITCH_CHAT_CHANNEL=bobassi
+      # Passing the path to the Docker Secret
+      - TWITCH_CHAT_CREDENTIALS=/run/secrets/twitch_credentials
+    secrets:
+      - twitch_credentials
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "1"

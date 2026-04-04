@@ -198,7 +198,7 @@ def get_gpu_info():
 
 
 def main():
-    """Hauptfunktion."""
+    """Run the main module functionality."""
     try:
         status = {
             'cpu': get_cpu_info(),

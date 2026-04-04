@@ -53,7 +53,7 @@ services:
   # -- RUNNER: LOCAL ACTIONS (Eva's CI) --
   act-runner:
     image: gitea/act_runner:latest
-    container_name: eva-runner
+    container_name: eva-gitea-runner
     networks:
       - eva-net
     depends_on:
@@ -64,6 +64,6 @@ services:
     environment:
       - GITEA_INSTANCE_URL=http://eva-gitea:3000
       - GITEA_RUNNER_REGISTRATION_TOKEN=DrzBSszEQKOAtnGE3Baxc5kfco44Ygz8G3yiIL6L
-      - GITEA_RUNNER_NAME=eva-nucleus-runner
+      - GITEA_RUNNER_NAME=eva-gitea-runner
       - GITEA_RUNNER_LABELS=ubuntu-latest:docker://catthehacker/ubuntu:act-latest,ubuntu-22.04:docker://catthehacker/ubuntu:act-22.04,ros-humble:docker://ros:humble
     restart: always

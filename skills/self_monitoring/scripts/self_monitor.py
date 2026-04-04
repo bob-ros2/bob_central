@@ -24,7 +24,7 @@ import subprocess
 import sys
 
 # Configuration
-LOG_DIR = Path('/tmp/eva')
+LOG_DIR = Path('/root/eva/logs')
 LOG_FILE = LOG_DIR / 'self_monitoring.log'
 STATUS_FILE = LOG_DIR / 'status.json'
 

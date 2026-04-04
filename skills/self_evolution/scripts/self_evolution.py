@@ -32,7 +32,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # Configuration paths relative to Eva's root-mapping
-EVA_ROOT = '/tmp/eva'
+EVA_ROOT = '/root/eva'
 TASKS_FILE = os.path.join(EVA_ROOT, 'tasks.json')
 LOG_FILE = os.path.join(EVA_ROOT, 'self_evolution.log')
 

@@ -34,6 +34,8 @@ services:
       - ROS_DOMAIN_ID=50
       - DISPLAY=$DISPLAY
       - QT_X11_NO_MITSHM=1
+      - MASTER_SEARXNG_URL=http://192.168.1.10:9080/search
+      - MASTER_SEARXNG_LANGUAGE=en-US
     deploy:
       resources:
         reservations:
@@ -43,7 +45,7 @@ services:
               capabilities: [gpu]
     command: ros2 launch bob_launch generic.launch.py config:=/ros2_ws/src/bob_central/launch/orch_eva.yaml
     volumes:
-      - /volume1/ros/eva:/volume1/ros/eva # Unified persistent home
+      - /volume1/ros/eva:/root/eva # Unified persistent home
       - /volume1/ros/eva/ssh:/root/.ssh # Persistent AI Identity (Keys)
       - ..:/ros2_ws/src/bob_central # Persistent Source Code (Self-Evolution)
     restart: on-failure

@@ -31,7 +31,7 @@ The system handles:
 
 ### Security Features
 * **Credential Isolation**: Pure separation of code and secrets.
-* **`/tmp/eva` Sandbox**: All temporary files and generated assets are locked into a dedicated host volume, preventing unauthorized filesystem access.
+* **`/root/eva` Sandbox**: All temporary files and generated assets are locked into a dedicated host volume, preventing unauthorized filesystem access.
 
 ## System Architecture
 

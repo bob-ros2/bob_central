@@ -1,0 +1,47 @@
+name: eva-nviz
+
+networks:
+  eva-net:
+    external: true
+
+secrets:
+  twitch_key:
+    file: /volume1/ros/secrets/streamkey_bobassi
+
+services:
+  nviz:
+    # image: ghcr.io/bob-ros2/bob-nviz:latest
+    image: bob-nviz:latest
+    container_name: eva-nviz-streamer
+    networks:
+      - eva-net
+    restart: unless-stopped
+    secrets:
+      - twitch_key
+    environment:
+      # Twitch Config
+      - TWITCH_STREAM_KEY_FILE=/run/secrets/twitch_key
+      - INGEST_SERVER=rtmp://live-fra.twitch.tv/app/
+      # ROS Config
+      - NAMESPACE=/eva/streamer
+      - ROS_DOMAIN_ID=50
+      # Nviz Config
+      - NVIZ_WIDTH=854
+      - NVIZ_HEIGHT=480
+      - NVIZ_FPS=30
+      - NVIZ_FIFO_PATH=/tmp/nano_fifo
+      # Audio Config
+      - MIXER_REMAPS=-r in0:=/eva/tts/audio_raw
+      - MIXER_IN0_CHANNELS=1
+      - AUDIO_PIPE=/tmp/audio_pipe
+      - AUDIO_MASTER_PATH=/tmp/audio_master_pipe
+
+    # Override CMD to launch the Twitch streaming orchestration script
+    command: [ "/ros2_ws/src/bob_nviz/scripts/start_stream.sh" ]
+    volumes:
+      - /tmp:/tmp
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "1"
