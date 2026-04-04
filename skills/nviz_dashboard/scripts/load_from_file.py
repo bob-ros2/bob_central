@@ -22,7 +22,9 @@ This script reads any dashboard JSON and applies it via ROS.
 import argparse
 import json
 import os
-import subprocess
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import String
 import sys
 
 
@@ -34,23 +36,28 @@ def publish_to_events_topic(config_data):
     :return: True if successful, False otherwise.
     """
     try:
-        # Double-dump to ensure it is safely escaped for the ROS 'data' string field
-        # This prevents quotes within the JSON from breaking the command
-        config_json_escaped = json.dumps(json.dumps(config_data))
+        if not rclpy.ok():
+            rclpy.init()
 
-        # Publish to ROS topic
-        cmd = [
-            'ros2', 'topic', 'pub', '--once',
-            '/eva/streamer/events', 'std_msgs/msg/String',
-            f'data: {config_json_escaped}'
-        ]
+        node = Node('dashboard_loader_node_file')
+        publisher = node.create_publisher(String, '/eva/streamer/events', 10)
 
-        result = subprocess.run(cmd, capture_output=True, text=True, check=False)
-        if result.returncode != 0:
-            print(f'Warning: Failed to publish to /eva/events: {result.stderr}')
-            return False
+        # Wait for connections (optional but safer)
+        # We give it a short moment to find the nviz subscriber
+        for _ in range(10):
+            if publisher.get_subscription_count() > 0:
+                break
+            rclpy.spin_once(node, timeout_sec=0.1)
 
-        print('Successfully published configuration to /eva/events topic')
+        msg = String()
+        msg.data = json.dumps(config_data)
+        publisher.publish(msg)
+
+        # Ensure the message is sent
+        rclpy.spin_once(node, timeout_sec=0.5)
+
+        print('Successfully published configuration to /eva/streamer/events')
+        node.destroy_node()
         return True
 
     except Exception as e:
