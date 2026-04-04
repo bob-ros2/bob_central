@@ -42,14 +42,14 @@ To manage the complex set of services, a master management script is provided in
 | `compose-inference.yaml` | LLM inference servers (Summarizer & Vision). |
 | `compose-q3tts.yaml` | Text-to-Speech service. |
 | `compose-qdrant.yaml` | Vector database for memory. |
-| `compose-tbot.yaml` | Integrated Telegram bot for remote control. |
+| `compose-tbot.yaml` | Integrated Twitch Chat bot for remote control. |
 
 #### Internal Images (Built from this Repo)
 | Image | Dockerfile | Description |
 |:---|:---|:---|
 | `eva-base` | `Dockerfile.base` | The primary orchestration and tool execution environment. |
 | `eva-artist` | `Dockerfile.tti` | SDXL-based image generation engine. |
-| `eva-tbot` | `Dockerfile.tbot` | Telegram bot interface for remote interaction. |
+| `eva-tbot` | `Dockerfile.tbot` | Twitch Chat bot interface for remote interaction. |
 
 #### External Services & Headless Specialists
 | Service | Image / Source | Repository / Docs |
