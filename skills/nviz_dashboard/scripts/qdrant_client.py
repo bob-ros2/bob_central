@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
+# Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
+# distributed under the License is distributed on an 'AS IS' BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
@@ -24,13 +24,13 @@ try:
     from qdrant_client.http import models
     from qdrant_client.http.exceptions import UnexpectedResponse
 except ImportError:
-    print("ERROR: qdrant_client not installed. Install with: pip install qdrant-client")
+    print('ERROR: qdrant_client not installed. Install with: pip install qdrant-client')
     exit(1)
 
 
 class NvizDashboardClient:
     """Client for managing nviz dashboards in Qdrant."""
-    COLLECTION_NAME = "eva_nviz_dashboards"
+    COLLECTION_NAME = 'eva_nviz_dashboards'
 
     def __init__(self, host: str = None, port: int = None):
         """Initialize Qdrant client."""
@@ -41,7 +41,7 @@ class NvizDashboardClient:
             self.client = QdrantClient(host=self.host, port=self.port)
             self._ensure_collection()
         except Exception as e:
-            print(f"ERROR: Failed to connect to Qdrant at {self.host}:{self.port}: {e}")
+            print(f'ERROR: Failed to connect to Qdrant at {self.host}:{self.port}: {e}')
             raise
 
     def _ensure_collection(self):
@@ -51,13 +51,13 @@ class NvizDashboardClient:
             collection_names = [c.name for c in collections.collections]
 
             if self.COLLECTION_NAME not in collection_names:
-                print(f"Creating collection: {self.COLLECTION_NAME}")
+                print(f'Creating collection: {self.COLLECTION_NAME}')
                 self.client.create_collection(
                     collection_name=self.COLLECTION_NAME,
                     vectors_config=models.VectorParams(size=384, distance=models.Distance.COSINE)
                 )
         except Exception as e:
-            print(f"WARNING: Could not ensure collection: {e}")
+            print(f'WARNING: Could not ensure collection: {e}')
 
     def save_dashboard(self, name: str, config_json: str,
                       description: str = "", tags: List[str] = None,
@@ -69,12 +69,12 @@ class NvizDashboardClient:
 
             # Prepare payload
             payload = {
-                "name": name,
-                "description": description,
-                "tags": tags or [],
-                "config_json": config_json,
-                "created_at": datetime.now().isoformat(),
-                "metadata": metadata or {}
+                'name': name,
+                'description': description,
+                'tags': tags or [],
+                'config_json': config_json,
+                'created_at': datetime.now().isoformat(),
+                'metadata': metadata or {}
             }
 
             # Create embedding from name + description for semantic search
@@ -130,7 +130,7 @@ class NvizDashboardClient:
                 query_filter=models.Filter(
                     must=[
                         models.FieldCondition(
-                            key="name",
+                            key='name',
                             match=models.MatchValue(value=name)
                         )
                     ]
@@ -157,7 +157,7 @@ class NvizDashboardClient:
                 query_filter = models.Filter(
                     must=[
                         models.FieldCondition(
-                            key="tags",
+                            key='tags',
                             match=models.MatchAny(any=tags)
                         )
                     ]
@@ -188,14 +188,14 @@ class NvizDashboardClient:
             dashboards = []
             for point in all_points[:limit]:
                 dashboards.append({
-                    "id": point.id,
+                    'id': point.id,
                     **point.payload
                 })
 
             return dashboards
 
         except Exception as e:
-            print(f"ERROR: Failed to list dashboards: {e}")
+            print(f'ERROR: Failed to list dashboards: {e}')
             return []
 
     def delete_dashboard(self, name: str) -> bool:
@@ -239,23 +239,23 @@ class NvizDashboardClient:
             dashboards = []
             for result in search_results:
                 dashboards.append({
-                    "id": result.id,
-                    "score": result.score,
+                    'id': result.id,
+                    'score': result.score,
                     **result.payload
                 })
 
             return dashboards
 
         except Exception as e:
-            print(f"ERROR: Failed to search dashboards: {e}")
+            print(f'ERROR: Failed to search dashboards: {e}')
             return []
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # Test the client
     client = NvizDashboardClient()
-    print(f"Connected to Qdrant at {client.host}:{client.port}")
+    print(f'Connected to Qdrant at {client.host}:{client.port}')
 
     # Test collection
     collections = client.client.get_collections()
-    print(f"Available collections: {[c.name for c in collections.collections]}")
+    print(f'Available collections: {[c.name for c in collections.collections]}')
