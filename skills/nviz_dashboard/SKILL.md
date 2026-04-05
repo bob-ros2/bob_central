@@ -58,43 +58,90 @@ execute_skill_script('nviz_dashboard', 'scripts/list_dashboards.py', '')
 execute_skill_script('nviz_dashboard', 'scripts/delete_dashboard.py', '--name twitch_stream')
 ```
 
-## Dashboard Configuration Structure
-A typical dashboard configuration for nviz includes terminals that monitor specific ROS topics:
+## Dashboard Configuration Structure (THE PLATINUM TRUTH)
+The `nviz` node follows the `bob_nviz` protocol. Use these exact fields:
+- **`type`**: `"String"` (Text) or `"VideoStream"` (External Pipe) or `"Bitmap"` (Canvas).
+- **`area`**: Must be an **ARRAY**: `[x, y, width, height]`.
+- **`text_color` / `bg_color`**: Must be RGBA arrays `[R, G, B, A]`.
+- **`font_size`**: Integer.
+- **`pipe_path`**: (Only for `VideoStream`) Path to the FIFO (e.g., `/tmp/smallchat_pipe`).
+- **`encoding`**: (Only for `VideoStream`) `"rgb"` or `"bgra"`.
 
+## Dual-Pane Dashboard Standard (PLATINUM V2)
+The dashboard is split 50/50 into two zones:
+1. **Left Half (`[0, 0, 426, 480]`):** Fixed anchor for **`smallchat_video`**. Should almost never be moved or removed.
+2. **Right Half (`[426, 0, 426, 480]`):** Dynamic steering zone for Eva.
+   - **`system_status`**: Top-right (`[426, 0, 426, 100]`). Use it for clear_on_new status messages.
+   - **`llm_stream`**: Middle-right (`[426, 100, 426, 380]`). Main area for typed text and tool logs.
+   - **`photo_stream`**: Can overlay the right half to show images (Vision, TTI).
+
+## Image Streaming via VideoStream
+To display an image, use a `VideoStream` pointing to `/tmp/photo_pipe`.
+- **Logic**: Use FFmpeg to loop an image into the pipe:
+  `ffmpeg -loop 1 -i <file> -f rawvideo -pixel_format rgb24 -video_size 426x480 /tmp/photo_pipe`
+- **Dashboard Action**:
+```json
+{
+  "action": "add",
+  "type": "VideoStream",
+  "id": "photo_stream",
+  "area": [426, 0, 426, 480],
+  "pipe_path": "/tmp/photo_pipe",
+  "encoding": "rgb"
+}
+```
+- **Cleanup**: Remove `photo_stream` when visual confirmation is no longer needed to save resources.
+
+## Standard Layout (Anchor: Smallchat)
+The primary layout uses the left half for the **Smallchat Video Stream**:
 ```json
 [
   {
-    "type": "terminal",
+    "action": "add",
+    "type": "VideoStream",
+    "id": "smallchat_video",
+    "area": [0, 0, 426, 480],
+    "pipe_path": "/tmp/smallchat_pipe",
+    "encoding": "rgb"
+  }
+]
+```
+
+Example Configuration (Hardware-Ready):
+```json
+[
+  {
+    "type": "String",
     "id": "rejected_queries_terminal",
     "title": "Rejected Queries",
     "topic": "/eva/rejected_queries",
     "mode": "append_newline",
-    "position": {"x": 0, "y": 0, "width": 600, "height": 300},
-    "fontSize": 14,
-    "backgroundColor": "#1e1e1e",
-    "textColor": "#ffffff"
+    "area": [0, 0, 420, 240],
+    "font_size": 16,
+    "bg_color": [30, 30, 30, 255],
+    "text_color": [255, 255, 255, 255]
   },
   {
-    "type": "terminal",
+    "type": "String",
     "id": "tts_spoken_text_terminal",
     "title": "TTS Spoken Text",
     "topic": "/eva/tts/spoken_text",
     "mode": "clear_on_new",
-    "position": {"x": 610, "y": 0, "width": 600, "height": 300},
-    "fontSize": 14,
-    "backgroundColor": "#1e1e1e",
-    "textColor": "#00ff00"
+    "area": [430, 0, 420, 240],
+    "font_size": 16,
+    "bg_color": [30, 30, 30, 255],
+    "text_color": [0, 255, 0, 255]
   },
   {
-    "type": "terminal",
+    "type": "String",
     "id": "tool_calls_terminal",
     "title": "LLM Tool Calls",
     "topic": "/eva/llm_tool_calls",
     "mode": "append_newline",
-    "position": {"x": 0, "y": 310, "width": 1210, "height": 200},
-    "fontSize": 12,
-    "backgroundColor": "#1e1e1e",
-    "textColor": "#ff9900"
+    "area": [0, 250, 854, 200],
+    "font_size": 16,
+    "bg_color": [30, 30, 30, 255],
+    "text_color": [255, 153, 0, 255]
   }
 ]
 ```

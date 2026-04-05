@@ -1,0 +1,46 @@
+name: eva-dashboard
+
+networks:
+  eva-net:
+    external: true
+
+services:
+  smallchat:
+    image: bob-av-tools:latest
+    container_name: eva-dashboard-smallchat
+    networks:
+      - eva-net
+    restart: unless-stopped
+    environment:
+      - ROS_DOMAIN_ID=50
+      # Webvideo Config
+      - WEBVIDEO_WIDTH=426
+      - WEBVIDEO_HEIGHT=480
+      - WEBVIDEO_FPS=30.0
+      - WEBVIDEO_FIFO_PATH=/tmp/smallchat_pipe
+      - WEBVIDEO_FIFO_ALPHA=False
+      # Paths (Matched to internal volume mount)
+      - WEBVIDEO_UI_PATH=/ros2_ws/src/bob_av_tools/bob_av_tools/smallchat.html
+    
+    # Entrypoint that ensures the FIFO exists before running the node
+    command: >
+      bash -c "
+      mkfifo /tmp/smallchat_pipe || true;
+      ros2 run bob_av_tools webvideo --ros-args 
+      -p width:=$${WEBVIDEO_WIDTH:-426} 
+      -p height:=$${WEBVIDEO_HEIGHT:-480} 
+      -p fifo_path:=$${WEBVIDEO_FIFO_PATH:-/tmp/smallchat_pipe} 
+      -p ui_path:=$${WEBVIDEO_UI_PATH} 
+      -p fifo_alpha:=$${WEBVIDEO_FIFO_ALPHA:-false} 
+      -r llm_stream:=/eva/llm_stream 
+      -r llm_tool_calls:=/eva/llm_tool_calls
+      "
+    volumes:
+      - /tmp:/tmp
+      # Map the source code directory to access the HTML template
+      #- /blue/dev/streamer/ros2_ws/src/bob_av_tools:/ros2_ws/src/bob_av_tools
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "1"

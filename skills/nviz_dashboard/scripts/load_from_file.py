@@ -28,6 +28,57 @@ from std_msgs.msg import String
 import sys
 
 
+def sanitize_config(config_data):
+    """Convert modern/web JSON to Bob Nviz Industrial Standard (String, area array, snake_case)."""
+    if not isinstance(config_data, list):
+        return config_data
+
+    sanitized = []
+    for item in config_data:
+        # 1. Type: terminal/Terminal -> String (Case Sensitive)
+        if item.get('type') in ['terminal', 'Terminal']:
+            item['type'] = 'String'
+
+        # 2. area: {x,y,w,h} or position: {x,y,width,height} -> [x, y, w, h] (ARRAY)
+        if 'position' in item:
+            p = item.pop('position')
+            item['area'] = [
+                p.get('x', 0),
+                p.get('y', 0),
+                p.get('width', p.get('w', 100)),
+                p.get('height', p.get('h', 100))
+            ]
+        elif isinstance(item.get('area'), dict):
+            a = item['area']
+            item['area'] = [
+                a.get('x', 0),
+                a.get('y', 0),
+                a.get('w', a.get('width', 100)),
+                a.get('h', a.get('height', 100))
+            ]
+
+        # 3. Snake Case Conversion
+        if 'backgroundColor' in item:
+            item['bg_color'] = item.pop('backgroundColor')
+        if 'textColor' in item:
+            item['text_color'] = item.pop('textColor')
+        if 'fontSize' in item:
+            item['font_size'] = item.pop('fontSize')
+
+        # 4. Color Conversion (Hex to RGBA array)
+        for col_key in ['bg_color', 'text_color']:
+            val = item.get(col_key)
+            if isinstance(val, str) and val.startswith('#'):
+                h = val.lstrip('#')
+                if len(h) == 6:  # RGB
+                    item[col_key] = [int(h[i:i+2], 16) for i in (0, 2, 4)] + [255]
+                elif len(h) == 8:  # RGBA
+                    item[col_key] = [int(h[i:i+2], 16) for i in (0, 2, 4, 6)]
+
+        sanitized.append(item)
+    return sanitized
+
+
 def publish_to_events_topic(config_data):
     """
     Publish configuration to /eva/events topic.
@@ -36,6 +87,7 @@ def publish_to_events_topic(config_data):
     :return: True if successful, False otherwise.
     """
     try:
+        config_data = sanitize_config(config_data)
         if not rclpy.ok():
             rclpy.init()
 
@@ -94,21 +146,26 @@ def main():
     # Read dashboard data
     try:
         with open(args.input, 'r', encoding='utf-8') as f:
-            dashboard_data = json.load(f)
+            data = json.load(f)
+
+        # Flexibility: handle raw array or wrapped object
+        if isinstance(data, list):
+            config_data = data
+            name = os.path.basename(args.input)
+            description = ''
+        elif isinstance(data, dict) and 'config' in data:
+            config_data = data['config']
+            name = data.get('name', os.path.basename(args.input))
+            description = data.get('description', '')
+        else:
+            print('Error: Unrecognized format (must be array or object with "config")')
+            sys.exit(1)
+
+        print(f'Loaded dashboard from {args.input}')
     except json.JSONDecodeError as e:
         print(f'Error: Invalid JSON in input file: {e}')
         sys.exit(1)
 
-    # Extract configuration
-    if 'config' not in dashboard_data:
-        print('Error: Input file missing "config" field')
-        sys.exit(1)
-
-    config_data = dashboard_data['config']
-    name = dashboard_data.get('name', os.path.basename(args.input))
-    description = dashboard_data.get('description', '')
-
-    print(f'Loaded dashboard from {args.input}')
     print(f'Name: {name}')
     if description:
         print(f'Description: {description}')

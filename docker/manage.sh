@@ -14,6 +14,7 @@ COMPOSE_FILES=(
     "compose-inference.yaml"
     "compose-base.yaml"
     "compose-nviz.yaml"
+    "compose-dashboard.yaml"
     "compose-tti.yaml"
     "compose-q3tts.yaml"
     "compose-tbot.yaml"

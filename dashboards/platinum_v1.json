@@ -1,0 +1,33 @@
+[
+  {
+    "action": "add",
+    "type": "VideoStream",
+    "id": "smallchat_video",
+    "area": [0, 0, 426, 480],
+    "pipe_path": "/tmp/smallchat_pipe",
+    "encoding": "rgb"
+  },
+  {
+    "action": "add",
+    "type": "String",
+    "id": "system_status",
+    "area": [426, 0, 426, 100],
+    "text_color": [0, 255, 100, 255],
+    "bg_color": [20, 20, 20, 200],
+    "font_size": 14,
+    "align": "left",
+    "text": "System Online | Monitoring..."
+  },
+  {
+    "action": "add",
+    "type": "String",
+    "id": "llm_stream",
+    "area": [426, 100, 426, 380],
+    "text_color": [255, 255, 255, 255],
+    "bg_color": [0, 0, 0, 150],
+    "font_size": 16,
+    "align": "left",
+    "append_newline": true,
+    "text": "Eva Ready."
+  }
+]
