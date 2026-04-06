@@ -12,8 +12,9 @@
     "id": "status_icon",
     "type": "Bitmap",
     "area": [780, 10, 64, 64],
-    "topic": "/root/eva/media/status_ready.png",
-    "bg_color": [0, 0, 0, 0]
+    "topic": "/eva/streamer/status_icon",
+    "depth": 8,
+    "color": [0, 255, 255, 255]
   },
   {
     "id": "system_status",
