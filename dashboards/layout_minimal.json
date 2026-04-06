@@ -20,9 +20,9 @@
   {
     "id": "status_icon",
     "type": "Bitmap",
-    "area": [780, 10, 64, 64],
+    "area": [10, 10, 48, 48],
     "topic": "/eva/streamer/status_icon",
     "depth": 8,
-    "color": [0, 255, 255, 255]
+    "color": [0, 255, 220, 255]
   }
 ]

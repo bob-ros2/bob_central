@@ -23,7 +23,7 @@
     "area": [780, 10, 64, 64],
     "topic": "/eva/streamer/status_icon",
     "depth": 8,
-    "color": [0, 255, 220, 255],
+    "color": [0, 255, 220, 255]
   },
   {
     "id": "system_overlay",
