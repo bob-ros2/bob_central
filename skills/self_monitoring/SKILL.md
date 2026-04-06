@@ -5,42 +5,41 @@ description: Monitor system health, CPU load, RAM usage, and GPU status. Extends
 
 # Self Monitoring Skill
 
-Dieses Skill überwacht den Systemzustand und erweitert das `get_system_status` Tool.
+This skill monitors the system state and extends the `get_system_status` tool.
 
-## Erweiterte Funktionen
+## Extended Functions
 
 ### Enhanced System Status
-Das erweiterte Systemstatus-Tool liefert detaillierte Informationen über:
-- CPU: Last, Modell, Kerne
-- Speicher: Verwendung in %, MB, GB
-- Load Average: 1, 5, 15 Minuten
-- GPU: Anzahl, Typ, VRAM (wenn verfügbar)
+The enhanced system status tool provides detailed information about:
+- CPU: Load, model, cores
+- memory: usage in %, MB, GB
+- Load Average: 1, 5, 15 minutes
+- GPU: Number, type, VRAM (if available)
 
-### Verfügbare Skripte
+### Available Scripts
 
-1. **enhanced_status.py** - Python-Version mit zuverlässiger GPU-Erkennung
-2. **enhanced_status_v2.sh** - Bash-Version (experimentell)
-3. **extended_system_status.py** - Vollständige Python-Implementierung
+1. **enhanced_status.py** - Python version with reliable GPU detection
+2. **enhanced_status_v2.sh** - Bash version (experimental)
+3. **extended_system_status.py** - Full Python implementation
 
-## Verwendung
+## Usage
 
 ```bash
-# Erweiterten Systemstatus abrufen
+# Retrieve extended system status
 python3 /ros2_ws/src/bob_central/skills/self_monitoring/enhanced_status.py
 ```
 
-## GPU-Erkennung
+## GPU Detection
 
-Das Tool erkennt GPUs über:
-1. **nvidia-smi** (falls installiert) - Liefert detaillierte VRAM-Informationen
-2. **DRM-Schnittstelle** (/sys/class/drm) - Erkennt NVIDIA-GPUs ohne nvidia-smi
+The tool detects GPUs via:
+1. **nvidia-smi** (if installed) - Provides detailed VRAM information
+2. **DRM Interface** (/sys/class/drm) - Detects NVIDIA-GPUs without nvidia-smi
 
-## Integration mit get_system_status
+## Integration with get_system_status
 
-Das erweiterte Tool ist kompatibel mit dem bestehenden `get_system_status` Tool, 
-erweitert es aber um GPU-Informationen und detailliertere CPU/Speicher-Daten.
+The enhanced tool is compatible with the existing `get_system_status` tool, but expands it with GPU information and more detailed CPU/memory data.
 
-## Beispiel-Ausgabe
+## Example Output
 
 ```json
 {

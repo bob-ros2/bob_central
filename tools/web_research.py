@@ -39,7 +39,7 @@ def search_web(query: str, num_results: int = 3) -> str:
     params = {
         'q': query,
         'format': 'json',
-        'language': os.environ.get('MASTER_SEARXNG_LANGUAGE', 'de-DE')
+        'language': os.environ.get('MASTER_SEARXNG_LANGUAGE', 'en-US')
     }
 
     try:

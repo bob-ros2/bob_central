@@ -12,7 +12,7 @@ services:
       - PULSE_SERVER=unix:/run/user/1000/pulse/native
       # TTS node parameters
       - Q3TTS_MODEL_DIR=/models
-      - Q3TTS_LANGUAGE=German
+      - Q3TTS_LANGUAGE=auto
       - Q3TTS_PLAY=true
       - Q3TTS_VOICE_REF_AUDIO=/app/ros2_ws/install/bob_q3tts/share/bob_q3tts/config/eva_24khz.wav
       - Q3TTS_VOICE_REF_TEXT=/app/ros2_ws/install/bob_q3tts/share/bob_q3tts/config/voice_ref_text.txt
