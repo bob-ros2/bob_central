@@ -31,8 +31,8 @@ services:
     volumes:
       - /volume1/ros/eva:/root/eva # Shared workspace for visuals (self-inspection)
       - eva-artist-models:/models # Dedicated persistent volume for models
-      # - ./models:/models # Optional: Use local folder instead of docker volume
       - ~/.cache/huggingface/cache/huggingface/token:/root/.cache/huggingface/token # Map HF Token directly
+      - /tmp/eva:/tmp
     deploy:
       resources:
         reservations:

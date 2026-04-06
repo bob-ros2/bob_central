@@ -27,7 +27,7 @@ services:
       - SDLVIZ_STREAM_PATH=/tmp/video_pipe
       - SDLVIZ_CONFIG_PATH=/config/sdlviz_layout.json
     volumes:
-      - /tmp:/tmp
+      - /tmp/eva:/tmp
       - ../config/sdlviz_layout.json:/config/sdlviz_layout.json:ro
     restart: unless-stopped
     # Overriding the default entrypoint (start_stream.sh) to only run the node
@@ -51,7 +51,7 @@ services:
       - WEBVIDEO_FIFO_PATH=/tmp/web_fifo
       - QT_QPA_PLATFORM=offscreen
     volumes:
-      - /tmp:/tmp
+      - /tmp/eva:/tmp
     restart: unless-stopped
     entrypoint: ["/bin/bash", "-c", "source /opt/ros/humble/setup.bash && source /ros2_ws/install/setup.bash && exec \"$@\"", "bash"]
     command: >

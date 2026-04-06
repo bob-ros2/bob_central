@@ -48,4 +48,5 @@ services:
       - /volume1/ros/eva:/root/eva # Unified persistent home
       - /volume1/ros/eva/ssh:/root/.ssh # Persistent AI Identity (Keys)
       - ..:/ros2_ws/src/bob_central # Persistent Source Code (Self-Evolution)
+      - /tmp/eva:/tmp
     restart: on-failure

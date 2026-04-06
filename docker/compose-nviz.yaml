@@ -39,7 +39,7 @@ services:
     # Override CMD to launch the Twitch streaming orchestration script
     command: [ "/ros2_ws/src/bob_nviz/scripts/start_stream.sh" ]
     volumes:
-      - /tmp:/tmp
+      - /tmp/eva:/tmp
     logging:
       driver: "json-file"
       options:

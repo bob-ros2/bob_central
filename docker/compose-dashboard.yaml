@@ -37,7 +37,7 @@ services:
       -r __ns:=/eva/streamer
       "
     volumes:
-      - /tmp:/tmp
+      - /tmp/eva:/tmp
       # Map the source code directory to access the HTML template
       #- /blue/dev/streamer/ros2_ws/src/bob_av_tools:/ros2_ws/src/bob_av_tools
     logging:

@@ -21,6 +21,7 @@ services:
     volumes:
       - /volume1/ros/Models/q3tts/:/models
       - /run/user/1000/pulse:/run/user/1000/pulse
+      - /tmp/eva:/tmp
     devices:
       - /dev/snd:/dev/snd
     group_add:
