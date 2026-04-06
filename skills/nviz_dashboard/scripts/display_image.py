@@ -14,9 +14,9 @@
 # limitations under the License.
 
 """
-Display Image Script with Permissions Fix.
+Display Image Script with Stream Timing Fix.
 
-Streams an image file into a FIFO pipe, ensuring the pipe is accessible to all.
+Streams an image file into a FIFO pipe with proper framerate and timing.
 """
 
 import argparse
@@ -81,28 +81,29 @@ def main():
     # 1. Ensure Pipe exists with Permissions
     if not os.path.exists(pipe_path):
         os.mkfifo(pipe_path)
-    
-    # INDUSTRIAL STANDARD: Make pipe accessible to other users (like nviz container)
     os.chmod(pipe_path, 0o666)
 
     # 2. Cleanup old FFmpeg processes for this pipe
     subprocess.run(['pkill', '-f', pipe_path], check=False)
-    time.sleep(0.5) # Let kernel cleanup
+    time.sleep(0.5)
 
-    # 3. Start FFmpeg background process with Scaling
+    # 3. Start FFmpeg background process with Scaling and TIMING
     w, h = args.area[2], args.area[3]
+    # -re ensures it reads the loop at the standard rate (prevents pipe flooding/stalling)
+    # -r 30 ensures nviz gets the frames at the correct cadence
     ffmpeg_cmd = [
-        'ffmpeg', '-y', '-loop', '1', '-i', args.path,
+        'ffmpeg', '-y', '-loop', '1', '-re', '-i', args.path,
         '-vf', f'scale={w}:{h}',
+        '-r', '30',
         '-f', 'rawvideo', '-pixel_format', 'rgb24',
         '-video_size', f'{w}x{h}',
         pipe_path
     ]
 
-    print(f"Starting stream for {args.path} (Scaled to {w}x{h})...")
+    print(f"Starting stabilized stream for {args.path} (30 FPS)...")
     subprocess.Popen(ffmpeg_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    # 4. Add VideoStream to Dashboard (Last added = On top)
+    # 4. Add VideoStream to Dashboard
     dashboard_msg = [
         {
             "type": "VideoStream",
@@ -115,7 +116,7 @@ def main():
         }
     ]
     publish_to_events(dashboard_msg)
-    print(f"Image added to dashboard at {args.area}. Permissions set to 666.")
+    print(f"Image added to Action Spot at {args.area}.")
 
 
 if __name__ == '__main__':
