@@ -8,6 +8,7 @@ ENV SHELL=/bin/bash
 # -- Install System Dependencies --
 RUN apt-get update && apt-get install -y \
     vim \
+    build-essential \
     ffmpeg \
     jq \
     htop \
@@ -46,18 +47,17 @@ WORKDIR /ros2_ws
 RUN mkdir -p /ros2_ws/src
 
 # 1. Clone Bob's engine dependencies & install their requirements
-ARG CACHE_BUST=1
 RUN git clone https://github.com/bob-ros2/bob_llm /ros2_ws/src/bob_llm && \
     if [ -f /ros2_ws/src/bob_llm/requirements.txt ]; then pip3 install --no-cache-dir -r /ros2_ws/src/bob_llm/requirements.txt; fi
 
 RUN git clone https://github.com/bob-ros2/bob_launch /ros2_ws/src/bob_launch && \
     if [ -f /ros2_ws/src/bob_launch/requirements.txt ]; then pip3 install --no-cache-dir -r /ros2_ws/src/bob_launch/requirements.txt; fi
 
+# -- Build the Workspace --
+ARG CACHE_BUST=1
 # 2. Copy current local repo (bob_central) into workspace
 COPY . /ros2_ws/src/bob_central
 
-# -- Build the Workspace --
-RUN apt-get update && apt-get install -y build-essential && rm -rf /var/lib/apt/lists/*
 RUN . /opt/ros/${ROS_DISTRO}/setup.sh && \
     colcon build --symlink-install --packages-select bob_llm bob_central bob_launch
 
