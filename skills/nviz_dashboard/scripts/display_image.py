@@ -14,15 +14,16 @@
 # limitations under the License.
 
 """
-Display Image Script with Central Action Spot.
+Display Image Script with Permissions Fix.
 
-Streams an image file into a FIFO pipe, defaulting to the 256x256 Action Spot.
+Streams an image file into a FIFO pipe, ensuring the pipe is accessible to all.
 """
 
 import argparse
 import json
 import os
 import subprocess
+import time
 
 import rclpy
 from rclpy.node import Node
@@ -58,7 +59,6 @@ def main():
     """Parse arguments and execute image streaming."""
     parser = argparse.ArgumentParser(description='Display image on the nviz dashboard')
     parser.add_argument('--path', required=True, help='Path to the image file')
-    # NEW CENTRAL ACTION SPOT: [511, 50, 256, 256]
     parser.add_argument('--area', type=int, nargs=4, default=[511, 50, 256, 256],
                         help='Dashboard area [x, y, w, h]')
     parser.add_argument('--stop', action='store_true', help='Stop streaming and remove element')
@@ -78,12 +78,16 @@ def main():
         print(f"Error: Image not found at {args.path}")
         return
 
-    # 1. Ensure Pipe exists
+    # 1. Ensure Pipe exists with Permissions
     if not os.path.exists(pipe_path):
         os.mkfifo(pipe_path)
+    
+    # INDUSTRIAL STANDARD: Make pipe accessible to other users (like nviz container)
+    os.chmod(pipe_path, 0o666)
 
     # 2. Cleanup old FFmpeg processes for this pipe
     subprocess.run(['pkill', '-f', pipe_path], check=False)
+    time.sleep(0.5) # Let kernel cleanup
 
     # 3. Start FFmpeg background process with Scaling
     w, h = args.area[2], args.area[3]
@@ -95,10 +99,10 @@ def main():
         pipe_path
     ]
 
-    print(f"Starting stream for {args.path} (Action Spot: {w}x{h})...")
+    print(f"Starting stream for {args.path} (Scaled to {w}x{h})...")
     subprocess.Popen(ffmpeg_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    # 4. Add VideoStream to Dashboard
+    # 4. Add VideoStream to Dashboard (Last added = On top)
     dashboard_msg = [
         {
             "type": "VideoStream",
@@ -111,7 +115,7 @@ def main():
         }
     ]
     publish_to_events(dashboard_msg)
-    print(f"Image added to Action Spot at {args.area}")
+    print(f"Image added to dashboard at {args.area}. Permissions set to 666.")
 
 
 if __name__ == '__main__':
