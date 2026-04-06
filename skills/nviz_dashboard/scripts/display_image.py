@@ -14,9 +14,9 @@
 # limitations under the License.
 
 """
-Display Image Script.
+Display Image Script with Central Action Spot.
 
-Streams an image file into a FIFO pipe and adds a VideoStream to the nviz dashboard.
+Streams an image file into a FIFO pipe, defaulting to the 256x256 Action Spot.
 """
 
 import argparse
@@ -58,7 +58,8 @@ def main():
     """Parse arguments and execute image streaming."""
     parser = argparse.ArgumentParser(description='Display image on the nviz dashboard')
     parser.add_argument('--path', required=True, help='Path to the image file')
-    parser.add_argument('--area', type=int, nargs=4, default=[426, 0, 426, 480],
+    # NEW CENTRAL ACTION SPOT: [511, 50, 256, 256]
+    parser.add_argument('--area', type=int, nargs=4, default=[511, 50, 256, 256],
                         help='Dashboard area [x, y, w, h]')
     parser.add_argument('--stop', action='store_true', help='Stop streaming and remove element')
 
@@ -84,32 +85,33 @@ def main():
     # 2. Cleanup old FFmpeg processes for this pipe
     subprocess.run(['pkill', '-f', pipe_path], check=False)
 
-    # 3. Start FFmpeg background process
-    # Using the exact command from the technician
+    # 3. Start FFmpeg background process with Scaling
+    w, h = args.area[2], args.area[3]
     ffmpeg_cmd = [
         'ffmpeg', '-y', '-loop', '1', '-i', args.path,
+        '-vf', f'scale={w}:{h}',
         '-f', 'rawvideo', '-pixel_format', 'rgb24',
-        '-video_size', f'{args.area[2]}x{args.area[3]}',
+        '-video_size', f'{w}x{h}',
         pipe_path
     ]
 
-    print(f"Starting stream for {args.path}...")
+    print(f"Starting stream for {args.path} (Action Spot: {w}x{h})...")
     subprocess.Popen(ffmpeg_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    # 4. Add VideoStream to Dashboard (Matching the definitive spec)
+    # 4. Add VideoStream to Dashboard
     dashboard_msg = [
         {
             "type": "VideoStream",
             "id": "photo_stream",
             "area": args.area,
-            "source_width": args.area[2],
-            "source_height": args.area[3],
+            "source_width": w,
+            "source_height": h,
             "topic": pipe_path,
             "encoding": "rgb"
         }
     ]
     publish_to_events(dashboard_msg)
-    print(f"Image added to dashboard at {args.area} using pipe {pipe_path}")
+    print(f"Image added to Action Spot at {args.area}")
 
 
 if __name__ == '__main__':
