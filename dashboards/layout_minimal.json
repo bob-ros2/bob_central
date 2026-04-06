@@ -1,0 +1,27 @@
+[
+  {
+    "id": "smallchat_video",
+    "type": "VideoStream",
+    "area": [0, 0, 426, 480],
+    "source_width": 426,
+    "source_height": 480,
+    "topic": "/tmp/smallchat_pipe",
+    "encoding": "rgb"
+  },
+  {
+    "id": "status_line",
+    "type": "String",
+    "area": [426, 460, 428, 20],
+    "bg_color": [0, 0, 0, 200],
+    "text_color": [0, 255, 100, 255],
+    "font_size": 12,
+    "title": "Status"
+  },
+  {
+    "id": "status_icon",
+    "type": "Bitmap",
+    "area": [10, 10, 48, 48],
+    "topic": "/root/eva/media/status_ready.png",
+    "bg_color": [0, 0, 0, 0]
+  }
+]

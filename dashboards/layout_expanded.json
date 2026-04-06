@@ -1,0 +1,36 @@
+[
+  {
+    "id": "smallchat_video",
+    "type": "VideoStream",
+    "area": [0, 0, 426, 480],
+    "source_width": 426,
+    "source_height": 480,
+    "topic": "/tmp/smallchat_pipe",
+    "encoding": "rgb"
+  },
+  {
+    "id": "photo_stream",
+    "type": "VideoStream",
+    "area": [426, 0, 428, 480],
+    "source_width": 428,
+    "source_height": 480,
+    "topic": "/tmp/photo_pipe",
+    "encoding": "rgb"
+  },
+  {
+    "id": "status_icon",
+    "type": "Bitmap",
+    "area": [780, 10, 64, 64],
+    "topic": "/root/eva/media/status_ready.png",
+    "bg_color": [0, 0, 0, 0]
+  },
+  {
+    "id": "system_overlay",
+    "type": "String",
+    "area": [426, 400, 428, 80],
+    "bg_color": [0, 0, 0, 150],
+    "text_color": [255, 255, 255, 255],
+    "font_size": 16,
+    "title": "System Meta"
+  }
+]

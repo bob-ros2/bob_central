@@ -1,0 +1,36 @@
+[
+  {
+    "id": "smallchat_video",
+    "type": "VideoStream",
+    "area": [0, 0, 426, 480],
+    "source_width": 426,
+    "source_height": 480,
+    "topic": "/tmp/smallchat_pipe",
+    "encoding": "rgb"
+  },
+  {
+    "id": "status_icon",
+    "type": "Bitmap",
+    "area": [780, 10, 64, 64],
+    "topic": "/root/eva/media/status_ready.png",
+    "bg_color": [0, 0, 0, 0]
+  },
+  {
+    "id": "system_status",
+    "type": "String",
+    "area": [426, 0, 428, 80],
+    "text_color": [0, 255, 100, 255],
+    "bg_color": [0, 0, 0, 100],
+    "font_size": 14,
+    "title": "System Status"
+  },
+  {
+    "id": "llm_stream",
+    "type": "String",
+    "area": [426, 306, 428, 174],
+    "text_color": [255, 255, 255, 255],
+    "bg_color": [20, 20, 20, 180],
+    "font_size": 16,
+    "title": "Eva Orchestrator"
+  }
+]
