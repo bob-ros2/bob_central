@@ -57,8 +57,9 @@ RUN git clone https://github.com/bob-ros2/bob_launch /ros2_ws/src/bob_launch && 
 COPY . /ros2_ws/src/bob_central
 
 # -- Build the Workspace --
+RUN apt-get update && apt-get install -y build-essential && rm -rf /var/lib/apt/lists/*
 RUN . /opt/ros/${ROS_DISTRO}/setup.sh && \
-    colcon build --packages-select bob_llm bob_central bob_launch
+    colcon build --symlink-install --packages-select bob_llm bob_central bob_launch
 
 # -- Entrypoint Script --
 RUN echo "#!/bin/bash\nservice cron start\nsource /opt/ros/\${ROS_DISTRO}/setup.bash\nsource /ros2_ws/install/setup.bash\nexec \"\$@\"" > /ros_entrypoint.sh \
