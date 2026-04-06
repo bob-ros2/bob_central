@@ -36,26 +36,4 @@ services:
               count: all
               capabilities: [ gpu ]
 
-  # -- SUMMARIZER (Llama 3.2 1B - The Speedster) --
-  llama-summarizer:
-    image: ghcr.io/ggml-org/llama.cpp:server
-    container_name: eva-summarizer
-    networks:
-      - eva-net
-    command: --jinja -a llama-3.2-1b-instruct-q8_0 --no-mmap
-    environment:
-      LLAMA_ARG_MODEL: /models/llama-3.2-1b-instruct-q8_0.gguf
-      LLAMA_ARG_CTX_SIZE: 8192
-      LLAMA_ARG_N_GPU_LAYERS: 0
-      LLAMA_ARG_PORT: 8080
-    ports:
-      - 8023:8080 # Dedicated summarization port
-    volumes:
-      - /volume1/ros/models:/models
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [ gpu ]
+
