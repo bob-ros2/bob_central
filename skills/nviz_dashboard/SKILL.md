@@ -40,18 +40,28 @@ Use `load_from_file.py` to deploy these proven designs:
 2. **`layout_minimal.json`**: Slim status lines at the bottom, prioritizing clean space for Chat/Media. 📉
 3. **`layout_expanded.json`**: Maximizes visual impact. The right side is a large 428x480 media pane with overlays. 🏛️🎨
 
-## Technical: Bitmaps
-- **Type**: `Bitmap` (8-bit grayscale).
-- **Topic**: Use the ROS topic name (e.g., `/eva/streamer/status_icon`). 
-- **Hex Standard**: `display_bitmap.py` sends images as hex strings to `/topic/hex`. 
-- **Color**: Foreground is defined via `color: [R, G, B, A]`. ✨
+## Available Tools
 
-## Usage Best Practices
-- **Never reinvent the wheel**: Always use the provided scripts. Dashboard updates should be non-blocking. 🏎️💨
-- **Atomic Loading**: To swap the look, always chain: `python3 clear_dashboard.py && python3 load_from_file.py --input ...`.
-- **Media Scaling**: Scaling is NOT supported by nviz. Image dimensions MUST match the area size in the JSON. 🕵️‍♂️🚥
-- **Cleanup**: Wipe temporary Action Spot elements when they are no longer needed. 🧹
+1.  **display_image.py**: Displays a high-resolution image on a specific dashboard area via an FFmpeg pipe.
+    ```bash
+    python3 /ros2_ws/src/bob_central/skills/nviz_dashboard/scripts/display_image.py --path /root/eva/media/image.jpg --area 428 511 428 480
+    ```
+2.  **display_bitmap.py**: Displays an 8-bit grayscale bitmap (hex-string) on a specific area via ROS topics.
+    ```bash
+    python3 /ros2_ws/src/bob_central/skills/nviz_dashboard/scripts/display_bitmap.py --hex "ff00aa..." --area 0 0 128 128
+    ```
+3.  **clear_dashboard.py**: Clears specific areas or the entire dashboard.
+    ```bash
+    python3 /ros2_ws/src/bob_central/skills/nviz_dashboard/scripts/clear_dashboard.py --all
+    ```
+4.  **load_from_file.py**: Restores a complete dashboard layout from a JSON file.
+    ```bash
+    python3 /ros2_ws/src/bob_central/skills/nviz_dashboard/scripts/load_from_file.py --input /root/eva/dashboards/layout_standard.json
+    ```
 
-## Industrial Standard Constants
+## Usage Guidelines
+
+- **No Scaling**: Images must match the pixel dimensions of the `area` (WIDTH x HEIGHT) specified in the dashboard JSON. For standard 428x480 images, use `--area 428 511 428 480`.
+- **Absolute Paths**: ALWAYS use the absolute paths listed above. DO NOT try to discover scripts with `find` or `ls`. Use the `/ros2_ws/src/bob_central/skills/nviz_dashboard/scripts/` prefix. ✨🛡️🚀🏁🌀
 - Colors: RGBA range 0-255 (e.g., `[255, 255, 255, 255]` for White).
 - Area: JSON Array `[x, y, w, h]`.
