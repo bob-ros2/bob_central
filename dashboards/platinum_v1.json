@@ -1,14 +1,14 @@
 [
   {
-    "action": "add",
     "type": "VideoStream",
     "id": "smallchat_video",
     "area": [0, 0, 426, 480],
-    "pipe_path": "/tmp/smallchat_pipe",
+    "source_width": 426,
+    "source_height": 480,
+    "topic": "/tmp/smallchat_pipe",
     "encoding": "rgb"
   },
   {
-    "action": "add",
     "type": "String",
     "id": "system_status",
     "area": [426, 0, 426, 100],
@@ -19,7 +19,6 @@
     "text": "System Online | Monitoring..."
   },
   {
-    "action": "add",
     "type": "String",
     "id": "llm_stream",
     "area": [426, 100, 426, 380],

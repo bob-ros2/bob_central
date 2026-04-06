@@ -96,19 +96,20 @@ def main():
     print(f"Starting stream for {args.path}...")
     subprocess.Popen(ffmpeg_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    # 4. Add VideoStream to Dashboard
+    # 4. Add VideoStream to Dashboard (Matching the definitive spec)
     dashboard_msg = [
         {
-            "action": "add",
             "type": "VideoStream",
             "id": "photo_stream",
             "area": args.area,
-            "pipe_path": pipe_path,
+            "source_width": args.area[2],
+            "source_height": args.area[3],
+            "topic": pipe_path,
             "encoding": "rgb"
         }
     ]
     publish_to_events(dashboard_msg)
-    print(f"Image added to dashboard at {args.area}")
+    print(f"Image added to dashboard at {args.area} using pipe {pipe_path}")
 
 
 if __name__ == '__main__':

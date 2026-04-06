@@ -91,11 +91,12 @@ def main():
         print(f'Repairing dashboard: Adding {anchor_id}...')
         repair_msg = [
             {
-                "action": "add",
                 "type": "VideoStream",
                 "id": anchor_id,
                 "area": [0, 0, 426, 480],
-                "pipe_path": "/tmp/smallchat_pipe",
+                "source_width": 426,
+                "source_height": 480,
+                "topic": "/tmp/smallchat_pipe",
                 "encoding": "rgb"
             }
         ]

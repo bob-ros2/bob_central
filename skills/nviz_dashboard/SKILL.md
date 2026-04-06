@@ -76,17 +76,20 @@ The dashboard is split 50/50 into two zones:
    - **`photo_stream`**: Can overlay the right half to show images (Vision, TTI).
 
 ## Image Streaming via VideoStream
-To display an image, use a `VideoStream` pointing to `/tmp/photo_pipe`.
+To display an image or stream, use a `VideoStream` pointing to a pipe.
+- **Mandatory Fields**: `topic` (this is the absolute FIFO path), `source_width`, `source_height`.
+- **Constraint**: Scaling is NOT supported. `area[2]` must match `source_width` and `area[3]` must match `source_height`.
 - **Logic**: Use FFmpeg to loop an image into the pipe:
   `ffmpeg -loop 1 -i <file> -f rawvideo -pixel_format rgb24 -video_size 426x480 /tmp/photo_pipe`
 - **Dashboard Action**:
 ```json
 {
-  "action": "add",
   "type": "VideoStream",
   "id": "photo_stream",
   "area": [426, 0, 426, 480],
-  "pipe_path": "/tmp/photo_pipe",
+  "source_width": 426,
+  "source_height": 480,
+  "topic": "/tmp/photo_pipe",
   "encoding": "rgb"
 }
 ```
