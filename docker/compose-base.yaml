@@ -45,6 +45,7 @@ services:
               capabilities: [gpu]
     command: ros2 launch bob_launch generic.launch.py config:=/ros2_ws/src/bob_central/launch/orch_eva.yaml
     volumes:
+      - ../:/ros2_ws/src/bob_central # Map source for self-evolution
       - /volume1/ros/eva:/root/eva # Unified persistent home
       - /volume1/ros/eva/ssh:/root/.ssh # Persistent AI Identity (Keys)
       - /tmp/eva:/tmp
