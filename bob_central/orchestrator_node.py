@@ -79,12 +79,20 @@ class OrchestratorNode(Node):
         self.pub_timed_query = self.create_publisher(
             String, 'user_query_timed', 10)
 
-        # Feedback topic for rejected queries
-        self.pub_rejected = self.create_publisher(
-            String, 'rejected_queries', 10)
+        # Feedforward to Support Bot (Bobassi)
+        self.pub_bobassi_query = self.create_publisher(
+            String, 'bobassi/user_query', 10)
+        
+        # Responses from Bobassi
+        self.sub_bobassi_response = self.create_subscription(
+            String,
+            'bobassi/response',
+            self.bobassi_response_callback,
+            10
+        )
 
         mode = (
-            'REJECT' if self.reject_if_busy else
+            'SUPPORT (Bobassi)' if self.reject_if_busy else
             'QUEUE' if self.enable_queuing else 'PASS-THROUGH')
         self.get_logger().info(f'Orchestrator ready. Mode: {mode}')
 
@@ -93,18 +101,22 @@ class OrchestratorNode(Node):
         Receive a query from the user.
 
         Analyze it and route to specialists.
-        Handle concurrency via rejection or queuing.
+        Handle concurrency via support routing or queuing.
         """
         query = msg.data
 
         # Concurrency Check
         if self.is_busy:
             if self.reject_if_busy:
-                self.get_logger().warn(f'Rejecting query (Busy): {query[:30]}...')
+                self.get_logger().info(f'Eva is busy. Routing to Bobassi: {query[:30]}...')
+                # Forward query to Bobassi as a support interaction
+                bob_msg = String()
+                bob_msg.data = json.dumps({'role': 'user', 'content': query})
+                self.pub_bobassi_query.publish(bob_msg)
+                
+                # Still log to rejected for tracking if needed
                 reject_info = {
-                    'status': 'rejected',
-                    'reason': 'busy',
-                    'message': self.reject_msg,
+                    'status': 'support_active',
                     'original_query': query
                 }
                 reject_msg = String()
@@ -202,6 +214,29 @@ class OrchestratorNode(Node):
             next_msg = self.query_queue.pop(0)
             self.get_logger().info('Processing next item from queue...')
             self.user_query_callback(next_msg)
+
+    def bobassi_response_callback(self, msg):
+        """
+        Receive a response from Bobassi (Support Bot).
+
+        Forward to the user without releasing the main busy-lock.
+        """
+        try:
+            data = json.loads(msg.data)
+            content = data.get('content', msg.data)
+            self.get_logger().info(f'Bobassi (Support) response: {content[:100]}...')
+
+            bundled_data = {
+                'user_query': 'Support Request',
+                'is_detailed': False,
+                'specialist_response': f'[Bobassi]: {content}'
+            }
+
+            response_msg = String()
+            response_msg.data = json.dumps(bundled_data)
+            self.pub_user_response.publish(response_msg)
+        except Exception as e:
+            self.get_logger().error(f'Error processing Bobassi response: {e}')
 
 
 def main(args=None):

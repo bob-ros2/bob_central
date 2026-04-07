@@ -69,3 +69,33 @@
     - "llm_stream:=/eva/llm_stream"
     - -r
     - *eva_ns
+
+# Bobassi: The Support Sidekick (For Busy States)
+- name: brain_bobassi
+  package: bob_llm
+  executable: llm
+  output: screen
+  parameters:
+    api_url: *api_orchestrator
+    api_key: "${ORCHESTRATOR_API_KEY}"
+    api_model: "deepseek-chat"
+    api_timeout: 30.0
+    system_prompt_file: "//PKGSHARE:bob_central/prompts/bobassi.md"
+    stream: true
+    max_tool_calls: 0
+    max_tokens: 500
+    max_history_length: 10
+    temperature: 0.5
+    tool_interfaces: []
+  arguments:
+    - --ros-args
+    - --log-level
+    - *log_level
+    - -r
+    - "llm_prompt:=/eva/bobassi/user_query"
+    - -r
+    - "llm_response:=/eva/bobassi/response"
+    - -r
+    - "llm_stream:=/eva/llm_stream"
+    - -r
+    - *eva_ns

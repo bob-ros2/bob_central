@@ -1,5 +1,5 @@
 # Twitch Chat Bot Template
-- &twitch_ns "__ns:=${TWITCH_NS:-/eva/tbot}"
+- &twitch_ns "__ns:=${TWITCH_NS:-/eva/twitch}"
 
 # Chatbot from tioros
 - name: bot
