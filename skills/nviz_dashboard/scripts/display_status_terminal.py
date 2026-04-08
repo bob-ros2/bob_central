@@ -152,7 +152,20 @@ def main():
     parser.add_argument('--json')
     parser.add_argument('--topic')
     parser.add_argument('--keep-alive', type=float, default=2.0)
+    parser.add_argument('--daemon', action='store_true', help='Run in background')
     args = parser.parse_args()
+
+    if args.daemon:
+        # Re-run without --daemon but decoupled
+        import subprocess
+        new_args = [sys.executable, __file__]
+        for arg in sys.argv[1:]:
+            if arg != '--daemon':
+                new_args.append(arg)
+        subprocess.Popen(new_args, stdout=subprocess.DEVNULL,
+                         stderr=subprocess.DEVNULL, start_new_session=True)
+        print(f"Terminal monitor '{args.id}' started in background. ✅")
+        sys.exit(0)
 
     rclpy.init()
     node = DashboardDisplayNode(args)
