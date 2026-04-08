@@ -1,74 +1,65 @@
 ---
 name: nviz_dashboard
-description: Control and orchestrate the nviz streaming dashboard. Supports loading layouts (standard, minimal, expanded), clearing the canvas, and displaying high-resolution images or 8-bit bitmaps.
+description: "Control and orchestrate the nviz streaming dashboard via CLI tools, layout management, and real-time data visualization."
+version: "1.2.0"
+category: "system"
 ---
 
 # Dashboard Control Skill (nviz)
 
-This skill allows Eva to control the `bob_nviz` streaming dashboard. 
-The dashboard uses a grid system (approx 852x480) and supports several elements.
+## Goal
+To provide a modular, high-performance interface for manipulating the Eva Dashboard (nviz), enabling real-time system visualization, image display, and automated layout transitions.
 
-## Dual-Pane Dashboard Standard (PLATINUM V2)
-The dashboard is split 50/50 into two zones:
-1. **Left Half (`[0, 0, 426, 480]`):** Fixed anchor for **`smallchat_video`**.
-2. **Right Half (`[426, 0, 426, 480]`):** Dynamic steering zone for Eva.
-   - **`system_status`**: Top-right (`[426, 0, 426, 100]`).
-   - **`llm_stream`**: Middle-right (`[426, 100, 426, 380]`).
+## Description
+This skill wraps the `bob_nviz` software renderer into easy-to-use CLI tools. It handles JSON event generation, FIFO pipe management for video streams, and raw bitmap rendering. It supports complex layouts split between static system information and dynamic media zones ("Eva Action Spot").
 
-## Dynamic Media (The Eva Action Spot)
-For dynamic images (Vision results, TTI), use the **Eva Action Spot**:
-- **Standard ID**: `photo_stream`
-- **Standard Area**: `[511, 50, 256, 256]` (Default for `display_image.py`).
-- **Technical Fields for VideoStream**:
-  - `type`: `"VideoStream"`
-  - `topic`: Absolute path to the FIFO (e.g., `/tmp/photo_pipe`).
-  - `source_width`: `256`
-  - `source_height`: `256`
-  - `area`: Must match source dimensions (Scaling NOT supported).
-  - `encoding`: `"rgb"` or `"bgr"`.
+## Usage
 
-## Dashboard Control Scripts
-Eva should prioritize these for all UI updates:
-- **`clear_dashboard.py`**: The canonical "Reset" button. Sends `clear_all` to nviz. Use this first when switching layouts. 🧹
-- **`display_image.py`**: `--path <image> [--area x y w h]`. Streams an image to the Action Spot (Default 256x256). 🖼️
-- **`display_bitmap.py`**: `--path <file> --topic <name> --size w h`. Renders bit-perfect 8-bit icons. ✨
-- **`load_from_file.py`**: `--input <layout.json>`. Appends/merges a JSON layout into the current dashboard. 🏎️💨
+### 1. Real-Time Data Display (CLI Terminal Look)
+Displays arbitrary JSON data as a pixel-perfect terminal on the dashboard. This tool is now primarily used for monitoring the Orchestrator or system health.
+```bash
+python3 scripts/display_status_terminal.py --id "System_Monitor" --area 428 120 426 240 --topic "/eva/orchestrator/status" --pipe "/tmp/monitor_pipe"
+```
 
-## Standard Layouts (Located in `./dashboards/`)
-Use `load_from_file.py` to deploy these proven designs:
-1. **`layout_standard.json`**: 50/50 split with Status Terminal, LLM Stream, and Status Icon. Default choice. ✨
-2. **`layout_minimal.json`**: Slim status lines at the bottom, prioritizing clean space for Chat/Media. 📉
-3. **`layout_expanded.json`**: Maximizes visual impact. The right side is a large 428x480 media pane with overlays. 🏛️🎨
+### 2. High-Resolution Images
+Streams an image file (JPG/PNG) to a specific canvas area.
+```bash
+python3 scripts/display_image.py --path "/root/eva/media/render.png" --area 511 50 256 256 --id "action_spot"
+```
 
-## Available Tools
+### 3. Layout Management
+Loads a complete dashboard configuration from a JSON file.
+```bash
+python3 scripts/load_from_file.py --input "dashboards/layout_standard.json"
+```
 
-1.  **display_image.py**: Displays a high-resolution image on a specific dashboard area via an FFmpeg pipe.
-    ```bash
-    python3 /ros2_ws/src/bob_central/skills/nviz_dashboard/scripts/display_image.py --path /root/eva/media/image.jpg --area 428 511 428 480
-    ```
-2.  **display_bitmap.py**: Displays an 8-bit grayscale bitmap (hex-string) on a specific area via ROS topics.
-    ```bash
-    python3 /ros2_ws/src/bob_central/skills/nviz_dashboard/scripts/display_bitmap.py --hex "ff00aa..." --area 0 0 128 128
-    ```
-3.  **clear_dashboard.py**: Clears specific areas or the entire dashboard.
-    ```bash
-    python3 /ros2_ws/src/bob_central/skills/nviz_dashboard/scripts/clear_dashboard.py --all
-    ```
-4.  **load_from_file.py**: Restores a complete dashboard layout from a JSON file.
-    ```bash
-    python3 /ros2_ws/src/bob_central/skills/nviz_dashboard/scripts/load_from_file.py --input /root/eva/dashboards/layout_standard.json
-    ```
+### 4. Canvas Maintenance
+Clears the entire dashboard or specific elements by ID.
+```bash
+python3 scripts/clear_dashboard.py --all
+```
 
-## Usage Guidelines
+## Parameters (display_status_terminal.py)
+| Parameter | Description |
+|-----------|-------------|
+| `--id` | Unique identifier for the dashboard layer. |
+| `--area` | Position and size: `[x y w h]`. |
+| `--topic` | ROS String topic to listen for JSON data updates. |
+| `--pipe` | Path to the FIFO pipe for video stream data. |
+| `--json` | Optional: One-shot JSON string for immediate display. |
+| `--keep-alive` | Seconds to hold the layer open after a one-shot update. |
 
-- **No Scaling**: Images must match the pixel dimensions of the `area` (WIDTH x HEIGHT) specified in the dashboard JSON. For standard 428x480 images, use `--area 428 511 428 480`.
-- **Absolute Paths**: ALWAYS use the absolute paths listed above. DO NOT try to discover scripts with `find` or `ls`. Use the `/ros2_ws/src/bob_central/skills/nviz_dashboard/scripts/` prefix. ✨🛡️🚀🏁🌀
-- Colors: RGBA range 0-255 (e.g., `[255, 255, 255, 255]` for White).
-- Area: JSON Array `[x, y, w, h]`.
+## Requirements
+- **bob_nviz**: ROS 2 node must be running (normally in `eva-nviz-streamer` container).
+- **FIFO Pipes**: Writing permissions to `/tmp/` for raw byte streaming.
+- **Pillow (PIL)**: Python library for image rendering and text overlays.
 
-### System Monitoring & Health Indicator
-To provide the technician with real-time visual feedback of your internal state and system performance:
-- **Command**: `python3 scripts/update_system_status.py [--busy]`
-- **Effect**: Renders a professional system status board (ID: `system_monitor`) with a dynamic "Status LED".
-- **Usage**: Automatically managed by the orchestrator for BUSY states, but you should invoke it manually if the technician asks for a "system check" or if you want to update the displayed metrics (Load, Memory, ROS nodes).
-- **Customization**: You are encouraged to improve the renderer script if you identify more relevant telemetry to display. ✨🛡️🚀🏁🌀
+## Technical Details
+- **Rendering Strategy**: Uses `PIL` to render text/JSON onto a raw buffer equal to the target area size (No scaling to prevent artifacts).
+- **Communication**: Publishes layout metadata to `/eva/streamer/events` and streams raw RGB888 bytes into the specified Unix FIFO pipe.
+- **Orchestrator Integration**: The Orchestrator publishes its state to `/eva/orchestrator/status`, which this skill can visualize in real-time.
+
+## Best Practices
+- **Area Alignment**: Ensure the `w/h` in `--area` matches the `source_width/height` in the JSON configuration (performed automatically by these scripts).
+- **Clean Starts**: Use `clear_dashboard.py --all` before loading a completely new layout to prevent layer overlap issues.
+- **Manual Control**: While data topics are live, Eva can start/stop specialized monitors (like `display_status_terminal.py`) manually to focus on specific debugging info.

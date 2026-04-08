@@ -41,8 +41,10 @@ class OrchestratorNode(Node):
 
         # Configuration from Environment Variables
         import os
-        self.reject_if_busy = os.getenv('ORCHESTRATOR_REJECT_IF_BUSY', 'true').lower() == 'true'
-        self.enable_queuing = os.getenv('ORCHESTRATOR_ENABLE_QUEUING', 'false').lower() == 'true'
+        rj = os.getenv('ORCHESTRATOR_REJECT_IF_BUSY', 'true').lower() == 'true'
+        self.reject_if_busy = rj
+        eq = os.getenv('ORCHESTRATOR_ENABLE_QUEUING', 'false').lower() == 'true'
+        self.enable_queuing = eq
         self.reject_msg = os.getenv(
             'ORCHESTRATOR_REJECT_MSG',
             'System is busy processing a previous request.')
@@ -82,7 +84,7 @@ class OrchestratorNode(Node):
         # Feedforward to Support Bot (Bobassi)
         self.pub_bobassi_query = self.create_publisher(
             String, 'bobassi/user_query', 10)
-        
+
         # Responses from Bobassi
         self.sub_bobassi_response = self.create_subscription(
             String,
@@ -94,6 +96,11 @@ class OrchestratorNode(Node):
         # Feedback topic for status updates and rejected queries
         self.pub_rejected = self.create_publisher(
             String, 'rejected_queries', 10)
+
+        # Dashboard / UI Monitoring
+        self.pub_status = self.create_publisher(
+            String, '/eva/orchestrator/status', 10)
+        self.timer_status = self.create_timer(1.0, self.publish_status)
 
         mode = (
             'SUPPORT (Bobassi)' if self.reject_if_busy else
@@ -117,7 +124,7 @@ class OrchestratorNode(Node):
                 bob_msg = String()
                 bob_msg.data = json.dumps({'role': 'user', 'content': query})
                 self.pub_bobassi_query.publish(bob_msg)
-                
+
                 # Still log to rejected for tracking if needed
                 reject_info = {
                     'status': 'support_active',
@@ -139,15 +146,40 @@ class OrchestratorNode(Node):
         self.trigger_visual_status(is_busy=True)
         self.process_query(msg)
 
+    def publish_status(self):
+        """Publish the current orchestrator status as JSON."""
+        mode_str = "SUPPORT" if self.reject_if_busy else (
+            "QUEUE" if self.enable_queuing else "PASS")
+
+        short_query = self.last_user_query
+        if len(short_query) > 40:
+            short_query = short_query[:40] + "..."
+
+        status = {
+            "Orchestrator": {
+                "State": "BUSY" if self.is_busy else "IDLE",
+                "Mode": mode_str,
+                "Queue_Depth": len(self.query_queue),
+                "Last_Query": short_query,
+                "Detailed_Mode": self.is_detailed,
+                "Time": datetime.now().strftime('%H:%M:%S')
+            }
+        }
+        msg = String()
+        msg.data = json.dumps(status)
+        self.pub_status.publish(msg)
+
     def trigger_visual_status(self, is_busy=False):
         """Invoke the nviz monitoring tool to update the dashboard LED."""
         try:
-            import os
             import subprocess
-            cmd = ["python3", "/ros2_ws/src/bob_central/skills/nviz_dashboard/scripts/update_system_status.py"]
+            spath = "/ros2_ws/src/bob_central/skills"
+            script = spath + "/nviz_dashboard/scripts/update_system_status.py"
+            cmd = ["python3", script]
             if is_busy:
                 cmd.append("--busy")
-            subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.Popen(
+                cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except Exception as e:
             self.get_logger().error(f"Failed to trigger visual status: {e}")
 
@@ -242,7 +274,8 @@ class OrchestratorNode(Node):
         try:
             data = json.loads(msg.data)
             content = data.get('content', msg.data)
-            self.get_logger().info(f'Bobassi (Support) response: {content[:100]}...')
+            self.get_logger().info(
+                f'Bobassi (Support) response: {content[:80]}...')
 
             bundled_data = {
                 'user_query': 'Support Request',

@@ -37,7 +37,7 @@
   {
     "id": "system_monitor",
     "type": "VideoStream",
-    "area": [426, 20, 400, 150],
+    "area": [426, 100, 400, 150],
     "source_width": 400,
     "source_height": 150,
     "topic": "/tmp/monitor_pipe",

@@ -92,19 +92,21 @@ def main():
     subprocess.run(['pkill', '-9', '-f', pipe_path], check=False)
     time.sleep(0.5)
 
-    # 3. Start FFmpeg background process
+    # 3. Start FFmpeg background process (Reduced to 1 Hz for efficiency)
     w, h = args.area[2], args.area[3]
-    # Explicitly force format=rgb24 in filter for maximum purity
     ffmpeg_cmd = [
         'ffmpeg', '-y', '-loop', '1', '-re', '-i', args.path,
         '-vf', f'scale={w}:{h},format=rgb24',
-        '-r', '30',
+        '-r', '1',
         '-f', 'rawvideo',
         pipe_path
     ]
 
-    print(f"Streaming {args.path} to {element_id} via {pipe_path}...")
-    subprocess.Popen(ffmpeg_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.Popen(
+        ffmpeg_cmd,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True)
 
     # 4. Add/Update VideoStream on Dashboard (Matching Dimensions)
     dashboard_msg = [
@@ -112,14 +114,13 @@ def main():
             "type": "VideoStream",
             "id": element_id,
             "area": args.area,
+            "topic": pipe_path,
             "source_width": w,
             "source_height": h,
-            "topic": pipe_path,
             "encoding": "rgb"
         }
     ]
     publish_to_events(dashboard_msg)
-    print(f"Image {element_id} deployed. Frame size: {w}x{h}.")
 
 
 if __name__ == '__main__':

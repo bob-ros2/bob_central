@@ -165,6 +165,7 @@ graph TD
 |-------|-------|-------------|
 | `/eva/user_query` | `std_msgs/String` | Universal input channel for user queries. |
 | `/eva/user_response` | `std_msgs/String` | Final bundled response (with metadata). |
+| `/eva/orchestrator/status` | `std_msgs/String` | Real-time system state (Busy/Idle, Queue, Mode) for monitoring. |
 | `/eva/llm_stream` | `std_msgs/String` | Real-time token stream for low-latency interfaces. |
 | `/eva/artist/prompt` | `std_msgs/String` | Intent channel for visual generation. |
 

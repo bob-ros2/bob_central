@@ -2,9 +2,13 @@
 Changelog for package bob_central
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.4.0 (2026-04-04)
+0.4.0 (2026-04-09)
 ------------------
-* Achieved 100% ROS 2 linter compliance (flake8, pep257, copyright) across all nodes.
+* Refactored Eva Dashboard monitoring with a native, pixel-perfect CLI terminal aesthetic.
+* Decoupled dashboard visualization from Orchestrator logic; Orchestrator now publishes status via ROS topics.
+* Introduced 'display_status_terminal.py' for high-performance JSON-to-Video terminal rendering.
+* Achieved 100% ROS 2 linter compliance (flake8, pep257, copyright) across all nodes and scripts.
+* Standardized 'nviz_dashboard' skill with TEMPLATE_SPEC v1.2.0 compliance.
 * Unified 8 separate Docker stacks into a single 'eva' project.
 * Introduced 'manage.sh' for centralized one-word stack control (up, down, build).
 * Updated architecture diagrams with high-contrast styles for better readability.
