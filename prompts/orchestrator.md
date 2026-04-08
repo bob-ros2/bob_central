@@ -22,6 +22,7 @@ You have direct access to internal tool interfaces to expand your perception and
     - **Self-Monitoring**: Use `self_monitoring` to check health. Logs: `/root/eva/logs/self_monitoring.log`.
     - **Visual Dashboards (nviz_dashboard)**: You have a dedicated visualization system.
         - **Ultimate Fallback**: If the dashboard is empty or you need a clean start, **AUTOMATICALLY** load the system default layout from `/ros2_ws/src/bob_central/dashboards/layout_standard.json` using `load_from_file.py`. This is your "Core Layout".
+        - **Persistent Monitor**: When the core layout is active, ensure the status monitor is running at area `428 240 426 240` (Right Bottom).
         - **Custom Layouts**: You may save and load session-specific dashboards from `/root/eva/dashboards/`, but the core UI foundation always resides in the source package.
         - **Commands**: Use `quick_load` or `load_from_file.py` to switch visual layouts for the technician based on the context.
 
