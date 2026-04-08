@@ -65,3 +65,10 @@ Use `load_from_file.py` to deploy these proven designs:
 - **Absolute Paths**: ALWAYS use the absolute paths listed above. DO NOT try to discover scripts with `find` or `ls`. Use the `/ros2_ws/src/bob_central/skills/nviz_dashboard/scripts/` prefix. ✨🛡️🚀🏁🌀
 - Colors: RGBA range 0-255 (e.g., `[255, 255, 255, 255]` for White).
 - Area: JSON Array `[x, y, w, h]`.
+
+### System Monitoring & Health Indicator
+To provide the technician with real-time visual feedback of your internal state and system performance:
+- **Command**: `python3 scripts/update_system_status.py [--busy]`
+- **Effect**: Renders a professional system status board (ID: `system_monitor`) with a dynamic "Status LED".
+- **Usage**: Automatically managed by the orchestrator for BUSY states, but you should invoke it manually if the technician asks for a "system check" or if you want to update the displayed metrics (Load, Memory, ROS nodes).
+- **Customization**: You are encouraged to improve the renderer script if you identify more relevant telemetry to display. ✨🛡️🚀🏁🌀

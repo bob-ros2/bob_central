@@ -33,5 +33,14 @@
     "bg_color": [20, 20, 20, 180],
     "font_size": 16,
     "title": "Eva Orchestrator"
+  },
+  {
+    "id": "system_monitor",
+    "type": "VideoStream",
+    "area": [426, 20, 400, 150],
+    "source_width": 400,
+    "source_height": 150,
+    "topic": "/tmp/monitor_pipe",
+    "encoding": "rgb"
   }
 ]

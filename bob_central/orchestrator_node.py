@@ -134,9 +134,22 @@ class OrchestratorNode(Node):
             else:
                 self.get_logger().info('Allowing parallel processing (Risk of race conditions)')
 
-        # Mark as busy
+        # Mark as busy and Update UI
         self.is_busy = True
+        self.trigger_visual_status(is_busy=True)
         self.process_query(msg)
+
+    def trigger_visual_status(self, is_busy=False):
+        """Invoke the nviz monitoring tool to update the dashboard LED."""
+        try:
+            import os
+            import subprocess
+            cmd = ["python3", "/ros2_ws/src/bob_central/skills/nviz_dashboard/scripts/update_system_status.py"]
+            if is_busy:
+                cmd.append("--busy")
+            subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except Exception as e:
+            self.get_logger().error(f"Failed to trigger visual status: {e}")
 
     def process_query(self, msg):
         """Handle the actual routing and timing injection."""
@@ -209,8 +222,9 @@ class OrchestratorNode(Node):
             response_msg.data = json.dumps(bundled_data)
             self.pub_user_response.publish(response_msg)
 
-        # RELEASE LOCK
+        # RELEASE LOCK and Update UI
         self.is_busy = False
+        self.trigger_visual_status(is_busy=False)
         self.get_logger().info('Processing finished. System ready.')
 
         # Handle Query Queue if enabled

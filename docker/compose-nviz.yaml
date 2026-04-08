@@ -33,6 +33,7 @@ services:
       # Audio Config
       - MIXER_REMAPS=-r in0:=/eva/tts/audio_raw
       - MIXER_IN0_CHANNELS=1
+      - MIXER_ENABLE_FIFO_INPUT=true
       - AUDIO_PIPE=/tmp/audio_pipe
       - AUDIO_MASTER_PATH=/tmp/audio_master_pipe
 
