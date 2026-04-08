@@ -86,7 +86,7 @@
     max_tokens: 500
     max_history_length: 10
     temperature: 0.5
-    tool_interfaces: []
+    tool_interfaces: ['']
   arguments:
     - --ros-args
     - --log-level

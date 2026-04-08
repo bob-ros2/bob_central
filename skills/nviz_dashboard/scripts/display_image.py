@@ -62,16 +62,19 @@ def main():
     parser.add_argument('--path', required=True, help='Path to the image file')
     parser.add_argument('--area', type=int, nargs=4, default=[511, 50, 256, 256],
                         help='Dashboard area [x, y, w, h]')
+    parser.add_argument('--id', default='photo_stream', help='Unique ID for the dashboard element')
+    parser.add_argument('--pipe', default='/tmp/photo_pipe', help='Path to the FIFO pipe')
     parser.add_argument('--stop', action='store_true', help='Stop streaming and remove element')
 
     args = parser.parse_args()
-    pipe_path = "/tmp/photo_pipe"
+    pipe_path = args.pipe
+    element_id = args.id
 
     # Handle removal
     if args.stop:
         subprocess.run(['pkill', '-9', '-f', pipe_path], check=False)
-        publish_to_events([{"action": "remove", "id": "photo_stream"}])
-        print("Image stream stopped.")
+        publish_to_events([{"action": "remove", "id": element_id}])
+        print(f"Image stream {element_id} stopped.")
         return
 
     # Check image existence
@@ -85,7 +88,7 @@ def main():
         os.chmod(pipe_path, 0o666)
         print(f"Created persistent FIFO at {pipe_path}")
 
-    # 2. Kill OLD streaming processes for this pipe
+    # 2. Kill OLD streaming processes for this SPECIFIC pipe
     subprocess.run(['pkill', '-9', '-f', pipe_path], check=False)
     time.sleep(0.5)
 
@@ -100,14 +103,14 @@ def main():
         pipe_path
     ]
 
-    print(f"Streaming {args.path} at {w}x{h} (RGB24 Standard)...")
+    print(f"Streaming {args.path} to {element_id} via {pipe_path}...")
     subprocess.Popen(ffmpeg_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    # 4. Add VideoStream to Dashboard (Matching Dimensions)
+    # 4. Add/Update VideoStream on Dashboard (Matching Dimensions)
     dashboard_msg = [
         {
             "type": "VideoStream",
-            "id": "photo_stream",
+            "id": element_id,
             "area": args.area,
             "source_width": w,
             "source_height": h,
@@ -116,7 +119,7 @@ def main():
         }
     ]
     publish_to_events(dashboard_msg)
-    print(f"Image deployed to Action Spot. Frame size: {w}x{h}.")
+    print(f"Image {element_id} deployed. Frame size: {w}x{h}.")
 
 
 if __name__ == '__main__':

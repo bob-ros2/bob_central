@@ -91,6 +91,10 @@ class OrchestratorNode(Node):
             10
         )
 
+        # Feedback topic for status updates and rejected queries
+        self.pub_rejected = self.create_publisher(
+            String, 'rejected_queries', 10)
+
         mode = (
             'SUPPORT (Bobassi)' if self.reject_if_busy else
             'QUEUE' if self.enable_queuing else 'PASS-THROUGH')
