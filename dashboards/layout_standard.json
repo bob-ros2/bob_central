@@ -9,6 +9,15 @@
     "encoding": "rgb"
   },
   {
+    "id": "system_status",
+    "type": "VideoStream",
+    "area": [427, 240, 427, 240],
+    "source_width": 427,
+    "source_height": 240,
+    "topic": "/tmp/dash_pipe_orch",
+    "encoding": "rgb"
+  },
+  {
     "id": "status_icon",
     "type": "Bitmap",
     "area": [810, 10, 32, 32],
