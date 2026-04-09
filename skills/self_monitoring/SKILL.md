@@ -1,11 +1,23 @@
 ---
 name: self_monitoring
-description: "INTERNAL system health monitoring and logging. Use ONLY for data retrieval, logic, and background logging. NOT for visual dashboard displays."
+description: "INTERNAL system health monitoring and logging"
 ---
 
 # Self Monitoring Skill
 
 This skill monitors the system state and extends the `get_system_status` tool.
+
+### 1. Internal Metrics Collector
+Collects deep system metrics (VRAM, Power, Temps) for use in AI logic.
+```bash
+python3 internal_metrics_collector.py
+```
+
+### 2. Internal Health Daemon
+A long-running background process that logs system health to `/root/eva/logs/self_monitoring.log`.
+```bash
+python3 scripts/internal_health_daemon.py start
+```
 
 ## Extended Functions
 

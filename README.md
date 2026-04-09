@@ -21,7 +21,7 @@ The system handles:
 - **ROS 2 Native AI Integration**: Pure ROS 2 communication for modular AI expansion.
 - **Self-Evolution Framework**: Infrastructure for agents to modify and expand their own capabilities.
 
-## 🧠 Autonomous Knowledge Graph
+## Autonomous Knowledge Graph
 The system maintains a dynamic documentation base fetched on-demand from the Bob ROS ecosystem. This keeps the main repository light while providing Eva with full technical depth.
 
 ### Building the Graphen
@@ -33,11 +33,9 @@ python3 src/bob_central/skills/knowledge_graph/scripts/sync.py
 ```
 Manuals are stored in `skills/knowledge_graph/docs/` (Git Ignored) and accessible via the `read_manual.py` reader.
 
-## 📊 Dashboard Visuals (nviz)
+## Dashboard Visuals (nviz)
 The dashboard uses an efficient event-driven bitmap system to display telemetry without taxing the CPU.
-
-## Architecture & Docker
-`bob_central` is strictly **Docker-First**, emphasizing security, absolute process isolation, and portability.
+, emphasizing security, absolute process isolation, and portability.
 
 ### The Docker Ecosystem
 To manage the complex set of services, a master management script is provided in the `docker/` directory.
