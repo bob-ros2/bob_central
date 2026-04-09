@@ -16,7 +16,6 @@ import json
 import os
 import sys
 import argparse
-import threading
 from PIL import Image, ImageDraw, ImageFont
 
 import rclpy
@@ -30,7 +29,7 @@ class DataRenderer:
 
     def render_and_scale(self, data, target_w, target_h, title="SYSTEM HEALTH"):
         # Direct Canvas - No virtual scaling needed for terminal aesthetic
-        img = Image.new('RGB', (target_w, target_h), color=(10, 10, 10))
+        img = Image.new('RGB', (target_w, target_h), color=(5, 5, 5))
         draw = ImageDraw.Draw(img)
         font = self._font
 
@@ -116,38 +115,26 @@ class DashboardDisplayNode(Node):
             pass
 
     def process_data(self, data):
-        # Only render and stream bytes, metadata was already sent in __init__
-        self.handle_video_stream(data)
+        # Render the virtual terminal image
+        tw, th = self.args.area[2], self.args.area[3]
+        display_title = self.args.title if self.args.title else self.args.id
+        img = self._renderer.render_and_scale(data, tw, th, title=display_title)
+        
+        # Convert to raw byte array
+        raw_bytes = list(img.tobytes('raw', 'RGB'))
 
-    def publish_layout(self):
+        # Send as an atomic Bitmap event
         msg = String()
         config = {
-            "type": "VideoStream", "id": self.args.id, "area": self.args.area,
-            "topic": self.args.pipe, "source_width": self.args.area[2],
-            "source_height": self.args.area[3], "encoding": "rgb"
+            "type": "Bitmap", 
+            "id": self.args.id, 
+            "area": self.args.area,
+            "data": raw_bytes,
+            "depth": 8,
+            "encoding": "rgb"
         }
         msg.data = json.dumps([config])
         self.publisher.publish(msg)
-
-    def handle_video_stream(self, data):
-        tw, th = self.args.area[2], self.args.area[3]
-        display_title = self.args.title if self.args.title else self.args.id
-        img = self._renderer.render_and_scale(
-            data, tw, th, title=display_title)
-        raw_bytes = img.tobytes('raw', 'RGB')
-
-        if not os.path.exists(self.args.pipe):
-            os.mkfifo(self.args.pipe)
-            os.chmod(self.args.pipe, 0o666)
-
-        try:
-            # We open/close to ensure nviz picks up the fresh data 
-            # without buffer congestion for low-framerate updates
-            fd = os.open(self.args.pipe, os.O_WRONLY)
-            os.write(fd, raw_bytes)
-            os.close(fd)
-        except Exception:
-            pass
 
 
 def main():
