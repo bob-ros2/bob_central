@@ -14,15 +14,18 @@ repositories:
   - name: bob_topic_tools
     url: "https://github.com/bob-ros2/bob_topic_tools"
     branch: main
-  - name: voskros
-    url: "https://github.com/bob-ros2/voskros"
+  - name: bob_nlp_tools
+    url: "https://github.com/bob-ros2/bob_nlp_tools"
     branch: main
-  - name: bob_coquitts
-    url: "https://github.com/bob-ros2/bob_coquitts"
+  - name: bob_q3tts
+    url: "https://github.com/bob-ros2/bob_q3tts"
     branch: main
-  - name: bob_moondream
-    url: "https://github.com/bob-ros2/bob_moondream"
+  - name: bob_nviz
+    url: "https://github.com/bob-ros2/bob_nviz"
     branch: main
-  - name: bob_flux2k
-    url: "https://github.com/bob-ros2/bob_flux2k"
+  - name: bob_audio
+    url: "https://github.com/bob-ros2/bob_audio"
+    branch: main
+  - name: bob_av_tools
+    url: "https://github.com/bob-ros2/bob_av_tools"
     branch: main

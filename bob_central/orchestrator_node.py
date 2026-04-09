@@ -73,15 +73,25 @@ class OrchestratorNode(Node):
         )
 
         # Publishers
-        # Final output back to the user
         self.pub_user_response = self.create_publisher(
             String, 'user_response', 10)
 
-        # Stream to TTS system
+        # Stream to TTS and Web UI (Public)
         self.pub_llm_stream = self.create_publisher(
             String, '/eva/llm_stream', 10)
 
-        # To publish the query with time to semantic router
+        # Internal Stream Subscriptions
+        self.sub_eva_stream = self.create_subscription(
+            String, 'brain_eva/internal/eva_stream', self.internal_stream_callback, 10
+        )
+        self.sub_bobassi_stream = self.create_subscription(
+            String, 'brain_bobassi/internal/bobassi_stream', self.internal_stream_callback, 10
+        )
+
+        # To track if we've already streamed the current response
+        self.was_streamed = False
+
+        # Status Publisher (1Hz)
         self.pub_timed_query = self.create_publisher(
             String, 'user_query_timed', 10)
 
@@ -111,6 +121,11 @@ class OrchestratorNode(Node):
             'QUEUE' if self.enable_queuing else 'PASS-THROUGH')
         self.get_logger().info(f'Orchestrator ready. Mode: {mode}')
 
+    def internal_stream_callback(self, msg):
+        """Pass internal stream tokens to public stream and mark as streamed."""
+        self.was_streamed = True
+        self.pub_llm_stream.publish(msg)
+
     def user_query_callback(self, msg):
         """
         Receive a query from the user.
@@ -118,6 +133,7 @@ class OrchestratorNode(Node):
         Analyze it and route to specialists.
         Handle concurrency via support routing or queuing.
         """
+        self.was_streamed = False
         query = msg.data
 
         # Concurrency Check
@@ -248,11 +264,12 @@ class OrchestratorNode(Node):
             response_msg = String()
             response_msg.data = json.dumps(bundled_data)
             self.pub_user_response.publish(response_msg)
-            
-            # Also stream to TTS
-            stream_msg = String()
-            stream_msg.data = content
-            self.pub_llm_stream.publish(stream_msg)
+
+            # Also stream to TTS (ONLY if not already streamed)
+            if not self.was_streamed:
+                stream_msg = String()
+                stream_msg.data = content
+                self.pub_llm_stream.publish(stream_msg)
         except json.JSONDecodeError:
             # Fallback if it's not JSON
             bundled_data = {
@@ -262,11 +279,12 @@ class OrchestratorNode(Node):
             response_msg = String()
             response_msg.data = json.dumps(bundled_data)
             self.pub_user_response.publish(response_msg)
-            
-            # Also stream to TTS
-            stream_msg = String()
-            stream_msg.data = msg.data
-            self.pub_llm_stream.publish(stream_msg)
+
+            # Also stream to TTS (ONLY if not already streamed)
+            if not self.was_streamed:
+                stream_msg = String()
+                stream_msg.data = msg.data
+                self.pub_llm_stream.publish(stream_msg)
 
         # RELEASE LOCK and Update UI
         self.is_busy = False
@@ -300,11 +318,12 @@ class OrchestratorNode(Node):
             response_msg = String()
             response_msg.data = json.dumps(bundled_data)
             self.pub_user_response.publish(response_msg)
-            
-            # CRITICAL FIX: Stream Bobassi response to TTS
-            stream_msg = String()
-            stream_msg.data = content
-            self.pub_llm_stream.publish(stream_msg)
+
+            # Stream to TTS (ONLY if not already streamed - likely false for Bobassi)
+            if not self.was_streamed:
+                stream_msg = String()
+                stream_msg.data = content
+                self.pub_llm_stream.publish(stream_msg)
         except Exception as e:
             self.get_logger().error(f'Error processing Bobassi response: {e}')
 

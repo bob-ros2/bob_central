@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,12 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
-import os
-import sys
 import argparse
-from PIL import Image, ImageDraw, ImageFont
+import json
+import sys
 
+from PIL import Image, ImageDraw, ImageFont
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String, UInt8MultiArray
@@ -28,7 +28,7 @@ class DataRenderer:
         # Use default font for terminal look
         self._font = ImageFont.load_default()
 
-    def render_to_grayscale(self, data, target_w, target_h, title="SYSTEM HEALTH"):
+    def render_to_grayscale(self, data, target_w, target_h, title='SYSTEM HEALTH'):
         # 8-bit Grayscale Canvas (L mode)
         img = Image.new('L', (target_w, target_h), color=0)
         draw = ImageDraw.Draw(img)
@@ -48,8 +48,8 @@ class DataRenderer:
             if curr_y > target_h - row_h:
                 return
 
-            prefix = "  " * indent
-            if key.startswith("[") and key.endswith("]"):
+            prefix = '  ' * indent
+            if key.startswith('[') and key.endswith(']'):
                 text = f"{prefix}- {val}"
             else:
                 text = f"{prefix}{key}: {val}"
@@ -61,14 +61,14 @@ class DataRenderer:
             if isinstance(obj, dict):
                 for k, v in obj.items():
                     if isinstance(v, (dict, list)):
-                        draw_kv_row(k, "", indent)
+                        draw_kv_row(k, '', indent)
                         process_recursive(v, indent + 1)
                     else:
                         draw_kv_row(k, v, indent)
             elif isinstance(obj, list):
                 for i, item in enumerate(obj):
                     if isinstance(item, (dict, list)):
-                        draw_kv_row(f"[{i}]", "", indent)
+                        draw_kv_row(f"[{i}]", '', indent)
                         process_recursive(item, indent + 1)
                     else:
                         draw_kv_row(f"[{i}]", item, indent)
@@ -82,18 +82,19 @@ class DataRenderer:
 
 class DashboardDisplayNode(Node):
     def __init__(self, args):
-        super().__init__(f'dash_display_{args.id.replace(".","_")}')
+        super().__init__(f'dash_display_{args.id.replace(".", "_")}')
         self.args = args
         self._renderer = DataRenderer()
-        
+
         # Core communication
-        self.publisher = self.create_publisher(String, '/eva/streamer/events', 10)
-        
+        self.publisher = self.create_publisher(
+            String, '/eva/streamer/events', 10)
+
         # Dedicated topic for the raw bitmap data
-        # We use a unique topic for each monitor instance
         self.topic_name = f'/eva/streamer/data/{args.id}'
-        self.data_pub = self.create_publisher(UInt8MultiArray, self.topic_name, 10)
-        
+        self.data_pub = self.create_publisher(
+            UInt8MultiArray, self.topic_name, 10)
+
         self.layout_sent = False
 
         if self.args.json:
@@ -104,7 +105,8 @@ class DashboardDisplayNode(Node):
                 String, self.args.topic, self.topic_callback, 10)
 
     def one_shot_logic(self):
-        diff = (self.get_clock().now() - self.discovery_start).nanoseconds / 1e9
+        now = self.get_clock().now()
+        diff = (now - self.discovery_start).nanoseconds / 1e9
         if self.publisher.get_subscription_count() > 0 or diff > 3.0:
             self.timer.cancel()
             try:
@@ -125,12 +127,12 @@ class DashboardDisplayNode(Node):
         if not self.layout_sent:
             msg = String()
             config = {
-                "type": "Bitmap", 
-                "id": self.args.id, 
-                "area": self.args.area,
-                "topic": self.topic_name,
-                "depth": 8, # 8-bit Grayscale as required
-                "color": [0, 255, 150, 255] # Technician Green foreground
+                'type': 'Bitmap',
+                'id': self.args.id,
+                'area': self.args.area,
+                'topic': self.topic_name,
+                'depth': 8,  # 8-bit Grayscale as required
+                'color': [0, 255, 150, 255]  # Technician Green foreground
             }
             msg.data = json.dumps([config])
             self.publisher.publish(msg)
@@ -139,8 +141,9 @@ class DashboardDisplayNode(Node):
         # 2. Render and publish raw bytes
         tw, th = self.args.area[2], self.args.area[3]
         display_title = self.args.title if self.args.title else self.args.id
-        img = self._renderer.render_to_grayscale(data, tw, th, title=display_title)
-        
+        img = self._renderer.render_to_grayscale(
+            data, tw, th, title=display_title)
+
         raw_msg = UInt8MultiArray()
         raw_msg.data = list(img.tobytes())
         self.data_pub.publish(raw_msg)
@@ -150,12 +153,14 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--id', required=True)
     parser.add_argument('--title')
-    parser.add_argument('--area', type=int, nargs=4, default=[428, 360, 426, 120])
+    area_default = [428, 360, 426, 120]
+    parser.add_argument('--area', type=int, nargs=4, default=area_default)
     parser.add_argument('--pipe', help='Legacy parameter - ignored')
     parser.add_argument('--json')
     parser.add_argument('--topic')
     parser.add_argument('--keep-alive', type=float, default=2.0)
-    parser.add_argument('--daemon', action='store_true', help='Run in background')
+    parser.add_argument('--daemon', action='store_true',
+                        help='Run in background')
     args = parser.parse_args()
 
     if args.daemon:
