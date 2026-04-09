@@ -20,7 +20,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
+from std_msgs.msg import String, UInt8MultiArray
 
 
 class DataRenderer:
@@ -86,9 +86,10 @@ class DashboardDisplayNode(Node):
         self.args = args
         self._renderer = DataRenderer()
         self.publisher = self.create_publisher(String, '/eva/streamer/events', 10)
-
-        # Initial Layout Push (Only once!)
-        self.publish_layout()
+        
+        # Dedicated topic for the raw bitmap data
+        self.data_pub = self.create_publisher(UInt8MultiArray, f'~/stream', 10)
+        self.layout_sent = False
 
         if self.args.json:
             self.discovery_start = self.get_clock().now()
@@ -115,26 +116,29 @@ class DashboardDisplayNode(Node):
             pass
 
     def process_data(self, data):
-        # Render the virtual terminal image
+        # 1. Ensure nviz knows about this layer (send once)
+        if not self.layout_sent:
+            msg = String()
+            config = {
+                "type": "Bitmap", 
+                "id": self.args.id, 
+                "area": self.args.area,
+                "topic": self.data_pub.topic_name,
+                "depth": 24, # RGB
+                "encoding": "rgb"
+            }
+            msg.data = json.dumps([config])
+            self.publisher.publish(msg)
+            self.layout_sent = True
+
+        # 2. Render and publish raw bytes
         tw, th = self.args.area[2], self.args.area[3]
         display_title = self.args.title if self.args.title else self.args.id
         img = self._renderer.render_and_scale(data, tw, th, title=display_title)
         
-        # Convert to raw byte array
-        raw_bytes = list(img.tobytes('raw', 'RGB'))
-
-        # Send as an atomic Bitmap event
-        msg = String()
-        config = {
-            "type": "Bitmap", 
-            "id": self.args.id, 
-            "area": self.args.area,
-            "data": raw_bytes,
-            "depth": 8,
-            "encoding": "rgb"
-        }
-        msg.data = json.dumps([config])
-        self.publisher.publish(msg)
+        raw_msg = UInt8MultiArray()
+        raw_msg.data = list(img.tobytes('raw', 'RGB'))
+        self.data_pub.publish(raw_msg)
 
 
 def main():
