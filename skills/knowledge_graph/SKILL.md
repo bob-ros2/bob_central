@@ -1,29 +1,28 @@
 ---
 name: knowledge_graph
-description: "Centralized documentation index for all Bob ROS packages. Access manuals and technical specifications for autonomous operations."
+description: "Autonomous documentation manager. Eva can use this to fetch, sync, and index technical manuals from all Bob ROS repositories."
 version: "1.0.0"
 category: "knowledge"
 ---
 
-# Bob ROS Knowledge Graph
+# Knowledge Graph Manager
 
-This skill provides Eva with detailed technical documentation for all Bob ROS packages. 
-Use the provided script to read specific manuals.
+This skill allows Eva to maintain a dynamic knowledge base of the entire Bob ROS ecosystem.
 
-## Available Manuals
-| Package | Description | Version | Last Sync |
-|---------|-------------|---------|-----------|
-| bob_central | ROS Package [bob_central](https://github.com/bob-ros2/bob_central) | N/A | 2026-04-09 23:50 |
-| bob_llm | ROS Package [bob_llm](https://github.com/bob-ros2/bob_llm) | N/A | 2026-04-09 23:50 |
-| bob_launch | ROS Package [bob_launch](https://github.com/bob-ros2/bob_launch) | N/A | 2026-04-09 23:50 |
-| bob_topic_tools | ROS Package [bob_topic_tools](https://github.com/bob-ros2/bob_topic_tools) | N/A | 2026-04-09 23:50 |
-| bob_nlp_tools | ROS Package [bob_nlp_tools](https://github.com/bob-ros2/bob_nlp_tools) | N/A | 2026-04-09 23:50 |
-| bob_q3tts | ROS Package [bob_q3tts](https://github.com/bob-ros2/bob_q3tts) | N/A | 2026-04-09 23:50 |
-| bob_nviz | ROS Package [bob_nviz](https://github.com/bob-ros2/bob_nviz) | N/A | 2026-04-09 23:50 |
-| bob_audio | ROS Package [bob_audio](https://github.com/bob-ros2/bob_audio) | N/A | 2026-04-09 23:50 |
-| bob_av_tools | ROS Package [bob_av_tools](https://github.com/bob-ros2/bob_av_tools) | N/A | 2026-04-09 23:50 |
-## Usage
-To read a specific manual, use:
-```bash
-python3 scripts/read_manual.py --pkg <package_name>
-```
+## Goal
+To keep the AI context clean by fetching only relevant documentation when needed, instead of bloating the repository with static manuals.
+
+## How it works (for the AI)
+1. **Sync**: If the knowledge graph is empty, run the Librarian to fetch all READMEs:
+   `python3 scripts/sync.py`
+2. **Access**: Manuals are stored as individual Markdown files in `./docs/`.
+3. **Read**: Use the reader tool to load a specific manual into context:
+   `python3 scripts/read_manual.py --pkg <package_name>`
+
+## Usage Tools
+- **Librarian (`scripts/sync.py`)**: Fetches READMEs from GitHub based on `/config/knowledge_repos.yaml`.
+- **Reader (`scripts/read_manual.py`)**: Streams the content of a doc into the chat context.
+
+## Repository Source
+Repos are defined in: `/config/knowledge_repos.yaml`
+Manuals are stored in: `./docs/` (Git Ignored)

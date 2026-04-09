@@ -39,3 +39,4 @@ models/
 
 # Docker specific
 docker/nginx.conf # Generated from template
+skills/knowledge_graph/docs/

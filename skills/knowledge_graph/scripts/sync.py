@@ -30,38 +30,6 @@ def fetch_raw_readme(base_url, branch):
         print(f"  Error fetching {base_url}: {e}")
         return None
 
-def rebuild_skill_index(packages):
-    header = f"""---
-name: knowledge_graph
-description: "Centralized documentation index for all Bob ROS packages. Access manuals and technical specifications for autonomous operations."
-version: "1.0.0"
-category: "knowledge"
----
-
-# Bob ROS Knowledge Graph
-
-This skill provides Eva with detailed technical documentation for all Bob ROS packages. 
-Use the provided script to read specific manuals.
-
-## Available Manuals
-| Package | Description | Version | Last Sync |
-|---------|-------------|---------|-----------|
-"""
-    rows = []
-    for pkg in packages:
-        rows.append(f"| {pkg['name']} | {pkg['desc']} | {pkg['ver']} | {pkg['sync']} |")
-    
-    footer = """
-## Usage
-To read a specific manual, use:
-```bash
-python3 scripts/read_manual.py --pkg <package_name>
-```
-"""
-    content = header + "\n".join(rows) + footer
-    with open(SKILL_FILE, "w") as f:
-        f.write(content)
-    print(f"Updated index: {SKILL_FILE}")
 
 def main():
     os.makedirs(DOCS_DIR, exist_ok=True)
@@ -122,7 +90,7 @@ synced_at: {sync_time}
             })
             print(f"  Saved to {target_path}")
 
-    rebuild_skill_index(synced_pkgs)
+    
     print("\nSync Complete. Knowledge Graph is ready.")
 
 if __name__ == "__main__":
