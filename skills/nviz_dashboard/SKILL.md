@@ -1,6 +1,6 @@
 ---
 name: nviz_dashboard
-description: "Control and orchestrate the nviz streaming dashboard via CLI tools, layout management, and real-time data visualization."
+description: "VISUAL dashboard orchestration. Use this ONLY to display assets (terminals, images, streams) for the HUMAN creator to see. Not for internal logging."
 version: "1.2.0"
 category: "system"
 ---
@@ -15,10 +15,10 @@ This skill wraps the `bob_nviz` software renderer into easy-to-use CLI tools. It
 
 ## Usage
 
-### 1. Real-Time Data Display (CLI Terminal Look)
-Displays arbitrary JSON data as a pixel-perfect terminal on the dashboard.
+### 1. Visual Status Terminal (Telemetry)
+Renders a live terminal-style overlay on the dashboard. Use for visual monitoring only.
 ```bash
-python3 scripts/display_status_terminal.py --id "System_Monitor" --area 428 360 426 120 --topic "/eva/orchestrator/status" --pipe "/tmp/monitor_pipe" --daemon
+python3 scripts/render_dashboard_telemetry.py --id "System_Monitor" --area 428 360 426 120 --topic "/eva/orchestrator/status" --title "EVA_TELEMETRY" --daemon
 ```
 
 ### 2. High-Resolution Images

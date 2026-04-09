@@ -1,6 +1,6 @@
 ---
 name: self_monitoring
-description: Monitor system health, CPU load, RAM usage, and GPU status. Extends basic system status tools with detailed metrics and NVIDIA VRAM tracking via scripts.
+description: "INTERNAL system health monitoring and logging. Use ONLY for data retrieval, logic, and background logging. NOT for visual dashboard displays."
 ---
 
 # Self Monitoring Skill
