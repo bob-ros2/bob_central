@@ -1,14 +1,19 @@
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package bob_central
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-0.4.0 (2026-04-09)
+0.4.0 (2026-04-10)
 ------------------
-* Refactored Eva Dashboard monitoring with a native, pixel-perfect CLI terminal aesthetic.
+* Introduced Autonomous Knowledge Graph skill for dynamic technical manual management.
+* Optimized Dashboard Telemetry with an event-driven 8-bit Bitmap system, resolving high-CPU polling issues.
+* Centralized LLM Token Streaming in Orchestrator node to ensure thread-safe UI consistency.
+* Implemented explicit role separation between Internal Self-Monitoring and Visual Dashboard Telemetry.
+* Standardized Knowledge registry in /config/knowledge_repos.yaml for ecosystem-wide technical documentation.
+* Refactored render_dashboard_telemetry.py for atomic visual updates on nviz surfaces.
+* Achieved 100% Source-Code Linter compliance (flake8, pep257, copyright) including custom build-clutter cleanup.
+* Contributors: Bob Ros, Antigravity AI
+
+0.3.5 (Interim)
+------------------
+* Initial refactor of Eva Dashboard monitoring with a native, pixel-perfect CLI terminal aesthetic.
 * Decoupled dashboard visualization from Orchestrator logic; Orchestrator now publishes status via ROS topics.
-* Introduced 'display_status_terminal.py' for high-performance JSON-to-Video terminal rendering.
-* Achieved 100% ROS 2 linter compliance (flake8, pep257, copyright) across all nodes and scripts.
-* Standardized 'nviz_dashboard' skill with TEMPLATE_SPEC v1.2.0 compliance.
+* Introduced 'render_dashboard_telemetry.py' (formerly display_status_terminal.py) for high-performance JSON-to-Video terminal rendering.
 * Unified 8 separate Docker stacks into a single 'eva' project.
 * Introduced 'manage.sh' for centralized one-word stack control (up, down, build).
 * Updated architecture diagrams with high-contrast styles for better readability.

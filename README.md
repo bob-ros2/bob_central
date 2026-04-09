@@ -3,21 +3,38 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 This package is a **General Central Orchestration Brain-Mesh System** designed for building and hosting self-evolving, autonomous AI entities within isolated container environments. It represents an AI deeply integrated into a **ROS 2 environment**, leveraging the full power of the ROS 2 ecosystem (topics, services, and parameters) for real-world interaction and self-monitoring.
+# bob_central (v0.4.0)
 
-While it utilizes various components from the `bob-ros2` ecosystem, it serves as a standalone foundation for any complex AI project requiring a multi-agent, modular orchestration layer.
+**The Central Nervous System of the Bob ROS Ecosystem.**
 
-## The Purpose: An AI Nucleus
-`bob_central` is intended to be used as a core "nucleus" for AI projects. It is designed to be cloned and expanded, providing a stable, secure, and inspectable environment where humans and coding agents can collaborate to build something greater. 
-
-Whether used as a standalone autonomous brain or integrated into a larger robotic context, it provides the essential orchestration needed for high-level reasoning and self-evolution.
+`bob_central` provides the essential infrastructure for orchestrating complex, multi-modular AI agents in a ROS 2 environment. It handles everything from high-level decision making (Orchestrator) to real-time system visualization (nviz) and autonomous documentation management (Knowledge Graph).
 
 ## Core Concept
 At its heart, `bob_central` manages a "Brain-Mesh" of interconnected specialized nodes (e.g., Vision, Researcher, Coder). The system is not monolithic; it is a distributed network of intelligence where every component is replaceable and extensible.
 
 The system handles:
-* **Autonomous Intent Routing**: Analyzing input and dispatching tasks to specialized specialist agents.
-* **Environmental Awareness**: Injecting real-time context and system state into the reasoning process via ROS parameters and topics.
-* **Self-Modification Ready**: Modular Anthropic-style skills allow the AI (in collaboration with a human or agent) to dynamically expand its own toolkit.
+## Key Features
+- **Centralized Orchestration**: A powerful node that manages conversation flows and tool calls.
+- **Visual Telemetry (nviz)**: High-performance, event-driven dashboard rendering (8-bit grayscale bitmaps).
+- **Autonomous Knowledge Graph**: On-demand technical documentation fetching and indexing for AI context.
+- **Ecosystem Registry**: Centralized management of specialized ROS nodes and LLM skills.
+- **ROS 2 Native AI Integration**: Pure ROS 2 communication for modular AI expansion.
+- **Self-Evolution Framework**: Infrastructure for agents to modify and expand their own capabilities.
+
+## 🧠 Autonomous Knowledge Graph
+The system maintains a dynamic documentation base fetched on-demand from the Bob ROS ecosystem. This keeps the main repository light while providing Eva with full technical depth.
+
+### Building the Graphen
+To initialize or refresh the documentation library:
+```bash
+# Register repositories in /config/knowledge_repos.yaml
+# Run the Librarian to fetch manuals
+python3 src/bob_central/skills/knowledge_graph/scripts/sync.py
+```
+Manuals are stored in `skills/knowledge_graph/docs/` (Git Ignored) and accessible via the `read_manual.py` reader.
+
+## 📊 Dashboard Visuals (nviz)
+The dashboard uses an efficient event-driven bitmap system to display telemetry without taxing the CPU.
 
 ## Architecture & Docker
 `bob_central` is strictly **Docker-First**, emphasizing security, absolute process isolation, and portability.
