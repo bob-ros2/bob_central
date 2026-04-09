@@ -1,0 +1,28 @@
+# Bob ROS Repository Registry for Eva's Knowledge Graph
+# The Librarian (sync.py) uses this list to fetch manuals and READMEs.
+
+repositories:
+  - name: bob_central
+    url: "https://github.com/bob-ros2/bob_central"
+    branch: main
+  - name: bob_llm
+    url: "https://github.com/bob-ros2/bob_llm"
+    branch: main
+  - name: bob_launch
+    url: "https://github.com/bob-ros2/bob_launch"
+    branch: main
+  - name: bob_topic_tools
+    url: "https://github.com/bob-ros2/bob_topic_tools"
+    branch: main
+  - name: voskros
+    url: "https://github.com/bob-ros2/voskros"
+    branch: main
+  - name: bob_coquitts
+    url: "https://github.com/bob-ros2/bob_coquitts"
+    branch: main
+  - name: bob_moondream
+    url: "https://github.com/bob-ros2/bob_moondream"
+    branch: main
+  - name: bob_flux2k
+    url: "https://github.com/bob-ros2/bob_flux2k"
+    branch: main
