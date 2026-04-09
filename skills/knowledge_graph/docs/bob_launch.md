@@ -1,7 +1,7 @@
 ---
 package: bob_launch
 source: https://github.com/bob-ros2/bob_launch
-synced_at: 2026-04-09 23:44
+synced_at: 2026-04-09 23:50
 ---
 
 # ROS Package [bob_launch](https://github.com/bob-ros2/bob_launch)
