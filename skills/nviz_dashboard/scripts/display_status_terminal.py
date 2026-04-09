@@ -25,18 +25,19 @@ from std_msgs.msg import String, UInt8MultiArray
 
 class DataRenderer:
     def __init__(self):
+        # Use default font for terminal look
         self._font = ImageFont.load_default()
 
-    def render_and_scale(self, data, target_w, target_h, title="SYSTEM HEALTH"):
-        # Direct Canvas - No virtual scaling needed for terminal aesthetic
-        img = Image.new('RGB', (target_w, target_h), color=(5, 5, 5))
+    def render_to_grayscale(self, data, target_w, target_h, title="SYSTEM HEALTH"):
+        # 8-bit Grayscale Canvas (L mode)
+        img = Image.new('L', (target_w, target_h), color=0)
         draw = ImageDraw.Draw(img)
         font = self._font
 
-        # Simple CLI Header
+        # Simple CLI Header (White on Black, will be colored by nviz)
         header = f"root@eva:/{title.lower()}"
-        draw.text((5, 5), header, fill=(0, 255, 100), font=font)
-        draw.line([5, 18, target_w-5, 18], fill=(0, 150, 50), width=1)
+        draw.text((5, 5), header, fill=255, font=font)
+        draw.line([5, 18, target_w-5, 18], fill=150, width=1)
 
         y_start = 22
         curr_y = y_start
@@ -48,13 +49,12 @@ class DataRenderer:
                 return
 
             prefix = "  " * indent
-            # Use JSON-like or strict CLI output format
             if key.startswith("[") and key.endswith("]"):
                 text = f"{prefix}- {val}"
             else:
                 text = f"{prefix}{key}: {val}"
 
-            draw.text((5, curr_y), text, fill=(200, 220, 200), font=font)
+            draw.text((5, curr_y), text, fill=220, font=font)
             curr_y += row_h
 
         def process_recursive(obj, indent=0):
@@ -76,7 +76,7 @@ class DataRenderer:
         process_recursive(data)
 
         # Subtle border
-        draw.rectangle([0, 0, target_w-1, target_h-1], outline=(40, 40, 40), width=1)
+        draw.rectangle([0, 0, target_w-1, target_h-1], outline=40, width=1)
         return img
 
 
@@ -85,10 +85,15 @@ class DashboardDisplayNode(Node):
         super().__init__(f'dash_display_{args.id.replace(".","_")}')
         self.args = args
         self._renderer = DataRenderer()
+        
+        # Core communication
         self.publisher = self.create_publisher(String, '/eva/streamer/events', 10)
         
         # Dedicated topic for the raw bitmap data
-        self.data_pub = self.create_publisher(UInt8MultiArray, f'~/stream', 10)
+        # We use a unique topic for each monitor instance
+        self.topic_name = f'/eva/streamer/data/{args.id}'
+        self.data_pub = self.create_publisher(UInt8MultiArray, self.topic_name, 10)
+        
         self.layout_sent = False
 
         if self.args.json:
@@ -116,16 +121,16 @@ class DashboardDisplayNode(Node):
             pass
 
     def process_data(self, data):
-        # 1. Ensure nviz knows about this layer (send once)
+        # 1. Ensure nviz knows about this layer (send registration once)
         if not self.layout_sent:
             msg = String()
             config = {
                 "type": "Bitmap", 
                 "id": self.args.id, 
                 "area": self.args.area,
-                "topic": self.data_pub.topic_name,
-                "depth": 24, # RGB
-                "encoding": "rgb"
+                "topic": self.topic_name,
+                "depth": 8, # 8-bit Grayscale as required
+                "color": [0, 255, 150, 255] # Technician Green foreground
             }
             msg.data = json.dumps([config])
             self.publisher.publish(msg)
@@ -134,10 +139,10 @@ class DashboardDisplayNode(Node):
         # 2. Render and publish raw bytes
         tw, th = self.args.area[2], self.args.area[3]
         display_title = self.args.title if self.args.title else self.args.id
-        img = self._renderer.render_and_scale(data, tw, th, title=display_title)
+        img = self._renderer.render_to_grayscale(data, tw, th, title=display_title)
         
         raw_msg = UInt8MultiArray()
-        raw_msg.data = list(img.tobytes('raw', 'RGB'))
+        raw_msg.data = list(img.tobytes())
         self.data_pub.publish(raw_msg)
 
 
@@ -145,8 +150,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--id', required=True)
     parser.add_argument('--title')
-    parser.add_argument('--area', type=int, nargs=4, default=[428, 120, 426, 240])
-    parser.add_argument('--pipe', default='/tmp/dash_pipe')
+    parser.add_argument('--area', type=int, nargs=4, default=[428, 360, 426, 120])
+    parser.add_argument('--pipe', help='Legacy parameter - ignored')
     parser.add_argument('--json')
     parser.add_argument('--topic')
     parser.add_argument('--keep-alive', type=float, default=2.0)
@@ -154,7 +159,6 @@ def main():
     args = parser.parse_args()
 
     if args.daemon:
-        # Re-run without --daemon but decoupled
         import subprocess
         new_args = [sys.executable, __file__]
         for arg in sys.argv[1:]:
@@ -162,7 +166,7 @@ def main():
                 new_args.append(arg)
         subprocess.Popen(new_args, stdout=subprocess.DEVNULL,
                          stderr=subprocess.DEVNULL, start_new_session=True)
-        print(f"Terminal monitor '{args.id}' started in background. ✅")
+        print(f"Bitmap monitor '{args.id}' started in background. ✅")
         sys.exit(0)
 
     rclpy.init()
