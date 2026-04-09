@@ -18,7 +18,7 @@ This skill wraps the `bob_nviz` software renderer into easy-to-use CLI tools. It
 ### 1. Real-Time Data Display (CLI Terminal Look)
 Displays arbitrary JSON data as a pixel-perfect terminal on the dashboard.
 ```bash
-python3 scripts/display_status_terminal.py --id "System_Monitor" --area 428 240 426 240 --topic "/eva/orchestrator/status" --pipe "/tmp/monitor_pipe" --daemon
+python3 scripts/display_status_terminal.py --id "System_Monitor" --area 428 360 426 120 --topic "/eva/orchestrator/status" --pipe "/tmp/monitor_pipe" --daemon
 ```
 
 ### 2. High-Resolution Images
