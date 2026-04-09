@@ -25,12 +25,14 @@ from std_msgs.msg import String
 
 
 class DataRenderer:
-    @staticmethod
-    def render_and_scale(data, target_w, target_h, title="SYSTEM HEALTH"):
+    def __init__(self):
+        self._font = ImageFont.load_default()
+
+    def render_and_scale(self, data, target_w, target_h, title="SYSTEM HEALTH"):
         # Direct Canvas - No virtual scaling needed for terminal aesthetic
         img = Image.new('RGB', (target_w, target_h), color=(10, 10, 10))
         draw = ImageDraw.Draw(img)
-        font = ImageFont.load_default()
+        font = self._font
 
         # Simple CLI Header
         header = f"root@eva:/{title.lower()}"
@@ -83,7 +85,11 @@ class DashboardDisplayNode(Node):
     def __init__(self, args):
         super().__init__(f'dash_display_{args.id.replace(".","_")}')
         self.args = args
+        self._renderer = DataRenderer()
         self.publisher = self.create_publisher(String, '/eva/streamer/events', 10)
+
+        # Initial Layout Push (Only once!)
+        self.publish_layout()
 
         if self.args.json:
             self.discovery_start = self.get_clock().now()
@@ -110,8 +116,8 @@ class DashboardDisplayNode(Node):
             pass
 
     def process_data(self, data):
-        self.publish_layout()
-        threading.Thread(target=self.handle_video_stream, args=(data,), daemon=True).start()
+        # Only render and stream bytes, metadata was already sent in __init__
+        self.handle_video_stream(data)
 
     def publish_layout(self):
         msg = String()
@@ -126,7 +132,7 @@ class DashboardDisplayNode(Node):
     def handle_video_stream(self, data):
         tw, th = self.args.area[2], self.args.area[3]
         display_title = self.args.title if self.args.title else self.args.id
-        img = DataRenderer.render_and_scale(
+        img = self._renderer.render_and_scale(
             data, tw, th, title=display_title)
         raw_bytes = img.tobytes('raw', 'RGB')
 
@@ -135,9 +141,10 @@ class DashboardDisplayNode(Node):
             os.chmod(self.args.pipe, 0o666)
 
         try:
+            # We open/close to ensure nviz picks up the fresh data 
+            # without buffer congestion for low-framerate updates
             fd = os.open(self.args.pipe, os.O_WRONLY)
-            for _ in range(4):
-                os.write(fd, raw_bytes)
+            os.write(fd, raw_bytes)
             os.close(fd)
         except Exception:
             pass
