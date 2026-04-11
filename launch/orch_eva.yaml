@@ -19,7 +19,7 @@
   arguments:
     - --ros-args
     - --log-level
-    - *log_level
+    - info
     - -r
     - "user_query:=/eva/user_query"
     - -r
@@ -30,6 +30,10 @@
     - "brain_mesh_routing:=~/internal/mesh_routing"
     - -r
     - "specialist_response:=~/internal/specialist_response"
+    - -r
+    - "bobassi_query:=/eva/bobassi/user_query"
+    - -r
+    - "bobassi_response:=/eva/bobassi/response"
     - -r
     - *eva_ns
 

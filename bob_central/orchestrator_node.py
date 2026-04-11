@@ -48,9 +48,9 @@ class OrchestratorNode(Node):
 
         # Publishers
         self.pub_timed_query = self.create_publisher(
-            String, 'internal/query_timed', 10)
+            String, 'user_query_timed', 10)
         self.pub_user_response = self.create_publisher(
-            String, '~/internal/full_response_text', 10)
+            String, 'user_response', 10)
         self.pub_llm_stream = self.create_publisher(
             String, '/eva/llm_stream', qos_latched)
 
@@ -60,7 +60,7 @@ class OrchestratorNode(Node):
         )
         self.sub_specialist_response = self.create_subscription(
             String,
-            'internal/specialist_response',
+            'specialist_response',
             self.specialist_response_callback,
             10
         )
@@ -73,11 +73,11 @@ class OrchestratorNode(Node):
 
         # Bobassi Support Bridge
         self.pub_bobassi_query = self.create_publisher(
-            String, 'bobassi/user_query', 10)
+            String, 'bobassi_query', 10)
 
         self.sub_bobassi_response = self.create_subscription(
             String,
-            'bobassi/response',
+            'bobassi_response',
             self.bobassi_response_callback,
             10
         )
