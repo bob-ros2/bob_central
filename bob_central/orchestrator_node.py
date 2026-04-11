@@ -190,9 +190,20 @@ class OrchestratorNode(Node):
 
     def specialist_response_callback(self, msg):
         """Receive a response from a specialist agent."""
+        if not msg.data:
+            self.get_logger().warn('Received empty specialist response.')
+            self.is_busy = False
+            self.trigger_visual_status(is_busy=False)
+            return
+
         try:
-            data = json.loads(msg.data)
-            content = data.get('content', msg.data)
+            try:
+                data = json.loads(msg.data)
+                content = data.get('content', msg.data)
+            except json.JSONDecodeError:
+                # Fallback for plain string responses
+                content = msg.data
+
             self.get_logger().debug(
                 f'Received specialist response: {content[:100]}...')
 
