@@ -117,3 +117,15 @@
     - *log_level
     - -r
     - *eva_ns
+
+# Status Monitor: Visual Telemetry Daemon
+- name: status_monitor
+  package: bob_central
+  executable: status_daemon
+  output: screen
+  arguments:
+    - --ros-args
+    - --log-level
+    - info
+    - -r
+    - *eva_ns

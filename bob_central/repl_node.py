@@ -46,8 +46,23 @@ class ReplNode(Node):
             String, '/eva/repl/input', self.input_callback, 10)
         self.pub_output = self.create_publisher(
             String, '/eva/repl/output', 10)
+        self.pub_status = self.create_publisher(
+            String, '/eva/repl/status', 10)
+
+        self._start_time = __import__('time').time()
+        self.timer_status = self.create_timer(5.0, self.publish_status)
 
         self.get_logger().info('Eva REPL Node active and hardened.')
+
+    def publish_status(self):
+        """Publish REPL session metadata."""
+        status = {
+            'start_time': self._start_time,
+            'locals_count': len(self._locals)
+        }
+        msg = String()
+        msg.data = json.dumps(status)
+        self.pub_status.publish(msg)
 
     def input_callback(self, msg):
         """Execute code with a timeout safety net."""

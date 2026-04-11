@@ -16,12 +16,21 @@
     "encoding": "rgb"
   },
   {
-    "id": "eva_art",
+    "id": "eva_art_background",
     "type": "VideoStream",
     "area": [426, 10, 428, 350],
-    "source_width": 426,
+    "source_width": 428,
     "source_height": 350,
     "topic": "/tmp/photo_pipe",
+    "encoding": "rgb"
+  },
+  {
+    "id": "system_status_bg",
+    "type": "VideoStream",
+    "area": [426, 360, 428, 120],
+    "source_width": 428,
+    "source_height": 120,
+    "topic": "/tmp/status_bg_pipe",
     "encoding": "rgb"
   },
   {
