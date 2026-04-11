@@ -22,7 +22,7 @@ _NODE = None
 
 
 def perform_thought(task: str,
-                    persona: str = "General",
+                    persona: str = 'General',
                     context: str = None) -> str:
     """
     Consult an internal specialist persona for reasoning.
@@ -34,7 +34,7 @@ def perform_thought(task: str,
     # Notify dashboard if node is available
     if _NODE:
         msg = String()
-        msg.data = f"thinking:{persona}"
+        msg.data = f'thinking:{persona}'
         try:
             pub = _NODE.create_publisher(
                 String, '/eva/dashboard/visual_trigger', 10)
@@ -50,23 +50,23 @@ def perform_thought(task: str,
     model = os.getenv('LLM_API_MODEL', 'deepseek-chat')
 
     personas = {
-        'General': "You are an internal reasoning module for Eva.",
+        'General': 'You are an internal reasoning module for Eva.',
         'Architect': "You are Eva's High-level Architect.",
         'Critic': "You are Eva's internal Critic.",
         'Planner': "You are Eva's Strategic Planner.",
-        'Debugger': "You are a Debugger."
+        'Debugger': 'You are a Debugger.'
     }
 
     system_prompt = personas.get(persona, personas['General'])
-    messages = [{"role": "system", "content": system_prompt}]
+    messages = [{'role': 'system', 'content': system_prompt}]
     if context:
-        messages.append({"role": "system", "content": f"Context: {context}"})
-    messages.append({"role": "user", "content": task})
+        messages.append({'role': 'system', 'content': f'Context: {context}'})
+    messages.append({'role': 'user', 'content': task})
 
-    payload = {"model": model, "messages": messages, "temperature": 0.3}
+    payload = {'model': model, 'messages': messages, 'temperature': 0.3}
     headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
+        'Authorization': f'Bearer {api_key}',
+        'Content-Type': 'application/json'
     }
 
     try:
@@ -77,14 +77,14 @@ def perform_thought(task: str,
         # Reset visual status
         if _NODE:
             idle_msg = String()
-            idle_msg.data = "idle"
+            idle_msg.data = 'idle'
             pub_idle = _NODE.create_publisher(
                 String, '/eva/dashboard/visual_trigger', 10)
             pub_idle.publish(idle_msg)
 
         return response.json()['choices'][0]['message']['content']
     except Exception as e:
-        return f"Thought error: {str(e)}"
+        return f'Thought error: {str(e)}'
 
 
 def register(module, node):

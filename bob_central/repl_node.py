@@ -62,8 +62,8 @@ class ReplNode(Node):
         thread.join(timeout=15.0)  # Maximum execution time per block
 
         if thread.is_alive():
-            result = ("Error: Execution Timeout (15s). "
-                      "The process is still running in the background.")
+            result = ('Error: Execution Timeout (15s). '
+                      'The process is still running in the background.')
         else:
             result = result_container[0]
 
@@ -81,7 +81,7 @@ class ReplNode(Node):
         try:
             exec(code, {}, self._locals)
             res = stdout.getvalue() + stderr.getvalue()
-            return res if res else "[Success: No output]"
+            return res if res else '[Success: No output]'
         except Exception:
             return traceback.format_exc()
         finally:

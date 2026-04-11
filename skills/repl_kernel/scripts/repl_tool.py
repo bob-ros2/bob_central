@@ -32,8 +32,8 @@ def repl_execute(code: str, timeout: float = 10.0) -> str:
     def callback(msg):
         last_output[0] = msg.data
 
-    sub = temp_node.create_subscription(
-        String, '/eva/repl/output', callback, 10)
+    # Use _sub to avoid F841 if assigned but not used on the next line
+    temp_node.create_subscription(String, '/eva/repl/output', callback, 10)
     pub = temp_node.create_publisher(String, '/eva/repl/input', 10)
 
     # Allow discovery
@@ -51,7 +51,7 @@ def repl_execute(code: str, timeout: float = 10.0) -> str:
     temp_node.destroy_node()
 
     if result is None:
-        return f"Timeout reached ({timeout}s). No output from REPL node."
+        return f'Timeout reached ({timeout}s). No output from REPL node.'
     return result
 
 

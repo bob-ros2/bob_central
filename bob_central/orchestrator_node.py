@@ -36,7 +36,7 @@ class OrchestratorNode(Node):
 
         # State
         self.is_busy = False
-        self.last_user_query = ""
+        self.last_user_query = ''
         self.is_detailed = False
         self.query_queue = []
         self.was_streamed = False
@@ -136,12 +136,12 @@ class OrchestratorNode(Node):
     def publish_status(self):
         """Publish the current orchestrator status as JSON."""
         status = {
-            "Orchestrator": {
-                "State": "BUSY" if self.is_busy else "IDLE",
-                "Queue_Depth": len(self.query_queue),
-                "Last_Query": self.last_user_query[:40],
-                "Detailed_Mode": self.is_detailed,
-                "Time": datetime.now().strftime('%H:%M:%S')
+            'Orchestrator': {
+                'State': 'BUSY' if self.is_busy else 'IDLE',
+                'Queue_Depth': len(self.query_queue),
+                'Last_Query': self.last_user_query[:40],
+                'Detailed_Mode': self.is_detailed,
+                'Time': datetime.now().strftime('%H:%M:%S')
             }
         }
         msg = String()
@@ -151,7 +151,7 @@ class OrchestratorNode(Node):
     def trigger_visual_status(self, is_busy=False):
         """Publish a trigger for the dashboard visualization worker."""
         msg = String()
-        msg.data = "busy" if is_busy else "idle"
+        msg.data = 'busy' if is_busy else 'idle'
         self.pub_visual_trigger.publish(msg)
 
     def process_query(self, msg):
