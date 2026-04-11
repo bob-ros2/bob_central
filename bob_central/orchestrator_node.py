@@ -117,10 +117,10 @@ class OrchestratorNode(Node):
         if self.is_busy:
             if self.reject_if_busy:
                 self.get_logger().info(
-                    f'Eva is busy. Routing to Bobassi: {query[:30]}...')
+                    f'EVA BUSY -> Routing to BOBASSI: "{query[:40]}..."')
                 # Forward to Bobassi
                 bob_msg = String()
-                bob_msg.data = json.dumps({'role': 'user', 'content': query})
+                bob_msg.data = query  # Send raw string for simplicity
                 self.pub_bobassi_query.publish(bob_msg)
                 return
             elif self.enable_queuing:
@@ -128,6 +128,7 @@ class OrchestratorNode(Node):
                 self.query_queue.append(msg)
                 return
 
+        self.get_logger().info(f'EVA IDLE -> Processing locally: "{query[:40]}..."')
         # Mark as busy and Update UI
         self.is_busy = True
         self.trigger_visual_status(is_busy=True)
