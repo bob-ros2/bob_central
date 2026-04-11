@@ -27,7 +27,7 @@
   {
     "id": "system_status",
     "type": "Bitmap",
-    "area": [410, 360, 444, 120],
+    "area": [426, 360, 428, 120],
     "topic": "/eva/streamer/data/system_status",
     "color": [0, 255, 150, 255]
   }
