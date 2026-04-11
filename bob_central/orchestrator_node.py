@@ -190,38 +190,42 @@ class OrchestratorNode(Node):
 
     def specialist_response_callback(self, msg):
         """Receive a response from a specialist agent."""
-        if not msg.data:
-            self.get_logger().warn('Received empty specialist response.')
+        if not msg.data and not self.was_streamed:
+            self.get_logger().warn('Received empty specialist response and no tokens were streamed.')
             self.is_busy = False
             self.trigger_visual_status(is_busy=False)
             return
 
-        try:
+        content = ''
+        if msg.data:
             try:
-                data = json.loads(msg.data)
-                content = data.get('content', msg.data)
-            except json.JSONDecodeError:
-                # Fallback for plain string responses
+                try:
+                    data = json.loads(msg.data)
+                    content = data.get('content', msg.data)
+                except json.JSONDecodeError:
+                    # Fallback for plain string responses
+                    content = msg.data
+            except Exception as e:
+                self.get_logger().error(f'Error parsing specialist resp: {e}')
                 content = msg.data
 
-            self.get_logger().debug(
-                f'Received specialist response: {content[:100]}...')
+        # Even if content is empty now, if we streamed, we are done.
+        self.get_logger().debug(
+            f'Finalizing turn. Streamed: {self.was_streamed}, Content Length: {len(content)}')
 
-            bundled_data = {
-                'user_query': self.last_user_query,
-                'is_detailed': self.is_detailed,
-                'specialist_response': content
-            }
-            response_msg = String()
-            response_msg.data = json.dumps(bundled_data)
-            self.pub_user_response.publish(response_msg)
+        bundled_data = {
+            'user_query': self.last_user_query,
+            'is_detailed': self.is_detailed,
+            'specialist_response': content
+        }
+        response_msg = String()
+        response_msg.data = json.dumps(bundled_data)
+        self.pub_user_response.publish(response_msg)
 
-            if not self.was_streamed:
-                stream_msg = String()
-                stream_msg.data = content
-                self.pub_llm_stream.publish(stream_msg)
-        except Exception as e:
-            self.get_logger().error(f'Error processing specialist resp: {e}')
+        if content and not self.was_streamed:
+            stream_msg = String()
+            stream_msg.data = content
+            self.pub_llm_stream.publish(stream_msg)
 
         # RELEASE LOCK
         self.is_busy = False
