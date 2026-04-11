@@ -28,7 +28,7 @@ class StatusDaemonNode(Node):
         self.height = 120
         self.topic_name = '/eva/streamer/data/system_status'
         self.bg_pipe = '/tmp/status_bg_pipe'
-        self.bg_image = '/root/eva/media/status_bg.png'
+        self.bg_image = '/tmp/media/status_bg.png'
         
         # Publishers
         self.pub_events = self.create_publisher(String, '/eva/streamer/events', 10)
@@ -42,7 +42,7 @@ class StatusDaemonNode(Node):
         
         # Timers
         self.create_timer(1.0, self.render_loop)
-        self.create_timer(5.0, self.rotate_page)
+        self.create_timer(10.0, self.rotate_page)
         
         # Initialize Background Stream (FFmpeg)
         self.bg_thread = threading.Thread(target=self.bg_stream_worker, daemon=True)
