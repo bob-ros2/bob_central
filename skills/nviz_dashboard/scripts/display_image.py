@@ -60,9 +60,9 @@ def main():
     """Parse arguments and execute image streaming."""
     parser = argparse.ArgumentParser(description='Display image on the nviz dashboard')
     parser.add_argument('--path', required=True, help='Path to the image file')
-    parser.add_argument('--area', type=int, nargs=4, default=[511, 50, 256, 256],
+    parser.add_argument('--area', type=int, nargs=4, default=[426, 10, 428, 350],
                         help='Dashboard area [x, y, w, h]')
-    parser.add_argument('--id', default='photo_stream', help='Unique ID for the dashboard element')
+    parser.add_argument('--id', default='eva_art', help='Unique ID for the dashboard element')
     parser.add_argument('--pipe', default='/tmp/photo_pipe', help='Path to the FIFO pipe')
     parser.add_argument('--stop', action='store_true', help='Stop streaming and remove element')
 
