@@ -57,6 +57,8 @@
        - "//PKGSHARE:bob_central/tools/artist_tool.py"
        - "//PKGSHARE:bob_central/tools/web_research.py"
        - "//PKGSHARE:bob_central/tools/system_helper.py"
+       - "//PKGSHARE:bob_central/skills/recursive_thought/scripts/thought_tool.py"
+       - "//PKGSHARE:bob_central/skills/repl_kernel/scripts/repl_tool.py"
   arguments:
     - --ros-args
     - --log-level
@@ -97,5 +99,17 @@
     - "llm_response:=/eva/bobassi/response"
     - -r
     - "llm_stream:=~/internal/bobassi_stream"
+    - -r
+    - *eva_ns
+
+# Eva REPL: Persistent Engineering Session
+- name: repl
+  package: bob_central
+  executable: repl
+  output: screen
+  arguments:
+    - --ros-args
+    - --log-level
+    - *log_level
     - -r
     - *eva_ns

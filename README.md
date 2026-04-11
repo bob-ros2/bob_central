@@ -3,40 +3,32 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 This package is a **General Central Orchestration Brain-Mesh System** designed for building and hosting self-evolving, autonomous AI entities within isolated container environments. It represents an AI deeply integrated into a **ROS 2 environment**, leveraging the full power of the ROS 2 ecosystem (topics, services, and parameters) for real-world interaction and self-monitoring.
-# bob_central (v0.4.0)
+# bob_central (v0.5.0)
 
 **The Central Nervous System of the Bob ROS Ecosystem.**
 
-`bob_central` provides the essential infrastructure for orchestrating complex, multi-modular AI agents in a ROS 2 environment. It handles everything from high-level decision making (Orchestrator) to real-time system visualization (nviz) and autonomous documentation management (Knowledge Graph).
+`bob_central` provides the essential infrastructure for orchestrating complex, multi-modular AI agents in a ROS 2 environment. It handles everything from high-level decision making (Orchestrator) to real-time system visualization (nviz), stateful code engineering (REPL), and autonomous documentation management (Knowledge Graph).
 
 ## Core Concept
-At its heart, `bob_central` manages a "Brain-Mesh" of interconnected specialized nodes (e.g., Vision, Researcher, Coder). The system is not monolithic; it is a distributed network of intelligence where every component is replaceable and extensible.
+At its heart, `bob_central` manages a "Brain-Mesh" of interconnected specialized nodes. The system is not monolithic; it is a distributed network of intelligence where every component is replaceable and extensible.
 
-The system handles:
 ## Key Features
-- **Centralized Orchestration**: A powerful node that manages conversation flows and tool calls.
-- **Visual Telemetry (nviz)**: High-performance, event-driven dashboard rendering (8-bit grayscale bitmaps).
+- **Recursive Reasoning (RLM Core)**: Multi-step internal dialogue using expert personas (Architect, Critic, Planner, Debugger) to decompose complex tasks.
+- **Persistent Python REPL**: A stateful engineering environment for iterative code development and system manipulation, preserving state across sessions.
+- **Centralized Orchestration**: A powerful node that manages conversation flows, busy-locking, and tool calls.
+- **Visual Telemetry (nviz)**: High-performance, event-driven dashboard rendering (8-bit grayscale bitmaps) with real-time status indicators.
 - **Autonomous Knowledge Graph**: On-demand technical documentation fetching and indexing for AI context.
-- **Ecosystem Registry**: Centralized management of specialized ROS nodes and LLM skills.
-- **ROS 2 Native AI Integration**: Pure ROS 2 communication for modular AI expansion.
-- **Self-Evolution Framework**: Infrastructure for agents to modify and expand their own capabilities.
+- **Self-Evolution Framework**: Pure ROS 2 native infrastructure for agents to modify and expand their own capabilities.
 
-## Autonomous Knowledge Graph
-The system maintains a dynamic documentation base fetched on-demand from the Bob ROS ecosystem. This keeps the main repository light while providing Eva with full technical depth.
+## Recursive Thought (RLM)
+Version 0.5.0 introduces the **Recursive Language Model** core. Eva can now use the `perform_thought` tool to consult internal specialists before executing sensitive actions. This enables high-level planning and risk assessment within the same conversational turn.
 
-### Building the Graphen
-To initialize or refresh the documentation library:
-```bash
-# Register repositories in /config/knowledge_repos.yaml
-# Run the Librarian to fetch manuals
-python3 src/bob_central/skills/knowledge_graph/scripts/sync.py
-```
-Manuals are stored in `skills/knowledge_graph/docs/` (Git Ignored) and accessible via the `read_manual.py` reader.
+## Persistent Engineering (REPL)
+The `repl_kernel` skill provides Eva with a permanent engineering workspace. 
+*   **Persistent State**: Variables, imports, and function definitions persist as long as the stack is running.
+*   **Safety**: Isolated execution via a dedicated `repl_node` with 15s timeouts and capture of all stdout/stderr output.
 
-## Dashboard Visuals (nviz)
-The dashboard uses an efficient event-driven bitmap system to display telemetry without taxing the CPU.
-, emphasizing security, absolute process isolation, and portability.
-
+## Ecosystem Management
 ### The Docker Ecosystem
 To manage the complex set of services, a master management script is provided in the `docker/` directory.
 
@@ -55,33 +47,15 @@ To manage the complex set of services, a master management script is provided in
 | `compose-tti.yaml` | Image generation engine (`eva-artist`). |
 | `compose-gitea.yaml` | Local Git infrastructure and CI runner. |
 | `compose-inference.yaml` | LLM inference servers (Summarizer & Vision). |
-| `compose-q3tts.yaml` | Text-to-Speech service. |
-| `compose-qdrant.yaml` | Vector database for memory. |
-| `compose-tbot.yaml` | Integrated Twitch Chat bot for remote control. |
-
-#### Internal Images (Built from this Repo)
-| Image | Dockerfile | Description |
-|:---|:---|:---|
-| `eva-base` | `Dockerfile.base` | The primary orchestration and tool execution environment. |
-| `eva-artist` | `Dockerfile.tti` | SDXL-based image generation engine. |
-| `eva-tbot` | `Dockerfile.tbot` | Twitch Chat bot interface for remote interaction. |
-
-#### External Services & Headless Specialists
-| Service | Image / Source | Repository / Docs |
-|:---|:---|:---|
-| **Gitea** | `gitea/gitea` | [Install with Docker](https://docs.gitea.com/installation/install-with-docker) |
-| **Qdrant** | `qdrant/qdrant` | [Vector DB Documentation](https://qdrant.tech/) |
-| **Llama.cpp** | `llama.cpp:server` | [llama.cpp HTTP Server](https://github.com/ggml-org/llama.cpp/tree/master/tools/server) |
-| **TTS Engine** | `bob-q3tts` | [bob-q3tts Repository](https://github.com/bob-ros2/bob-q3tts) |
-| **Nviz Streamer** | `bob-nviz` | [bob-nviz Repository](https://github.com/bob-ros2/bob-nviz) |
+| `compose-qdrant.yaml` | Vector database for long-term memory. |
 
 ### Security Features
-* **Credential Isolation**: Pure separation of code and secrets via environment variables and volume mounts.
-* **`/root/eva` Sandbox**: All temporary files and generated assets are locked into a dedicated host volume, preventing unauthorized filesystem access.
+* **Credential Isolation**: Pure separation of code and secrets via environment variables.
+* **`/root/eva` Sandbox**: All temporary files and generated assets are locked into a dedicated host volume.
 
 ## System Architecture
 
-The following diagram illustrates the interaction between the Docker containers and the internal ROS 2 communication mesh within the Nucleus:
+The following diagram illustrates the interaction between the Docker containers and the internal ROS 2 communication mesh:
 
 ```mermaid
 graph TD
@@ -98,20 +72,15 @@ graph TD
         subgraph "Container: eva-base (Nucleus)"
             direction TB
             
-            subgraph "Namespace: /eva/tbot"
-                T_BOT["/tbot/bot (Twitch)"]
-                T_FILT["/tbot/filter"]
-                T_THROT["/tbot/throttle"]
+            subgraph "Namespace: /eva"
+                LOGIC["/eva/logic (Orchestrator)"]
+                BRAIN["/eva/brain_eva (bob_llm)"]
+                REPL["/eva/repl (Persistent Context)"]
+                VMGR["/eva/visual_status_manager"]
             end
 
-            LOGIC["/eva/logic (Orchestrator)"]
-            BRAIN["/eva/brain_eva (bob_llm)"]
             CLIENT["/eva/bob_chat_client"]
             
-            subgraph "Namespace: /eva/tts"
-                TTS["/tts/tts (Q3TTS)"]
-            end
-
             subgraph "Namespace: /eva/streamer"
                 MIXER["/streamer/mixer"]
                 NVIZ["/streamer/nviz"]
@@ -125,24 +94,22 @@ graph TD
         end
     end
 
-    %% Tbot Feed
-    T_BOT -- ".../chat_raw" --> T_FILT
-    T_FILT -- ".../chat_filtered" --> T_THROT
-    T_THROT -- "/eva/user_query" --> LOGIC
-
-    %% Core Logic Loop
+    %% Queries
     CLIENT -- "/eva/user_query" --> LOGIC
     LOGIC -- ".../query_timed" --> BRAIN
     BRAIN -- ".../specialist_response" --> LOGIC
     
+    %% Recursive / Persistent Work
+    BRAIN -- "Tool Call" --> REPL
+    REPL -- "Result" --> BRAIN
+    
+    %% Status / Dashboard
+    LOGIC -- "/eva/dashboard/visual_trigger" --> VMGR
+    VMGR -- "/eva/streamer/status_icon" --> NVIZ
+
     %% Output to Client
     BRAIN -- "/eva/llm_stream" --> CLIENT
-    BRAIN -- "/eva/llm_tool_calls" --> CLIENT
     
-    %% To TTS Pipeline (Direct Stream)
-    BRAIN -- "/eva/llm_stream" --> TTS
-    TTS -- ".../audio_raw" --> MIXER
-
     %% Inference / Proxy
     GATE -- "Proxy" --> SUM
     GATE -- "Proxy" --> VIS
@@ -151,27 +118,12 @@ graph TD
     %% Memory Access
     BRAIN -- "REST / gRPC" --> QDRANT
 
-    %% Styling for optimal readability (Dark themes & white text)
+    %% Styling
     style LOGIC fill:#c0392b,stroke:#333,stroke-width:3px,color:#fff
     style BRAIN fill:#2980b9,stroke:#333,stroke-width:2px,color:#fff
+    style REPL fill:#e67e22,stroke:#333,stroke-width:2px,color:#fff
+    style VMGR fill:#16a085,stroke:#333,color:#fff
     style CLIENT fill:#27ae60,stroke:#333,stroke-width:2px,color:#fff
-    
-    style T_BOT fill:#8e44ad,stroke:#333,color:#fff
-    style T_FILT fill:#8e44ad,stroke:#333,color:#fff
-    style T_THROT fill:#8e44ad,stroke:#333,color:#fff
-    
-    style VGATE fill:#16a085,stroke:#333,color:#fff
-    style TTS fill:#16a085,stroke:#333,color:#fff
-    
-    style MIXER fill:#2c3e50,stroke:#333,color:#fff
-    style NVIZ fill:#2c3e50,stroke:#333,color:#fff
-    
-    style TTI fill:#d35400,stroke:#333,color:#fff
-    
-    style GATE fill:#7f8c8d,stroke:#333,color:#fff
-    style SUM fill:#7f8c8d,stroke:#333,color:#fff
-    style VIS fill:#7f8c8d,stroke:#333,color:#fff
-    style QDRANT fill:#34495e,stroke:#333,color:#fff
 ```
 
 ## ROS 2 API
@@ -179,28 +131,12 @@ graph TD
 | Topic | Type | Description |
 |-------|-------|-------------|
 | `/eva/user_query` | `std_msgs/String` | Universal input channel for user queries. |
-| `/eva/user_response` | `std_msgs/String` | Final bundled response (with metadata). |
-| `/eva/orchestrator/status` | `std_msgs/String` | Real-time system state (Busy/Idle, Queue, Mode) for monitoring. |
+| `/eva/repl/input` | `std_msgs/String` | Raw Python code feed for the persistent REPL node. |
+| `/eva/repl/output` | `std_msgs/String` | Captured output from the engineering workspace. |
+| `/eva/dashboard/visual_trigger` | `std_msgs/String` | Internal status triggers (busy/idle/thinking) for UI. |
 | `/eva/llm_stream` | `std_msgs/String` | Real-time token stream for low-latency interfaces. |
-| `/eva/artist/prompt` | `std_msgs/String` | Intent channel for visual generation. |
-
-### Parameters
-* `api_url`: The gateway endpoint for LLM interactions.
-* `system_prompt_file`: Defines the core identity and logic of the orchestrator.
-* `skill_dir`: Directory for modular, self-contained skill specifications.
-
-## Getting Started
-### Interactive Shell
-You can enter a direct dialogue with the brain's core via the `bob_llm` chat interface:
-```bash
-ros2 run bob_llm chat --topic_in "/eva/user_query" --topic_out "/eva/llm_stream"
-```
-
-### Launching the Core
-```bash
-ros2 launch bob_central orch_eva.yaml
-```
 
 ## Development & Evolution
-* **Linter Compliant**: Built with `ament_lint_auto` to ensure high code quality.
-* **Extensible Architecture**: Designed for users who want to clone a "living" system and evolve it using their own coding agents.
+* **Linter Compliant**: 100% compliance with `ament_lint_auto`, `flake8`, and `pep257`.
+* **Standardized Skills**: All tools are documented via `SKILL.md` using the Anthropic Agent Skill standard.
+* **Extensible Architecture**: Designed for autonomous self-evolution.

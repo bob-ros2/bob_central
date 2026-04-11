@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -118,12 +117,14 @@ def list_dir(path: str = '.') -> str:
 
     try:
         items = os.listdir(path)
-        result = [
-            f'{"[DIR] " if os.path.isdir(os.path.join(path, i)) else "      "}{i}'
-            for i in items
-        ]
-        result.sort()
-        return f'Contents of {os.path.abspath(path)}:\n' + '\n'.join(result)
+        formatted_items = []
+        for i in items:
+            is_dir = os.path.isdir(os.path.join(path, i))
+            prefix = "[DIR] " if is_dir else "      "
+            formatted_items.append(f"{prefix}{i}")
+        formatted_items.sort()
+        header = f'Contents of {os.path.abspath(path)}:\n'
+        return header + '\n'.join(formatted_items)
     except Exception as e:
         return f'Error listing directory: {str(e)}'
 

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,14 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Central Orchestration Node for Bob's Brain-Mesh.
-
-Handles high-level intent routing and manages specialized LLM agents.
-"""
-
-from datetime import datetime
 import json
+from datetime import datetime
 
 import rclpy
 from rclpy.node import Node
@@ -29,77 +22,59 @@ from std_msgs.msg import String
 
 class OrchestratorNode(Node):
     """
-    Central Orchestration Node for Bob's Brain-Mesh.
+    Central node that orchestrates user queries and specialist responses.
 
-    Handles high-level intent routing and manages specialized LLM agents.
+    Handles busy-locking, queuing, and support-routing.
     """
 
     def __init__(self):
-        """Initialize the Orchestrator Node."""
         super().__init__('orchestrator')
-        self.get_logger().info('Orchestrator starting up...')
 
-        # Configuration from Environment Variables
-        import os
-        rj = os.getenv('ORCHESTRATOR_REJECT_IF_BUSY', 'true').lower() == 'true'
-        self.reject_if_busy = rj
-        eq = os.getenv('ORCHESTRATOR_ENABLE_QUEUING', 'false').lower() == 'true'
-        self.enable_queuing = eq
-        self.reject_msg = os.getenv(
-            'ORCHESTRATOR_REJECT_MSG',
-            'System is busy processing a previous request.')
+        # Parameters
+        self.declare_parameter('enable_queuing', False)
+        self.declare_parameter('reject_if_busy', True)
 
-        # State Management
+        # State
         self.is_busy = False
-        self.query_queue = []
-        self.last_user_query = 'Unknown'
+        self.last_user_query = ""
         self.is_detailed = False
+        self.query_queue = []
+        self.was_streamed = False
+
+        # QoS for late-joining subscribers (for stream)
+        qos_latched = rclpy.qos.QoSProfile(
+            depth=1,
+            durability=rclpy.qos.DurabilityPolicy.TRANSIENT_LOCAL)
+
+        # Publishers
+        self.pub_timed_query = self.create_publisher(
+            String, 'internal/query_timed', 10)
+        self.pub_user_response = self.create_publisher(
+            String, '~/internal/full_response_text', 10)
+        self.pub_llm_stream = self.create_publisher(
+            String, '/eva/llm_stream', qos_latched)
 
         # Subscriptions
-        # User input (terminal, voice, etc.)
         self.sub_user_query = self.create_subscription(
-            String,
-            'user_query',
-            self.user_query_callback,
-            10
+            String, 'user_query', self.user_query_callback, 10
         )
-
-        # Response from specialized nodes
         self.sub_specialist_response = self.create_subscription(
             String,
-            'specialist_response',
+            'internal/specialist_response',
             self.specialist_response_callback,
             10
         )
-
-        # Publishers
-        self.pub_user_response = self.create_publisher(
-            String, 'user_response', 10)
-
-        # Stream to TTS and Web UI (Public)
-        self.pub_llm_stream = self.create_publisher(
-            String, '/eva/llm_stream', 10)
-
-        # Internal Stream Subscriptions
-        self.sub_eva_stream = self.create_subscription(
-            String, 'brain_eva/internal/eva_stream', self.internal_stream_callback, 10
-        )
-        self.sub_bobassi_stream = self.create_subscription(
-            String, 'brain_bobassi/internal/bobassi_stream', self.internal_stream_callback, 10
+        self.sub_internal_stream = self.create_subscription(
+            String,
+            'internal/eva_stream',
+            self.internal_stream_callback,
+            qos_latched
         )
 
-        # To track if we've already streamed the current response
-        self.was_streamed = False
-
-        # Status Publisher (1Hz)
-        self.pub_timed_query = self.create_publisher(
-            String, 'user_query_timed', 10)
-
-        # Feedforward to Support Bot (Bobassi)
+        # Bobassi Support Bridge
         self.pub_bobassi_query = self.create_publisher(
             String, 'bobassi/user_query', 10)
 
-        # Responses from Bobassi
         self.sub_bobassi_response = self.create_subscription(
             String,
             'bobassi/response',
@@ -114,52 +89,44 @@ class OrchestratorNode(Node):
         # Dashboard / UI Monitoring
         self.pub_status = self.create_publisher(
             String, '/eva/orchestrator/status', 10)
+        self.pub_visual_trigger = self.create_publisher(
+            String, '/eva/dashboard/visual_trigger', 10)
         self.timer_status = self.create_timer(1.0, self.publish_status)
 
-        mode = (
-            'SUPPORT (Bobassi)' if self.reject_if_busy else
-            'QUEUE' if self.enable_queuing else 'PASS-THROUGH')
-        self.get_logger().info(f'Orchestrator ready. Mode: {mode}')
+        self.get_logger().info('Orchestrator ready.')
+
+    @property
+    def enable_queuing(self):
+        return self.get_parameter('enable_queuing').value
+
+    @property
+    def reject_if_busy(self):
+        return self.get_parameter('reject_if_busy').value
 
     def internal_stream_callback(self, msg):
-        """Pass internal stream tokens to public stream and mark as streamed."""
+        """Pass internal tokens to public stream and mark as streamed."""
         self.was_streamed = True
         self.pub_llm_stream.publish(msg)
 
     def user_query_callback(self, msg):
-        """
-        Receive a query from the user.
-
-        Analyze it and route to specialists.
-        Handle concurrency via support routing or queuing.
-        """
+        """Receive and route user queries."""
         self.was_streamed = False
         query = msg.data
 
         # Concurrency Check
         if self.is_busy:
             if self.reject_if_busy:
-                self.get_logger().info(f'Eva is busy. Routing to Bobassi: {query[:30]}...')
-                # Forward query to Bobassi as a support interaction
+                self.get_logger().info(
+                    f'Eva is busy. Routing to Bobassi: {query[:30]}...')
+                # Forward to Bobassi
                 bob_msg = String()
                 bob_msg.data = json.dumps({'role': 'user', 'content': query})
                 self.pub_bobassi_query.publish(bob_msg)
-
-                # Still log to rejected for tracking if needed
-                reject_info = {
-                    'status': 'support_active',
-                    'original_query': query
-                }
-                reject_msg = String()
-                reject_msg.data = json.dumps(reject_info)
-                self.pub_rejected.publish(reject_msg)
                 return
             elif self.enable_queuing:
                 self.get_logger().info(f'Queuing query: {query[:30]}...')
                 self.query_queue.append(msg)
                 return
-            else:
-                self.get_logger().info('Allowing parallel processing (Risk of race conditions)')
 
         # Mark as busy and Update UI
         self.is_busy = True
@@ -168,19 +135,11 @@ class OrchestratorNode(Node):
 
     def publish_status(self):
         """Publish the current orchestrator status as JSON."""
-        mode_str = "SUPPORT" if self.reject_if_busy else (
-            "QUEUE" if self.enable_queuing else "PASS")
-
-        short_query = self.last_user_query
-        if len(short_query) > 40:
-            short_query = short_query[:40] + "..."
-
         status = {
             "Orchestrator": {
                 "State": "BUSY" if self.is_busy else "IDLE",
-                "Mode": mode_str,
                 "Queue_Depth": len(self.query_queue),
-                "Last_Query": short_query,
+                "Last_Query": self.last_user_query[:40],
                 "Detailed_Mode": self.is_detailed,
                 "Time": datetime.now().strftime('%H:%M:%S')
             }
@@ -190,136 +149,91 @@ class OrchestratorNode(Node):
         self.pub_status.publish(msg)
 
     def trigger_visual_status(self, is_busy=False):
-        """Invoke the nviz monitoring tool to update the dashboard LED."""
-        try:
-            import subprocess
-            spath = "/ros2_ws/src/bob_central/skills"
-            script = spath + "/nviz_dashboard/scripts/update_system_status.py"
-            cmd = ["python3", script]
-            if is_busy:
-                cmd.append("--busy")
-            subprocess.Popen(
-                cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        except Exception as e:
-            self.get_logger().error(f"Failed to trigger visual status: {e}")
+        """Publish a trigger for the dashboard visualization worker."""
+        msg = String()
+        msg.data = "busy" if is_busy else "idle"
+        self.pub_visual_trigger.publish(msg)
 
     def process_query(self, msg):
         """Handle the actual routing and timing injection."""
         query = msg.data
-        self.last_user_query = query  # Store for the summarizer
+        self.last_user_query = query
         self.get_logger().debug(f'Processing query: {query}')
 
         # Simple Intent/Verbosity Detection
-        details_keywords = [
-            'detail', 'ausführlich', 'erklär', 'explain', 'thorough', 'genau']
+        details_keywords = ['detail', 'ausführlich', 'explain', 'thorough']
         self.is_detailed = any(k in query.lower() for k in details_keywords)
 
         self.get_logger().info(
-            f'Dispatching query (Detailed={self.is_detailed}): {query[:50]}...')
+            f'Dispatching query (Detailed={self.is_detailed})')
 
         # Get current time
         now = datetime.now()
         time_str = now.strftime('%Y-%m-%d %H:%M:%S')
         day_of_week = now.strftime('%A')
 
-        # Prefix the user's message with exact time and verbosity preference
         if self.is_detailed:
-            verbosity = 'DETAILED (Be thorough, explain facts, tell stories if requested)'
+            verbosity = ('DETAILED (Be thorough, explain facts, '
+                         'tell stories if requested)')
         else:
             verbosity = 'CONCISE (Be brief, max 2-3 sentences for fast speech)'
 
-        sys_ctx = (f'[System Context: Current Real Time is {day_of_week}, {time_str}. '
+        sys_ctx = (f'[System Context: Current Real Time is '
+                   f'{day_of_week}, {time_str}. '
                    f'Verbosity Preference: {verbosity}] ')
         enriched_query = sys_ctx + query
 
-        routing_data = {
-            'role': 'user',
-            'content': enriched_query
-        }
-
+        routing_data = {'role': 'user', 'content': enriched_query}
         timed_msg = String()
         timed_msg.data = json.dumps(routing_data)
         self.pub_timed_query.publish(timed_msg)
 
     def specialist_response_callback(self, msg):
-        """
-        Receive a response from a specialist agent.
-
-        Forward to the user.
-        Release the busy-lock and handle queued queries.
-        """
+        """Receive a response from a specialist agent."""
         try:
             data = json.loads(msg.data)
             content = data.get('content', msg.data)
             self.get_logger().debug(
                 f'Received specialist response: {content[:100]}...')
 
-            # Bundle original query + specialist result + meta-intent
             bundled_data = {
                 'user_query': self.last_user_query,
                 'is_detailed': self.is_detailed,
                 'specialist_response': content
             }
-
             response_msg = String()
             response_msg.data = json.dumps(bundled_data)
             self.pub_user_response.publish(response_msg)
 
-            # Also stream to TTS (ONLY if not already streamed)
             if not self.was_streamed:
                 stream_msg = String()
                 stream_msg.data = content
                 self.pub_llm_stream.publish(stream_msg)
-        except json.JSONDecodeError:
-            # Fallback if it's not JSON
-            bundled_data = {
-                'user_query': self.last_user_query,
-                'specialist_response': msg.data
-            }
-            response_msg = String()
-            response_msg.data = json.dumps(bundled_data)
-            self.pub_user_response.publish(response_msg)
+        except Exception as e:
+            self.get_logger().error(f'Error processing specialist resp: {e}')
 
-            # Also stream to TTS (ONLY if not already streamed)
-            if not self.was_streamed:
-                stream_msg = String()
-                stream_msg.data = msg.data
-                self.pub_llm_stream.publish(stream_msg)
-
-        # RELEASE LOCK and Update UI
+        # RELEASE LOCK
         self.is_busy = False
         self.trigger_visual_status(is_busy=False)
-        self.get_logger().info('Processing finished. System ready.')
 
-        # Handle Query Queue if enabled
+        # Handle Queue
         if self.enable_queuing and self.query_queue:
-            next_msg = self.query_queue.pop(0)
-            self.get_logger().info('Processing next item from queue...')
-            self.user_query_callback(next_msg)
+            self.user_query_callback(self.query_queue.pop(0))
 
     def bobassi_response_callback(self, msg):
-        """
-        Receive a response from Bobassi (Support Bot).
-
-        Forward to the user without releasing the main busy-lock.
-        """
+        """Receive a response from Bobassi (Support Bot)."""
         try:
             data = json.loads(msg.data)
             content = data.get('content', msg.data)
-            self.get_logger().info(
-                f'Bobassi (Support) response: {content[:80]}...')
-
             bundled_data = {
                 'user_query': 'Support Request',
                 'is_detailed': False,
                 'specialist_response': f'[Bobassi]: {content}'
             }
-
             response_msg = String()
             response_msg.data = json.dumps(bundled_data)
             self.pub_user_response.publish(response_msg)
 
-            # Stream to TTS (ONLY if not already streamed - likely false for Bobassi)
             if not self.was_streamed:
                 stream_msg = String()
                 stream_msg.data = content
@@ -338,8 +252,7 @@ def main(args=None):
         pass
     finally:
         node.destroy_node()
-        if rclpy.ok():
-            rclpy.shutdown()
+        rclpy.shutdown()
 
 
 if __name__ == '__main__':

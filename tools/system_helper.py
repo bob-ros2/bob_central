@@ -11,14 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Return a simple system status summary useful for an LLM."""
-import os
 
+"""Return a simple system status summary useful for an LLM."""
+
+import os
 import psutil
 
 
 def get_system_status():
-
+    """Get CPU, Memory and Load statistics."""
     cpu_percent = psutil.cpu_percent(interval=None)
     mem = psutil.virtual_memory()
     load_avg = os.getloadavg()
@@ -33,7 +34,7 @@ def get_system_status():
 
 def scan_workspace(path='.'):
     """
-    Return a list of folders (potential packages) in the specified workspace directory.
+    Return a list of folders (potential packages) in the workspace.
 
     Default search is the current working directory.
     """

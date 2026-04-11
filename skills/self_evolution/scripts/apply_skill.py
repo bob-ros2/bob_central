@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,51 +12,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Apply Self-Evolution skill actions."""
-import argparse
-import json
-
-from self_evolution import Evolver
+import subprocess
+import os
 
 
-def main():
-    """Run CLI for self-evolution actions."""
-    parser = argparse.ArgumentParser(description='Apply Self-Evolution skill actions.')
-    parser.add_argument('--action', choices=['init_task', 'iterate', 'status'], required=True)
-    parser.add_argument('--task_id', type=str, help='Evolution Task ID')
-    parser.add_argument('--description', type=str, help='Task description')
-    parser.add_argument('--target', type=str, help='Target file for mutation')
-    parser.add_argument('--test_cmd', type=str, help='Command to verify results')
+def apply_skill(skill_name: str, args: str = "") -> str:
+    """
+    Execute a skill's main entry point (usually apply.py).
 
-    args = parser.parse_args()
-    evolver = Evolver()
+    :param skill_name: Name of the skill folder.
+    :param args: Optional arguments string.
+    """
+    base_path = "/ros2_ws/src/bob_central/skills"
+    skill_path = os.path.join(base_path, skill_name, "scripts", "apply.py")
+
+    if not os.path.exists(skill_path):
+        return f"Error: Apply script for skill '{skill_name}' not found."
+
+    cmd = ["python3", skill_path]
+    if args:
+        cmd.extend(args.split())
 
     try:
-        if args.action == 'init_task':
-            if not all([args.task_id, args.description, args.target, args.test_cmd]):
-                result = {'status': 'error', 'message': 'Missing arguments for init_task.'}
-            else:
-                result = evolver.init_task(
-                    args.task_id, args.description, args.target, args.test_cmd
-                )
-
-        elif args.action == 'iterate':
-            if not args.task_id:
-                result = {'status': 'error', 'message': 'Missing task_id for iterate.'}
-            else:
-                result = evolver.run_iteration(args.task_id)
-
-        elif args.action == 'status':
-            result = {'status': 'success', 'data': evolver.tasks}
-
-        else:
-            result = {'status': 'error', 'message': f'Unknown action: {args.action}'}
-
+        result = subprocess.run(
+            cmd, capture_output=True, text=True, timeout=30.0)
+        output = result.stdout.strip()
+        if result.returncode != 0:
+            output += f"\n[Error {result.returncode}]: {result.stderr.strip()}"
+        return output if output else "[Success: Skill applied]"
     except Exception as e:
-        result = {'status': 'error', 'message': str(e)}
-
-    print(json.dumps(result, indent=2))
+        return f"Error applying skill: {str(e)}"
 
 
-if __name__ == '__main__':
-    main()
+def register(module, node):
+    from bob_llm.tool_utils import register as default_register
+    return default_register(module, node)

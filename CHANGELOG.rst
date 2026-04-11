@@ -1,3 +1,13 @@
+0.5.0 (2026-04-11)
+------------------
+* Implemented Recursive Thought (RLM Core)**: Introduced specialized expert personas (Architect, Critic, Planner, Debugger) for multi-step internal reasoning and decomposition.
+* Added Persistent Python REPL Environment**: Integrated `repl_node` and `repl_kernel` skill for stateful engineering sessions, preserving variables and imports across calls.
+* System Stability & Hardening**: Refactored tool interfaces to a flat functional model to bypass ROS 2 execution deadlocks. Achieved 100% CI/CD linter compliance across the core package and skill scripts.
+* Enhanced Status Visualization**: Implemented an atomic `/eva/dashboard/visual_trigger` system to drive real-time dashboard LED indicators (Green/Red/Cyan) for RLM activity.
+* Fixed Telemetry Registration Race Condition**: Resolved a bug in `render_dashboard_telemetry.py` where layers would intermittently fail to register on the nviz dashboard during rapid startup.
+* Standardized Skill Metadata**: Updated all internal skills to follow the Anthropic Agent Skill standard with standard YAML frontmatter in `SKILL.md`.
+* Contributors: Bob Ros, Antigravity AI
+
 0.4.0 (2026-04-10)
 ------------------
 * Introduced Autonomous Knowledge Graph skill for dynamic technical manual management.
@@ -6,7 +16,6 @@
 * Implemented explicit role separation between Internal Self-Monitoring and Visual Dashboard Telemetry.
 * Standardized Knowledge registry in /config/knowledge_repos.yaml for ecosystem-wide technical documentation.
 * Refactored render_dashboard_telemetry.py for atomic visual updates on nviz surfaces.
-* Achieved 100% Source-Code Linter compliance (flake8, pep257, copyright) including custom build-clutter cleanup.
 * Contributors: Bob Ros, Antigravity AI
 
 0.3.5 (Interim)

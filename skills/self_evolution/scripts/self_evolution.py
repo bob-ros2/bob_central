@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,9 +15,9 @@
 """
 Self-Evolution Engine for Eva (Nucleus).
 
-This script provides the tools for autonomous iterative code improvement,
-inspired by AlphaEvolve. It manages tasks, branches, and test execution.
+Provides autonomous iterative code improvement.
 """
+
 import datetime
 import json
 import logging
@@ -50,7 +49,7 @@ class Evolver:
     """Manages the evolution of Eva's code."""
 
     def __init__(self):
-        """Initialize the Evolver and ensure the persistent directory exists."""
+        """Initialize Evolver and ensure persistent directory exists."""
         if not os.path.exists(EVA_ROOT):
             os.makedirs(EVA_ROOT)
         self.tasks = self._load_tasks()
@@ -88,22 +87,26 @@ class Evolver:
     def init_task(self, task_id, description, target_file, test_cmd):
         """Set up a new evolution task."""
         if task_id in self.tasks['tasks']:
-            return {'status': 'error', 'message': f'Task {task_id} already exists.'}
+            return {'status': 'error',
+                    'message': f'Task {task_id} already exists.'}
 
         logging.info(f'Initializing task: {task_id} - {description}')
 
         # Git preparations (on host/container repo)
         try:
             # Create a branch for the task
-            subprocess.run(['git', 'checkout', 'main'], cwd='/ros2_ws/src/bob_central', check=True)
+            repo_path = '/ros2_ws/src/bob_central'
+            subprocess.run(['git', 'checkout', 'main'],
+                           cwd=repo_path, check=True)
             subprocess.run(
                 ['git', 'checkout', '-b', f'evolution/{task_id}'],
-                cwd='/ros2_ws/src/bob_central',
+                cwd=repo_path,
                 check=True
             )
             logging.info(f'Created branch evolution/{task_id}')
         except Exception as e:
-            return {'status': 'error', 'message': f'Git preparation failed: {e}'}
+            return {'status': 'error',
+                    'message': f'Git preparation failed: {e}'}
 
         self.tasks['tasks'][task_id] = {
             'id': task_id,
@@ -121,17 +124,17 @@ class Evolver:
         return {'status': 'success', 'task_id': task_id}
 
     def _call_llm_for_mutation(self, prompt, current_code, context=None):
-        """Call Eva's LLM to generate a code mutation based on the prompt."""
-        logging.info(f'LLM mutation requested with prompt: {prompt[:100]}...')
+        """Call Eva's LLM to generate a code mutation."""
+        logging.info(f'LLM mutation requested: {prompt[:100]}...')
 
         if self.has_llm and self.llm_integration:
             try:
-                # Use real LLM integration
+                ctx_json = json.dumps(context, indent=2) if context else None
                 mutated_code = self.llm_integration.generate_code_mutation(
                     prompt=prompt,
                     current_code=current_code,
-                    context=json.dumps(context, indent=2) if context else None,
-                    timeout=60  # 60 second timeout for LLM
+                    context=ctx_json,
+                    timeout=60
                 )
 
                 if mutated_code:
@@ -149,19 +152,15 @@ class Evolver:
     def _fallback_mutation(self, prompt, current_code, context):
         """Fallback mutation logic when LLM is not available."""
         prompt_lower = prompt.lower()
-
-        # Simple rule-based mutations
         lines = current_code.split('\n')
         modified_lines = []
 
         for line in lines:
             modified_lines.append(line)
-
             # Add error handling if mentioned
             if 'error' in prompt_lower or 'exception' in prompt_lower:
                 if line.strip().startswith('def ') and '):' in line:
                     modified_lines.append('    try:')
-                    # We'll need to adjust indentation later
 
         result = '\n'.join(modified_lines)
 
@@ -175,7 +174,8 @@ class Evolver:
 
         # Add optimization comment if performance mentioned
         if 'performance' in prompt_lower or 'optimize' in prompt_lower:
-            result += '\n\n# Performance optimization applied based on mutation prompt'
+            result += ('\n\n# Performance optimization applied '
+                       'based on mutation prompt')
 
         # Add feature comment if feature mentioned
         if 'feature' in prompt_lower or 'add' in prompt_lower:
@@ -187,18 +187,18 @@ class Evolver:
         """Apply LLM-generated mutation to the target file."""
         task = self.tasks['tasks'].get(task_id)
         if not task:
-            return {'status': 'error', 'message': f'Task {task_id} not found.'}
+            return {'status': 'error',
+                    'message': f'Task {task_id} not found.'}
 
         target_file = task['target_file']
         if not os.path.exists(target_file):
-            return {'status': 'error', 'message': f'Target file {target_file} not found.'}
+            return {'status': 'error',
+                    'message': f'Target file {target_file} not found.'}
 
         try:
-            # Read current code
             with open(target_file, 'r') as f:
                 current_code = f.read()
 
-            # Get context about the task
             context = {
                 'task_description': task['description'],
                 'test_command': task['test_cmd'],
@@ -207,22 +207,13 @@ class Evolver:
                 'iteration_count': len(task['iterations']) + 1
             }
 
-            # Call LLM for mutation
             mutated_code = self._call_llm_for_mutation(
-                mutation_prompt,
-                current_code,
-                context
-            )
+                mutation_prompt, current_code, context)
 
             # Extract code from LLM response (handle code blocks)
             code_pattern = r'```(?:python)?\n(.*?)\n```'
             matches = re.findall(code_pattern, mutated_code, re.DOTALL)
-
-            if matches:
-                mutated_code = matches[0]
-            else:
-                # If no code blocks found, use the whole response
-                mutated_code = mutated_code.strip()
+            mutated_code = matches[0] if matches else mutated_code.strip()
 
             # Backup original file
             backup_file = target_file + '.backup'
@@ -236,18 +227,12 @@ class Evolver:
             logging.info(f'Applied mutation to {target_file}')
 
             # Git commit the change
-            subprocess.run(
-                ['git', 'add', target_file],
-                cwd='/ros2_ws/src/bob_central',
-                check=True
-            )
+            repo_p = '/ros2_ws/src/bob_central'
+            subprocess.run(['git', 'add', target_file], cwd=repo_p, check=True)
             i_count = len(task['iterations']) + 1
             m_msg = f'Evolution iteration {i_count}: {mutation_prompt[:50]}...'
-            subprocess.run(
-                ['git', 'commit', '-m', m_msg],
-                cwd='/ros2_ws/src/bob_central',
-                check=True
-            )
+            subprocess.run(['git', 'commit', '-m', m_msg],
+                           cwd=repo_p, check=True)
 
             return {
                 'status': 'success',
@@ -257,7 +242,6 @@ class Evolver:
                 'mutated_hash': self._get_file_hash(target_file),
                 'llm_used': self.has_llm
             }
-
         except Exception as e:
             logging.error(f'Mutation failed: {e}')
             return {'status': 'error', 'message': f'Mutation failed: {e}'}
@@ -272,7 +256,9 @@ class Evolver:
         """Run the test command and calculate a score."""
         task = self.tasks['tasks'].get(task_id)
         if not task:
-            return {'status': 'error', 'message': f'Task {task_id} not found.', 'score': 0}
+            return {'status': 'error',
+                    'message': f'Task {task_id} not found.',
+                    'score': 0}
 
         try:
             result = subprocess.run(
@@ -281,10 +267,9 @@ class Evolver:
                 cwd='/ros2_ws',
                 capture_output=True,
                 text=True,
-                timeout=30  # 30 second timeout
+                timeout=30
             )
 
-            # Calculate score based on test results
             success = (result.returncode == 0)
             score = 100 if success else 0
 
@@ -293,30 +278,21 @@ class Evolver:
                 'success': success,
                 'score': score,
                 'returncode': result.returncode,
-                'stdout': result.stdout[-1000:],  # Last 1000 chars
+                'stdout': result.stdout[-1000:],
                 'stderr': result.stderr[-1000:],
                 'timed_out': False
             }
-
         except subprocess.TimeoutExpired:
-            return {
-                'status': 'error',
-                'success': False,
-                'score': 0,
-                'message': 'Test timed out',
-                'timed_out': True
-            }
+            return {'status': 'error', 'success': False,
+                    'score': 0, 'message': 'Test timed out',
+                    'timed_out': True}
         except Exception as e:
-            return {
-                'status': 'error',
-                'success': False,
-                'score': 0,
-                'message': f'Test execution failed: {e}',
-                'timed_out': False
-            }
+            return {'status': 'error', 'success': False,
+                    'score': 0, 'message': f'Test execution failed: {e}',
+                    'timed_out': False}
 
     def run_iteration(self, task_id, mutation_prompt=None):
-        """Execute one verify-test-learn cycle with LLM-based mutation."""
+        """Execute one verify-test-learn cycle."""
         task = self.tasks['tasks'].get(task_id)
         if not task:
             return {'status': 'error', 'message': f'Task {task_id} not found.'}
@@ -336,13 +312,14 @@ class Evolver:
         try:
             # Step 1: Apply mutation if prompt provided
             if mutation_prompt:
-                mutation_result = self._apply_mutation(task_id, mutation_prompt)
-                if mutation_result['status'] == 'success':
+                mutation_res = self._apply_mutation(task_id, mutation_prompt)
+                if mutation_res['status'] == 'success':
                     iteration_result['applied'] = True
-                    iteration_result['mutation_result'] = mutation_result
-                    iteration_result['llm_used'] = mutation_result.get('llm_used', False)
+                    iteration_result['mutation_result'] = mutation_res
+                    iteration_result['llm_used'] = mutation_res.get(
+                        'llm_used', False)
                 else:
-                    iteration_result['mutation_error'] = mutation_result['message']
+                    iteration_result['mutation_error'] = mutation_res['message']
 
             # Step 2: Run test and get score
             test_result = self._run_test_and_score(task_id)
@@ -357,10 +334,10 @@ class Evolver:
                 task['best_score'] = current_score
                 task['best_iteration'] = len(task['iterations'])
                 iteration_result['improvement'] = True
-                logging.info(f'New best score: {current_score} (previous: {best_score})')
+                logging.info(f'New best score: {current_score}')
 
                 # Push to Gitea if significant improvement
-                if current_score >= 80:  # Threshold for pushing
+                if current_score >= 80:
                     try:
                         subprocess.run(
                             ['git', 'push', 'sandbox', f'evolution/{task_id}'],
@@ -384,14 +361,9 @@ class Evolver:
                 'improvement': iteration_result['improvement'],
                 'llm_used': iteration_result['llm_used']
             }
-
         except Exception as e:
-            error_msg = f'Iteration failed: {e}'
-            logging.error(error_msg)
-            iteration_result['error'] = error_msg
-            task['iterations'].append(iteration_result)
-            self._save_tasks()
-            return {'status': 'error', 'message': error_msg}
+            logging.error(f'Iteration failed: {e}')
+            return {'status': 'error', 'message': str(e)}
 
     def get_task_status(self, task_id):
         """Get detailed status of a task."""
@@ -401,6 +373,7 @@ class Evolver:
 
         iterations = task['iterations']
         successful = sum(1 for i in iterations if i.get('score', 0) > 0)
+        mutations = sum(1 for i in iterations if i.get('applied', False))
         return {
             'status': 'success',
             'task': task,
@@ -409,51 +382,35 @@ class Evolver:
                 'best_score': task.get('best_score', 0),
                 'best_iteration': task.get('best_iteration', -1),
                 'successful_iterations': successful,
-                'mutations_applied': sum(1 for i in iterations if i.get('applied', False))
+                'mutations_applied': mutations
             }
         }
 
 
 if __name__ == '__main__':
     evolver_inst = Evolver()
-
-    # Enhanced CLI with mutation support
+    # CLI Logic
     if len(sys.argv) > 1:
         action_cli = sys.argv[1]
-
         if action_cli == 'init' and len(sys.argv) == 6:
-            res_cli = evolver_inst.init_task(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
-            print(json.dumps(res_cli, indent=2))
-
+            r = evolver_inst.init_task(sys.argv[2], sys.argv[3],
+                                       sys.argv[4], sys.argv[5])
+            print(json.dumps(r, indent=2))
         elif action_cli == 'iterate':
             if len(sys.argv) == 3:
-                # Iterate without mutation prompt
-                res_cli = evolver_inst.run_iteration(sys.argv[2])
-                print(json.dumps(res_cli, indent=2))
+                r = evolver_inst.run_iteration(sys.argv[2])
+                print(json.dumps(r, indent=2))
             elif len(sys.argv) == 4:
-                # Iterate with mutation prompt
-                res_cli = evolver_inst.run_iteration(sys.argv[2], sys.argv[3])
-                print(json.dumps(res_cli, indent=2))
-
+                r = evolver_inst.run_iteration(sys.argv[2], sys.argv[3])
+                print(json.dumps(r, indent=2))
         elif action_cli == 'status':
             if len(sys.argv) == 3:
-                # Specific task status
-                res_cli = evolver_inst.get_task_status(sys.argv[2])
-                print(json.dumps(res_cli, indent=2))
+                r = evolver_inst.get_task_status(sys.argv[2])
+                print(json.dumps(r, indent=2))
             else:
-                # Overall status
                 print(json.dumps(evolver_inst.tasks, indent=2))
-
         elif action_cli == 'mutate' and len(sys.argv) == 4:
-            # Direct mutation without iteration
-            res_cli = evolver_inst._apply_mutation(sys.argv[2], sys.argv[3])
-            print(json.dumps(res_cli, indent=2))
-
+            r = evolver_inst._apply_mutation(sys.argv[2], sys.argv[3])
+            print(json.dumps(r, indent=2))
         else:
-            print("""#!/usr/bin/env python3
-
-Self Evolution CLI Usage:
-init <task_id> <description> <target_file> <test_cmd>
-iterate <task_id> [mutation_prompt]
-status [task_id]
-mutate <task_id> <mutation_prompt>""")
+            print("Usage: init, iterate, status, mutate")

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,13 +27,14 @@ class DataRenderer:
         # Use default font for terminal look
         self._font = ImageFont.load_default()
 
-    def render_to_grayscale(self, data, target_w, target_h, title='SYSTEM HEALTH'):
+    def render_to_grayscale(self, data, target_w, target_h,
+                            title='SYSTEM HEALTH'):
         # 8-bit Grayscale Canvas (L mode)
         img = Image.new('L', (target_w, target_h), color=0)
         draw = ImageDraw.Draw(img)
         font = self._font
 
-        # Simple CLI Header (White on Black, will be colored by nviz)
+        # Simple CLI Header
         header = f"root@eva:/{title.lower()}"
         draw.text((5, 5), header, fill=255, font=font)
         draw.line([5, 18, target_w-5, 18], fill=150, width=1)
@@ -125,18 +125,23 @@ class DashboardDisplayNode(Node):
     def process_data(self, data):
         # 1. Ensure nviz knows about this layer (send registration once)
         if not self.layout_sent:
+            # Wait briefly for discovery if needed
+            if self.publisher.get_subscription_count() == 0:
+                return
+
             msg = String()
             config = {
                 'type': 'Bitmap',
                 'id': self.args.id,
                 'area': self.args.area,
                 'topic': self.topic_name,
-                'depth': 8,  # 8-bit Grayscale as required
-                'color': [0, 255, 150, 255]  # Technician Green foreground
+                'depth': 8,
+                'color': [0, 255, 150, 255]
             }
             msg.data = json.dumps([config])
             self.publisher.publish(msg)
             self.layout_sent = True
+            self.get_logger().info(f"Registered layer '{self.args.id}' ✅")
 
         # 2. Render and publish raw bytes
         tw, th = self.args.area[2], self.args.area[3]
