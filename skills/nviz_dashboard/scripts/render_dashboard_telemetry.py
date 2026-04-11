@@ -159,7 +159,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--id', required=True)
     parser.add_argument('--title')
-    area_default = [428, 360, 426, 120]
+    area_default = [426, 360, 428, 120]
     parser.add_argument('--area', type=int, nargs=4, default=area_default)
     parser.add_argument('--pipe', help='Legacy parameter - ignored')
     parser.add_argument('--json')
