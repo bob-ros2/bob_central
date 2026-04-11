@@ -38,6 +38,7 @@
     "type": "Bitmap",
     "area": [426, 360, 428, 120],
     "topic": "/eva/streamer/data/system_status",
+    "depth": 8,
     "color": [0, 255, 150, 255]
   }
 ]

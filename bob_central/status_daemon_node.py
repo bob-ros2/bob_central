@@ -34,6 +34,8 @@ class StatusDaemonNode(Node):
         self.pub_events = self.create_publisher(String, '/eva/streamer/events', 10)
         self.pub_bitmap = self.create_publisher(UInt8MultiArray, self.topic_name, 10)
         
+        self.layout_sent = False
+        
         # Subscriptions
         self.create_subscription(String, '/eva/orchestrator/status', self.orch_cb, 10)
         self.create_subscription(String, '/eva/repl/status', self.repl_cb, 10)
@@ -95,6 +97,22 @@ class StatusDaemonNode(Node):
 
     def render_loop(self):
         """Main rendering loop for the Bitmap text overlay."""
+        # 0. Ensure registration
+        if not self.layout_sent and self.pub_events.get_subscription_count() > 0:
+            config = {
+                "type": "Bitmap",
+                "id": "system_status",
+                "area": [426, 360, self.width, self.height],
+                "topic": self.topic_name,
+                "depth": 8,
+                "color": [0, 255, 150, 255]
+            }
+            msg = String()
+            msg.data = json.dumps([config])
+            self.pub_events.publish(msg)
+            self.layout_sent = True
+            self.get_logger().info("Registered system_status layer with depth 8.")
+
         img = Image.new('L', (self.width, self.height), color=0)
         draw = ImageDraw.Draw(img)
         font = ImageFont.load_default()
