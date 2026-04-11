@@ -1,0 +1,15 @@
+# --- Eva Telemetry & Dashboard Status Launcher ---
+# Isolated from main brain-mesh to ensure dashboard resilience
+
+- &eva_ns    "__ns:=/eva"
+
+- name: status_monitor
+  package: bob_central
+  executable: status_daemon
+  output: screen
+  arguments:
+    - --ros-args
+    - --log-level
+    - info
+    - -r
+    - *eva_ns

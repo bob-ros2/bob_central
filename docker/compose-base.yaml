@@ -50,3 +50,18 @@ services:
       - /volume1/ros/eva/ssh:/root/.ssh # Persistent AI Identity (Keys)
       - /tmp/eva:/tmp
     restart: on-failure
+
+  status:
+    image: eva-base:latest
+    container_name: eva-status
+    depends_on:
+      - base
+    networks:
+      - eva-net
+    environment:
+      - ROS_DOMAIN_ID=50
+    command: ros2 launch bob_launch generic.launch.py config:=/ros2_ws/src/bob_central/launch/orch_status.yaml
+    volumes:
+      - ../:/ros2_ws/src/bob_central
+      - /tmp/eva:/tmp
+    restart: always
