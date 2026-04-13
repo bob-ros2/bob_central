@@ -25,15 +25,6 @@
     "encoding": "rgb"
   },
   {
-    "id": "system_status_bg",
-    "type": "VideoStream",
-    "area": [426, 360, 428, 120],
-    "source_width": 428,
-    "source_height": 120,
-    "topic": "/tmp/status_bg_pipe",
-    "encoding": "rgb"
-  },
-  {
     "id": "system_status",
     "type": "Bitmap",
     "area": [426, 360, 428, 120],

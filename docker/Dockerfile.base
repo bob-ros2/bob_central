@@ -50,10 +50,12 @@ RUN mkdir -p /ros2_ws/src
 ARG CACHE_BUST=1
 
 # 1. Clone Bob's engine dependencies & install their requirements
-RUN git clone https://github.com/bob-ros2/bob_llm /ros2_ws/src/bob_llm && \
+RUN echo "Cache bust: $CACHE_BUST" && \
+    git clone https://github.com/bob-ros2/bob_llm /ros2_ws/src/bob_llm && \
     if [ -f /ros2_ws/src/bob_llm/requirements.txt ]; then pip3 install --no-cache-dir -r /ros2_ws/src/bob_llm/requirements.txt; fi
 
-RUN git clone https://github.com/bob-ros2/bob_launch /ros2_ws/src/bob_launch && \
+RUN echo "Cache bust: $CACHE_BUST" && \
+    git clone https://github.com/bob-ros2/bob_launch /ros2_ws/src/bob_launch && \
     if [ -f /ros2_ws/src/bob_launch/requirements.txt ]; then pip3 install --no-cache-dir -r /ros2_ws/src/bob_launch/requirements.txt; fi
 
 # 2. Copy current local repo (bob_central) into workspace

@@ -40,7 +40,7 @@ usage() {
 case "$1" in
     up)
         echo "🚀 Starting Eva Stack..."
-        cd "$BASE_DIR" && $COMPOSE_CMD up -d
+        cd "$BASE_DIR" && $COMPOSE_CMD up -d "${@:2}"
         ;;
     down)
         echo "🛑 Stopping Eva Stack..."
@@ -48,7 +48,7 @@ case "$1" in
         ;;
     build)
         echo "🏗️ Rebuilding Eva Images..."
-        cd "$BASE_DIR" && $COMPOSE_CMD build
+        cd "$BASE_DIR" && $COMPOSE_CMD build "${@:2}"
         ;;
     restart)
         echo "🔄 Restarting Eva Stack..."

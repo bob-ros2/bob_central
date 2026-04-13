@@ -70,7 +70,22 @@ class ReplNode(Node):
         result_container = [None]
 
         def run_target():
-            result_container[0] = self.execute_code(code)
+            if code == "__RESET__":
+                self._locals = {
+                    'node': self,
+                    'rclpy': rclpy,
+                    'json': json,
+                    'sys': sys,
+                    'os': __import__('os'),
+                    'time': __import__('time'),
+                    'math': __import__('math')
+                }
+                result_container[0] = "REPL namespace has been reset."
+            elif code == "__HISTORY__":
+                keys = sorted([k for k in self._locals.keys() if not k.startswith('_')])
+                result_container[0] = "REPL HISTORY: " + ", ".join(keys)
+            else:
+                result_container[0] = self.execute_code(code)
 
         thread = threading.Thread(target=run_target)
         thread.start()
@@ -104,6 +119,7 @@ class ReplNode(Node):
 
 
 def main(args=None):
+    """Start the REPL node."""
     rclpy.init(args=args)
     node = ReplNode()
     try:

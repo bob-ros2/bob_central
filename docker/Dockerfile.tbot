@@ -32,8 +32,8 @@ RUN if [ -f /ros2_ws/src/bob_launch/requirements.txt ]; then pip3 install --no-c
 
 # 3. Create a config directory and copy the launch files
 RUN mkdir -p /ros2_ws/src/tbot_config
-COPY tbot_launch.yaml /ros2_ws/src/tbot_config/tbot_launch.yaml
-COPY tbot_whitelist.yaml /ros2_ws/src/tbot_config/tbot_whitelist.yaml
+COPY config/tbot_whitelist.yaml /ros2_ws/src/tbot_config/tbot_whitelist.yaml
+COPY launch/tbot_launch.yaml /ros2_ws/src/tbot_config/tbot_launch.yaml
 
 # -- Build the Workspace --
 RUN . /opt/ros/${ROS_DISTRO}/setup.sh && \

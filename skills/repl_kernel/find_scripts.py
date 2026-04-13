@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,4 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Package initialization for bob_central."""
+import os
+base_path = '/ros2_ws/src/bob_central/skills/nviz_dashboard/'
+for root, dirs, files in os.walk(base_path):
+    for file in files:
+        if file.endswith('.py'):
+            print(os.path.join(root, file))

@@ -13,8 +13,8 @@ services:
   # -- TBOT: Twitch Interaction & Filtering --
   tbot:
     build:
-      context: .
-      dockerfile: Dockerfile.tbot
+      context: ../
+      dockerfile: ./docker/Dockerfile.tbot
     container_name: eva-tbot
     networks:
       - eva-net

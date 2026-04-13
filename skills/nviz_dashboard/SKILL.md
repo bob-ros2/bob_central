@@ -30,7 +30,7 @@ python3 scripts/display_image.py --path "/root/eva/media/render.png" --area 511 
 ### 3. Layout Management
 Loads a complete dashboard configuration from a JSON file.
 ```bash
-python3 scripts/load_from_file.py --input "dashboards/layout_standard.json"
+python3 scripts/load_from_file.py --input "config/layout_standard.json"
 ```
 
 ### 4. Canvas Maintenance

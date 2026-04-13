@@ -7,6 +7,9 @@
   package: bob_central
   executable: status_daemon
   output: screen
+  parameters:
+    update_rate: 0.5
+    stream_topic: /eva/tts/spoken_text
   arguments:
     - --ros-args
     - --log-level

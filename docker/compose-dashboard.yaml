@@ -16,7 +16,7 @@ services:
       # Webvideo Config
       - WEBVIDEO_WIDTH=426
       - WEBVIDEO_HEIGHT=480
-      - WEBVIDEO_FPS=10.0
+      - WEBVIDEO_FPS=5
       - WEBVIDEO_FIFO_PATH=/tmp/smallchat_pipe
       - WEBVIDEO_FIFO_ALPHA=False
       # Paths (Matched to internal volume mount)

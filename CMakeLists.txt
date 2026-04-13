@@ -12,7 +12,7 @@ ament_python_install_package(${PROJECT_NAME}
 
 # Install data files
 install(
-  DIRECTORY launch prompts tools skills
+  DIRECTORY launch prompts config skills
   DESTINATION share/${PROJECT_NAME}
 )
 

@@ -17,6 +17,7 @@
 
 import json
 import os
+import sys
 
 import requests
 
@@ -67,6 +68,34 @@ def search_web(query: str, num_results: int = 3) -> str:
         return json.dumps({'status': 'error', 'message': str(e)})
 
 
+def main():
+    """Run search CLI for Eva tools."""
+    # Very simple CLI for compatibility with Eva's execute_skill_script calls
+    query = ""
+    num_results = 3
+
+    # Try to find query and num_results in sys.argv
+    for i, arg in enumerate(sys.argv):
+        if i == 0:
+            continue
+        if arg == "--query":
+            if i + 1 < len(sys.argv):
+                query = sys.argv[i + 1]
+        elif arg == "--num_results":
+            if i + 1 < len(sys.argv):
+                try:
+                    num_results = int(sys.argv[i + 1])
+                except Exception:
+                    pass
+        elif not arg.startswith('--') and not query:
+            query = arg
+
+    if not query:
+        print(json.dumps({'status': 'error', 'message': 'No query provided.'}))
+        sys.exit(1)
+
+    print(search_web(query, num_results))
+
+
 if __name__ == '__main__':
-    # Test
-    print(search_web('ros2 hardware acceleration'))
+    main()

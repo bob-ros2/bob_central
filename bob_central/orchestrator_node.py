@@ -40,11 +40,13 @@ class OrchestratorNode(Node):
         self.is_detailed = False
         self.query_queue = []
         self.was_streamed = False
+        self.busy_since = None  # Timestamp for watchdog
 
-        # QoS for late-joining subscribers (for stream)
-        qos_latched = rclpy.qos.QoSProfile(
-            depth=1,
-            durability=rclpy.qos.DurabilityPolicy.TRANSIENT_LOCAL)
+        # QoS for high-speed streaming (Volatile, Reliable, Depth 100)
+        qos_stream = rclpy.qos.QoSProfile(
+            depth=100,
+            durability=rclpy.qos.DurabilityPolicy.VOLATILE,
+            reliability=rclpy.qos.ReliabilityPolicy.RELIABLE)
 
         # Publishers
         self.pub_timed_query = self.create_publisher(
@@ -52,7 +54,7 @@ class OrchestratorNode(Node):
         self.pub_user_response = self.create_publisher(
             String, 'user_response', 10)
         self.pub_llm_stream = self.create_publisher(
-            String, '/eva/llm_stream', qos_latched)
+            String, '/eva/llm_stream', qos_stream)
 
         # Subscriptions
         self.sub_user_query = self.create_subscription(
@@ -68,7 +70,7 @@ class OrchestratorNode(Node):
             String,
             'internal/eva_stream',
             self.internal_stream_callback,
-            qos_latched
+            qos_stream
         )
 
         # Bobassi Support Bridge
@@ -97,10 +99,12 @@ class OrchestratorNode(Node):
 
     @property
     def enable_queuing(self):
+        """Return the enable_queuing parameter value."""
         return self.get_parameter('enable_queuing').value
 
     @property
     def reject_if_busy(self):
+        """Return the reject_if_busy parameter value."""
         return self.get_parameter('reject_if_busy').value
 
     def internal_stream_callback(self, msg):
@@ -131,6 +135,7 @@ class OrchestratorNode(Node):
         self.get_logger().info(f'EVA IDLE -> Processing locally: "{query[:40]}..."')
         # Mark as busy and Update UI
         self.is_busy = True
+        self.busy_since = self.get_clock().now()
         self.trigger_visual_status(is_busy=True)
         self.process_query(msg)
 
@@ -148,6 +153,16 @@ class OrchestratorNode(Node):
         msg = String()
         msg.data = json.dumps(status)
         self.pub_status.publish(msg)
+
+        # WATCHDOG: Reset Busy state if stuck for too long (> 180s)
+        if self.is_busy and self.busy_since:
+            elapsed = (self.get_clock().now() - self.busy_since).nanoseconds / 1e9
+            if elapsed > 180.0:
+                self.get_logger().error(
+                    f'WATCHDOG: Busy state stuck for {elapsed:.1f}s. Resetting to IDLE.')
+                self.is_busy = False
+                self.busy_since = None
+                self.trigger_visual_status(is_busy=False)
 
     def trigger_visual_status(self, is_busy=False):
         """Publish a trigger for the dashboard visualization worker."""
@@ -192,7 +207,8 @@ class OrchestratorNode(Node):
     def specialist_response_callback(self, msg):
         """Receive a response from a specialist agent."""
         if not msg.data and not self.was_streamed:
-            self.get_logger().warn('Received empty specialist response and no tokens were streamed.')
+            self.get_logger().warn(
+                'Received empty specialist response and no tokens were streamed.')
             self.is_busy = False
             self.trigger_visual_status(is_busy=False)
             return
@@ -238,9 +254,19 @@ class OrchestratorNode(Node):
 
     def bobassi_response_callback(self, msg):
         """Receive a response from Bobassi (Support Bot)."""
+        if not msg.data:
+            self.get_logger().warn('Received empty Bobassi response.')
+            return
+
+        content = ''
         try:
-            data = json.loads(msg.data)
-            content = data.get('content', msg.data)
+            try:
+                data = json.loads(msg.data)
+                content = data.get('content', msg.data)
+            except json.JSONDecodeError:
+                # Direct string fallback
+                content = msg.data
+
             bundled_data = {
                 'user_query': 'Support Request',
                 'is_detailed': False,

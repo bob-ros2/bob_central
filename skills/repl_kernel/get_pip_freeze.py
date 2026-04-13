@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,4 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Package initialization for bob_central."""
+import subprocess
+try:
+    output = subprocess.check_output(['pip', 'freeze']).decode()
+    print(output)
+except Exception as e:
+    print(f"Error: {e}")

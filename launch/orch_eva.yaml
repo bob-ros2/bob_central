@@ -3,7 +3,6 @@
 
 - &api_orchestrator "${ORCHESTRATOR_API_URL}"
 - &api_researcher   "${RESEARCHER_API_URL}"
-- &api_summarizer   "${SUMMARIZER_API_URL}"
 
 - &eva_ns    "__ns:=/eva"
 - &tts_ns    "__ns:=/eva/tts"
@@ -31,6 +30,8 @@
     - -r
     - "specialist_response:=~/internal/specialist_response"
     - -r
+    - "internal/eva_stream:=/eva/brain_eva/internal/eva_stream"
+    - -r
     - "bobassi_query:=/eva/bobassi/user_query"
     - -r
     - "bobassi_response:=/eva/bobassi/response"
@@ -52,17 +53,15 @@
     max_tool_calls: 30
     max_tokens: 8000
     max_history_length: 25
-    temperature: 0.3
+    temperature: 0.2
+    presence_penalty: 1.2
     skill_dir: "/ros2_ws/src/bob_central/skills"
+    width: 400
+    height: 304
+    output_path: "/root/eva/media/eva_artist.jpg"
     tool_interfaces: 
        - "//PKGSHARE:bob_llm/config/skill_tools.py"
        - "//PKGSHARE:bob_llm/config/ros_cli_tools.py"
-       - "//PKGSHARE:bob_central/tools/coder_tool.py"
-       - "//PKGSHARE:bob_central/tools/artist_tool.py"
-       - "//PKGSHARE:bob_central/tools/web_research.py"
-       - "//PKGSHARE:bob_central/tools/system_helper.py"
-       - "//PKGSHARE:bob_central/skills/recursive_thought/scripts/thought_tool.py"
-       - "//PKGSHARE:bob_central/skills/repl_kernel/scripts/repl_tool.py"
   arguments:
     - --ros-args
     - --log-level
@@ -114,6 +113,33 @@
   arguments:
     - --ros-args
     - --log-level
-    - *log_level
+    - info
+    - -r
+    - *eva_ns
+
+# Dashboard Visualization: LLM Reasoning HUD
+- name: reasoning_viz
+  package: bob_central
+  executable: reasoning_viz
+  output: screen
+  parameters:
+    width: 400
+    height: 300
+    topic_out: "/nviz/reasoning_bitmap"
+  arguments:
+    - --ros-args
+    - -r
+    - *eva_ns
+
+# Dashboard Visualization: Artwork Background
+- name: art_observer
+  package: bob_central
+  executable: art_observer
+  output: screen
+  parameters:
+    image_path: "/root/eva/media/eva_artist.jpg"
+    img_size: [400, 304]
+  arguments:
+    - --ros-args
     - -r
     - *eva_ns

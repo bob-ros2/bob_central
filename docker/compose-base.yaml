@@ -15,7 +15,7 @@ services:
     env_file:
       - /volume1/ros/secrets/deepseek.env
     volumes:
-      - ./nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ../config/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
     restart: always
 
   # -- CORE: EVA (Brain & Logic) --

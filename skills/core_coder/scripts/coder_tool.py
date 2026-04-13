@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -187,3 +188,42 @@ def search_text(directory: str, query: str, pattern: str = '*') -> str:
         return output[:5000]  # Cap output for LLM context
     except Exception as e:
         return f'Search failed: {str(e)}'
+
+
+if __name__ == '__main__':
+    import argparse
+    import sys
+
+    parser = argparse.ArgumentParser(description="Eva's Coder CLI")
+    parser.add_argument("--func", required=True, help="Function to call")
+    parser.add_argument("--path", help="File/Dir path")
+    parser.add_argument("--content", help="Content to write")
+    parser.add_argument("--command", help="Shell command to run")
+    parser.add_argument("--query", help="Search query")
+    parser.add_argument("--pattern", default="*", help="File pattern for search")
+    parser.add_argument("--start", type=int, default=1, help="Start line")
+    parser.add_argument("--end", type=int, default=800, help="End line")
+    parser.add_argument(
+        "--overwrite", type=str, default="True", help="Overwrite flag (True/False)"
+    )
+
+    args = parser.parse_args()
+
+    try:
+        if args.func == "read_file":
+            print(read_file(args.path, args.start, args.end))
+        elif args.func == "write_file":
+            ov = args.overwrite.lower() == "true"
+            print(write_file(args.path, args.content, ov))
+        elif args.func == "list_dir":
+            print(list_dir(args.path or "."))
+        elif args.func == "run_command":
+            print(run_command(args.command))
+        elif args.func == "search_text":
+            print(search_text(args.path or ".", args.query, args.pattern))
+        else:
+            print(f"Error: Unknown function '{args.func}'")
+            sys.exit(1)
+    except Exception as e:
+        print(f"CLI Error: {str(e)}")
+        sys.exit(1)

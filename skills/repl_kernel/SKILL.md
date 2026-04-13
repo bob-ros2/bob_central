@@ -6,12 +6,19 @@ author: Antigravity
 ---
 
 # REPL Kernel Skill
-This skill grants Eva access to a persistent Python REPL (Read-Eval-Print Loop) environment. Unlike standard tools, the REPL maintains its global namespace between subsequent calls.
+This skill grants Eva access to a persistent Python REPL environment and a physical "Scratchpad" directory.
 
-## Key Features
-- **Persistence**: Variables, functions, and imports defined in one call are available in the next.
-- **System Access**: Direct access to Python's `os`, `sys`, and `subprocess` modules within the Eva container context.
-- **Safety**: Includes a 15-second execution timeout to prevent blocking.
+## Paradigms
+1. **Interactive REPL (`repl_execute`)**:
+   - Best for stateful engineering, quick calculations, and iterative logic.
+   - **Persistence**: Variables and imports survive between calls.
+   - **Timeout**: 15s limit. Do NOT use for long delays/sleeps.
+2. **Scratchpad Execution (`execute_skill_script`)**:
+   - Best for long-running tasks, background scripts, or multi-threaded operations.
+   - Use `write_skill_file` to create a script in this directory, then run it.
+   - Scripts are executed as independent subprocesses.
 
 ## Tools
-- `repl_execute(code)`: Executes a block of Python code and returns the captured stdout/stderr.
+- `repl_execute(code)`: Run Python logic with persistent state (15s timeout).
+- `repl_reset()`: Clear the persistent global namespace.
+- `repl_list_history()`: Return a summary of current variables and imports.

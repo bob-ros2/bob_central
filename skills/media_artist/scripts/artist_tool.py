@@ -13,9 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Generate images based on textual descriptions."""
+"""Artist Tool for Eva."""
 
 import time
+import argparse
 
 import rclpy
 from rclpy.node import Node
@@ -28,7 +29,7 @@ def draw_image(prompt: str) -> str:
 
     The image will be published to the robot's visual subsystem.
 
-    :param prompt: Description of the image. Keep it under 70 tokens.
+    :param prompt: Description of the image. Keep it under 70 tokens for best results.
     :return: A message indicating the prompt has been sent.
     """
     if not rclpy.ok():
@@ -41,18 +42,17 @@ def draw_image(prompt: str) -> str:
     msg.data = prompt
 
     # Wait a moment for connection
-    time.sleep(0.5)
+    time.sleep(1.0)
     publisher.publish(msg)
 
     node.destroy_node()
-
-    return (
-        f'Image prompt "{prompt}" sent to TTI subsystem. '
-        'The result will be saved /root/eva/media/eva_artist.jpg.'
-        'You can use your vision tools to inspect it there.'
-    )
+    return (f"Image prompt '{prompt}' sent to TTI subsystem. "
+            f"The result will be saved to '/root/eva/media/eva_artist.jpg' after a few "
+            f"seconds. You can use your vision tools to inspect it there.")
 
 
 if __name__ == '__main__':
-    # Test
-    print(draw_image('A futuristic robot library full of holographic books'))
+    parser = argparse.ArgumentParser(description="Artist CLI")
+    parser.add_argument("--prompt", type=str, required=True, help="Image prompt")
+    args = parser.parse_args()
+    print(draw_image(args.prompt))

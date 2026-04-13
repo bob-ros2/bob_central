@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,4 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Package initialization for bob_central."""
+import subprocess
+import os
+
+dirs = [
+    '/etc/crontab', '/etc/cron.d', '/etc/cron.daily',
+    '/etc/cron.hourly', '/etc/cron.monthly', '/etc/cron.weekly'
+]
+for d in dirs:
+    if os.path.exists(d):
+        print(f"--- {d} ---")
+        try:
+            print(subprocess.check_output(['ls', '-la', d]).decode())
+        except Exception as e:
+            print(e)
+    else:
+        print(f"--- {d} (not found) ---")

@@ -1,4 +1,4 @@
-# -- Eva Artist Subsystem (The Visual Studio) --
+# -- Artist Subsystem --
 name: eva-artist
 
 networks:
@@ -7,10 +7,12 @@ networks:
 
 # Persistent storage for diffusion weights
 volumes:
-  eva-artist-models:
+  models:
+    name: eva_models
+    external: true
 
 services:
-  # -- TTI: EVA'S ATELIER (Diffusion Engine) --
+  # -- TTI --
   artist:
     build:
       context: ../
@@ -26,12 +28,13 @@ services:
       - TTI_MODEL_TYPE=sdxl_turbo
       - TTI_MODELS_PATH=/models
       - TTI_OUTPUT_PATH=/root/eva/media/eva_artist.jpg
+      - HF_HUB_DISABLE_SYMLINKS_WARNING=1
     # Launch the artist-only orchestrator (with correct GPU/Model paths)
     command: ros2 launch bob_launch generic.launch.py config:=/ros2_ws/src/bob_central/launch/orch_eva_tti.yaml
     volumes:
       - /volume1/ros/eva:/root/eva # Shared workspace for visuals (self-inspection)
-      - eva-artist-models:/models # Dedicated persistent volume for models
-      - ~/.cache/huggingface/cache/huggingface/token:/root/.cache/huggingface/token # Map HF Token directly
+      - models:/models # Dedicated persistent volume for models
+      - /volume1/ros/secrets/huggingface_token:/root/.cache/huggingface/token:ro
       - /tmp/eva:/tmp
     deploy:
       resources:

@@ -55,6 +55,16 @@ def repl_execute(code: str, timeout: float = 10.0) -> str:
     return result
 
 
+def repl_reset() -> str:
+    """Clear the persistent global namespace in the REPL session."""
+    return repl_execute("__RESET__")
+
+
+def repl_list_history() -> str:
+    """Return a list of all currently defined global variables and imports."""
+    return repl_execute("__HISTORY__")
+
+
 def register(module, node):
     from bob_llm.tool_utils import register as default_register
     return default_register(module, node)

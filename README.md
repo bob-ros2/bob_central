@@ -46,7 +46,7 @@ To manage the complex set of services, a master management script is provided in
 | `compose-nviz.yaml` | Visual dashboard streamer (`eva-nviz-streamer`). |
 | `compose-tti.yaml` | Image generation engine (`eva-artist`). |
 | `compose-gitea.yaml` | Local Git infrastructure and CI runner. |
-| `compose-inference.yaml` | LLM inference servers (Summarizer & Vision). |
+| `compose-inference.yaml` | LLM inference servers (Vision). |
 | `compose-qdrant.yaml` | Vector database for long-term memory. |
 
 ### Security Features
@@ -65,7 +65,6 @@ graph TD
         end
 
         subgraph "Container: eva-inference (llama.cpp)"
-            SUM[eva-summarizer]
             VIS[eva-researcher-vision]
         end
 
