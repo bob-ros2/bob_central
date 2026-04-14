@@ -18,5 +18,17 @@ Lists subdirectories in a given path (non-hidden only).
 - **Arguments**: `path` (str, optional, defaults to '.')
 - **Returns**: List of directory names or an error string.
 
+### get_ps
+Lists all running processes on the system (like `ps aux`).
+- **`script_path`**: `"scripts/get_ps.py"`
+
+### get_pip_freeze
+Lists all installed Python packages via `pip freeze`.
+- **`script_path`**: `"scripts/get_pip_freeze.py"`
+
+### find_scripts
+Searches for specific scripts or tools across the workspace.
+- **`script_path`**: `"scripts/find_scripts.py"`
+
 ## Usage
 Useful for verifying system resources before intensive tasks or for discovering the project structure when navigating new repositories.
