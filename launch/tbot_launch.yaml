@@ -59,4 +59,4 @@
     - -r
     - *twitch_ns
     - -p
-    - "db_url:=http://admin:password@api-gateway:5984/memo_db"
+    - "db_url:=http://api-gateway:8080/memo_db"

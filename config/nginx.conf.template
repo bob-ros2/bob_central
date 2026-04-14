@@ -45,4 +45,12 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
+
+    # Proxy CouchDB Memo DB – Injecting Credentials here to keep them out of ROS Nodes
+    location /memo_db {
+        proxy_pass http://192.168.1.130:5984/memo_db;
+        # admin:password -> Basic YWRtaW46cGFzc3dvcmQ=
+        proxy_set_header Authorization "Basic YWRtaW46cGFzc3dvcmQ=";
+        proxy_set_header Host $host;
+    }
 }
