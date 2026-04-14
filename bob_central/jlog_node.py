@@ -27,7 +27,7 @@ class JLogNode(Node):
         
         # Konfiguration mit Priorität: ROS-Parameter > Umgebungsvariable > Default
         # Routing erfolgt über api-gateway (Port 8080), das die Credentials injiziert
-        env_db_url = os.environ.get('JLOG_DB_URL', 'http://api-gateway:8080/memo_db')
+        env_db_url = os.environ.get('JLOG_DB_URL', 'http://api-gateway:8080/couchdb/memo_db')
         self.declare_parameter('db_url', env_db_url)
         self.db_url = self.get_parameter('db_url').value
         
