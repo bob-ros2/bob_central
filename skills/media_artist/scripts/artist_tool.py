@@ -15,8 +15,8 @@
 
 """Artist Tool for Eva."""
 
-import time
 import argparse
+import time
 
 import rclpy
 from rclpy.node import Node
@@ -46,13 +46,15 @@ def draw_image(prompt: str) -> str:
     publisher.publish(msg)
 
     node.destroy_node()
-    return (f"Image prompt '{prompt}' sent to TTI subsystem. "
-            f"The result will be saved to '/root/eva/media/eva_artist.jpg' after a few "
-            f"seconds. You can use your vision tools to inspect it there.")
+    return (
+        f"Image prompt '{prompt}' sent to TTI subsystem. "
+        f"The result will be saved to '/root/eva/media/eva_artist.jpg' after a few "
+        f'seconds. You can use your vision tools to inspect it there.'
+    )
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Artist CLI")
-    parser.add_argument("--prompt", type=str, required=True, help="Image prompt")
+    parser = argparse.ArgumentParser(description='Artist CLI')
+    parser.add_argument('--prompt', type=str, required=True, help='Image prompt')
     args = parser.parse_args()
     print(draw_image(args.prompt))

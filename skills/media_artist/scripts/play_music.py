@@ -19,12 +19,14 @@ Music Player Tool for Eva.
 Broadcasts audio files to the master mixer via ROS topics.
 """
 
-import os
 import argparse
+import os
 import subprocess
 
 
-def play_audio(file_path: str, topic: str = '/eva/streamer/mixer/in1', loop: bool = False) -> str:
+def play_audio(
+    file_path: str, topic: str = '/eva/streamer/mixer/in1', loop: bool = False
+) -> str:
     """
     Play an audio file through the ROS audio pipeline.
 
@@ -57,8 +59,10 @@ def play_audio(file_path: str, topic: str = '/eva/streamer/mixer/in1', loop: boo
     try:
         # We start it as a background process
         process = subprocess.Popen(full_cmd, shell=True, preexec_fn=os.setsid)
-        return (f'Started playback of {os.path.basename(file_path)} on topic {topic}. '
-                f'PID: {process.pid}')
+        return (
+            f'Started playback of {os.path.basename(file_path)} on topic {topic}. '
+            f'PID: {process.pid}'
+        )
     except Exception as e:
         return f'Failed to start audio playback: {str(e)}'
 

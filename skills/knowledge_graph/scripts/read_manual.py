@@ -27,7 +27,7 @@ def main():
     parser.add_argument('--pkg', required=True, help='The name of the package document to read.')
     args = parser.parse_args()
 
-    doc_path = os.path.join(DOCS_DIR, f"{args.pkg}.md")
+    doc_path = os.path.join(DOCS_DIR, f'{args.pkg}.md')
 
     if os.path.exists(doc_path):
         with open(doc_path, 'r') as f:

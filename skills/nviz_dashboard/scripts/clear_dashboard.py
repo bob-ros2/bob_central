@@ -20,6 +20,7 @@ Sends a 'clear_all' action to nviz to remove all elements without restarting the
 """
 
 import json
+
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
@@ -32,9 +33,9 @@ def main():
 
     # The 'clear_all' action is the industrial standard for resetting the canvas
     msg = String()
-    msg.data = json.dumps([{"action": "clear_all"}])
+    msg.data = json.dumps([{'action': 'clear_all'}])
 
-    print("Cleaning dashboard (sending clear_all)...")
+    print('Cleaning dashboard (sending clear_all)...')
 
     # Wait for subscriber (max 2s)
     for _ in range(20):
@@ -48,7 +49,7 @@ def main():
     for _ in range(5):
         rclpy.spin_once(node, timeout_sec=0.2)
 
-    print("Dashboard cleared. Canvas is ready for new layouts. ✨🏁")
+    print('Dashboard cleared. Canvas is ready for new layouts. ✨🏁')
     node.destroy_node()
     rclpy.shutdown()
 

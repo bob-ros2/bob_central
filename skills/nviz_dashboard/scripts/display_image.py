@@ -73,20 +73,20 @@ def main():
     # Handle removal
     if args.stop:
         subprocess.run(['pkill', '-9', '-f', pipe_path], check=False)
-        publish_to_events([{"action": "remove", "id": element_id}])
-        print(f"Image stream {element_id} stopped.")
+        publish_to_events([{'action': 'remove', 'id': element_id}])
+        print(f'Image stream {element_id} stopped.')
         return
 
     # Check image existence
     if not os.path.exists(args.path):
-        print(f"Error: Image not found at {args.path}")
+        print(f'Error: Image not found at {args.path}')
         return
 
     # 1. Persistent Pipe: Create ONLY if missing
     if not os.path.exists(pipe_path):
         os.mkfifo(pipe_path)
         os.chmod(pipe_path, 0o666)
-        print(f"Created persistent FIFO at {pipe_path}")
+        print(f'Created persistent FIFO at {pipe_path}')
 
     # 2. Kill OLD streaming processes for this SPECIFIC pipe
     subprocess.run(['pkill', '-9', '-f', pipe_path], check=False)
@@ -111,13 +111,13 @@ def main():
     # 4. Add/Update VideoStream on Dashboard (Matching Dimensions)
     dashboard_msg = [
         {
-            "type": "VideoStream",
-            "id": element_id,
-            "area": args.area,
-            "topic": pipe_path,
-            "source_width": w,
-            "source_height": h,
-            "encoding": "rgb"
+            'type': 'VideoStream',
+            'id': element_id,
+            'area': args.area,
+            'topic': pipe_path,
+            'source_width': w,
+            'source_height': h,
+            'encoding': 'rgb'
         }
     ]
     publish_to_events(dashboard_msg)

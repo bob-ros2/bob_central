@@ -13,19 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import os
 import sys
-import argparse
 
 
 def main():
     """Scan a path for non-hidden subdirectories (potential packages)."""
     parser = argparse.ArgumentParser(
-        description="Scan a path for non-hidden subdirectories (potential packages)."
+        description='Scan a path for non-hidden subdirectories (potential packages).'
     )
     parser.add_argument(
-        "path", type=str, nargs="?", default=".",
-        help="The directory path to scan."
+        'path', type=str, nargs='?', default='.',
+        help='The directory path to scan.'
     )
     args = parser.parse_args()
 
@@ -43,11 +43,11 @@ def main():
         dirs.sort()
         print(f"INFO: Found {len(dirs)} directories in '{args.path}':")
         for d in dirs:
-            print(f"- {d}")
+            print(f'- {d}')
     except Exception as e:
-        print(f"ERROR: {e}")
+        print(f'ERROR: {e}')
         sys.exit(1)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

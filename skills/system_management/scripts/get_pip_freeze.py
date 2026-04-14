@@ -14,8 +14,9 @@
 # limitations under the License.
 
 import subprocess
+
 try:
     output = subprocess.check_output(['pip', 'freeze']).decode()
     print(output)
 except Exception as e:
-    print(f"Error: {e}")
+    print(f'Error: {e}')

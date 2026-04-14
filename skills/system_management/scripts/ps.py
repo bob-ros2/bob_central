@@ -18,4 +18,4 @@ try:
     output = subprocess.check_output(['ps', 'aux']).decode()
     print(output)
 except Exception as e:
-    print(f"Error: {e}")
+    print(f'Error: {e}')

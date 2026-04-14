@@ -22,10 +22,11 @@ to a ROS topic for use with nviz Bitmaps.
 
 import argparse
 import os
+
+from PIL import Image
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-from PIL import Image
 
 
 def main():
@@ -38,11 +39,11 @@ def main():
     args = parser.parse_args()
 
     if not os.path.exists(args.path):
-        print(f"Error: Image not found at {args.path}")
+        print(f'Error: Image not found at {args.path}')
         return
 
     # 1. Image Processing with PIL
-    img = Image.open(args.path).convert("L")  # Ensure 8-bit Grayscale
+    img = Image.open(args.path).convert('L')  # Ensure 8-bit Grayscale
     img = img.resize((args.size[0], args.size[1]))
 
     # Convert to Hex String
@@ -51,14 +52,14 @@ def main():
     # 2. ROS 2 Publishing
     rclpy.init()
     node = Node('display_bitmap_node')
-    # Use topic + "/hex" convention
-    topic_name = args.topic + "/hex"
+    # Use topic + '/hex' convention
+    topic_name = args.topic + '/hex'
     publisher = node.create_publisher(String, topic_name, 10)
 
     msg = String()
     msg.data = hex_data
 
-    print(f"Publishing {args.path} to {topic_name} (8-bit, {args.size[0]}x{args.size[1]})...")
+    print(f'Publishing {args.path} to {topic_name} (8-bit, {args.size[0]}x{args.size[1]})...')
 
     # Wait for discovery or just burst
     for _ in range(10):
@@ -72,7 +73,7 @@ def main():
     for _ in range(5):
         rclpy.spin_once(node, timeout_sec=0.2)
 
-    print("Bitmap sent successfully. ✨🏁")
+    print('Bitmap sent successfully. ✨🏁')
     node.destroy_node()
     rclpy.shutdown()
 

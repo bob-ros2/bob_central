@@ -74,8 +74,8 @@ def main():
         if guardian.state_received:
             break
 
-    # Define the "Smallchat Anchor" (The Essential Element)
-    anchor_id = "smallchat_video"
+    # Define the 'Smallchat Anchor' (The Essential Element)
+    anchor_id = 'smallchat_video'
     anchor_missing = True
 
     if guardian.state_received:
@@ -91,13 +91,13 @@ def main():
         print(f'Repairing dashboard: Adding {anchor_id}...')
         repair_msg = [
             {
-                "type": "VideoStream",
-                "id": anchor_id,
-                "area": [0, 0, 426, 480],
-                "source_width": 426,
-                "source_height": 480,
-                "topic": "/tmp/smallchat_pipe",
-                "encoding": "rgb"
+                'type': 'VideoStream',
+                'id': anchor_id,
+                'area': [0, 0, 426, 480],
+                'source_width': 426,
+                'source_height': 480,
+                'topic': '/tmp/smallchat_pipe',
+                'encoding': 'rgb'
             }
         ]
 

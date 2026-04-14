@@ -15,6 +15,7 @@
 """Return a simple system status summary useful for an LLM."""
 
 import os
+
 import psutil
 
 

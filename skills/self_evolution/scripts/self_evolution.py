@@ -413,4 +413,4 @@ if __name__ == '__main__':
             r = evolver_inst._apply_mutation(sys.argv[2], sys.argv[3])
             print(json.dumps(r, indent=2))
         else:
-            print("Usage: init, iterate, status, mutate")
+            print('Usage: init, iterate, status, mutate')
