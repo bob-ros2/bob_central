@@ -177,7 +177,7 @@ class OrchestratorNode(Node):
         self.get_logger().debug(f'Processing query: {query}')
 
         # Simple Intent/Verbosity Detection
-        details_keywords = ['detail', 'ausführlich', 'explain', 'thorough']
+        details_keywords = ['detail', 'verbose', 'explain', 'thorough']
         self.is_detailed = any(k in query.lower() for k in details_keywords)
 
         self.get_logger().info(

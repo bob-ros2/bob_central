@@ -43,10 +43,10 @@ def main():
 
     # 1. Add dialogue
     dialogue = [
-        ('user', 'Hallo Eva, wie geht es dir?', 1),
-        ('assistant', 'Hallo! Mir geht es sehr gut. Wie kann ich dir helfen?', 2),
-        ('user', 'Erzähl mir was über ROS 2.', 3),
-        ('assistant', 'ROS 2 ist ein Middleware-System für die Robotik.', 4)
+        ('user', 'Hello Eva, how are you?', 1),
+        ('assistant', 'Hello! I am doing very well. How can I help you?', 2),
+        ('user', 'Tell me something about ROS 2.', 3),
+        ('assistant', 'ROS 2 is a middleware system for robotics.', 4)
     ]
 
     for role, content, turn_id in dialogue:

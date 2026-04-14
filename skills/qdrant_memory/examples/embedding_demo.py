@@ -48,10 +48,10 @@ def main():
     # 2. Add texts with dummy embeddings
     print('\n2. Adding texts with vectors...')
     entries = [
-        ('Die Katze sitzt auf der Matte.', [0.1] * vector_size),
-        ('Hunde spielen gerne im Park.', [0.2] * vector_size),
-        ('Der Computer berechnet die Daten.', [0.5] * vector_size),
-        ('Die Sonne ist sehr heiß heute.', [0.9] * vector_size)
+        ('The cat is sitting on the mat.', [0.1] * vector_size),
+        ('Dogs love playing in the park.', [0.2] * vector_size),
+        ('The computer processes the data.', [0.5] * vector_size),
+        ('The sun is very hot today.', [0.9] * vector_size)
     ]
 
     for i, (text, vector) in enumerate(entries):

@@ -44,9 +44,9 @@ def main():
 
     # 2. Add texts
     texts = [
-        'Die Hauptstadt von Deutschland ist Berlin.',
-        'Der Mount Everest ist der höchste Berg der Welt.',
-        'Python ist eine vielseitige Programmiersprache.'
+        'The capital of Germany is Berlin.',
+        'Mount Everest is the highest mountain in the world.',
+        'Python is a versatile programming language.'
     ]
 
     for t in texts:
@@ -55,7 +55,7 @@ def main():
             print(f"   ✓ Saved: '{t}' (ID: {doc_id})")
 
     # 3. Search
-    query = 'Wo liegt Berlin?'
+    query = 'Where is Berlin located?'
     print(f"\nSearching for: '{query}'")
     results = search_text(collection, query, limit=1)
 
