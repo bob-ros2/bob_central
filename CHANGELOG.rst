@@ -4,10 +4,10 @@ Changelog for package bob_central
 
 0.6.0 (2026-04-14)
 ------------------
-* Absolute Purity: Achieved 100% flake8 linter compliance across all nodes and scripts.
-* Enforced Google-style import ordering and single-quote coding standard.
-* Cleaned up obsolete and misplaced scripts (VLM robot controller, legacy monitoring, and internal observers).
-* Stabilized CI/CD pipeline by removing redundant build dependencies.
+* Automated Dashboard functionality: Integrated image display stream via art_observer_node.py.
+* Redesigned Status Updater: New compact and reactive layout for system health visualization.
+* API Gateway: Implemented persistent backend integration via CouchDB.
+* New Node: Introduced jlog_node.py for advanced system logging and diagnostics.
 * Contributors: Bob Ros, Antigravity AI
 
 
