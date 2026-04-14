@@ -16,10 +16,19 @@
 """List available media files in the Eva media directory."""
 
 import os
+import sys
 
 MEDIA_DIR = '/root/eva/media'
 
-files = sorted(os.listdir(MEDIA_DIR))
+try:
+    files = sorted(os.listdir(MEDIA_DIR))
+except PermissionError:
+    print(f'ERROR: Cannot access {MEDIA_DIR} - permission denied.')
+    sys.exit(1)
+except FileNotFoundError:
+    print(f'ERROR: Media directory not found: {MEDIA_DIR}')
+    sys.exit(1)
+
 audio = [f for f in files if f.endswith(('.mp3', '.wav', '.ogg', '.flac'))]
 images = [f for f in files if f.endswith(('.jpg', '.jpeg', '.png', '.gif', '.webp'))]
 other = [f for f in files if f not in audio and f not in images]
