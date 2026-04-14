@@ -20,9 +20,11 @@ Provides absolute filesystem and shell power.
 Allows the AI to act as a true software engineer on the host system.
 """
 
+import argparse
 import os
 import shlex
 import subprocess
+import sys
 from typing import Any, List
 
 from bob_llm.tool_utils import register as default_register, Tool
@@ -45,7 +47,7 @@ def register(module: Any, node: Any = None) -> List[Tool]:
     """
     _NodeContext.node = node
     node.get_logger().info(
-        "[Coder Tools] Eva's engineering hands are now active."
+        '[Coder Tools] Eva\'s engineering hands are now active.'
     )
     return default_register(module, node)
 
@@ -60,7 +62,7 @@ def read_file(path: str, start_line: int = 1, end_line: int = 800) -> str:
     :return: File content or error message.
     """
     if not os.path.exists(path):
-        return f"Error: File '{path}' not found."
+        return f'Error: File \'{path}\' not found.'
 
     try:
         with open(path, 'r', encoding='utf-8') as f:
@@ -93,7 +95,7 @@ def write_file(path: str, content: str, overwrite: bool = True) -> str:
     :return: Success or error message.
     """
     if os.path.exists(path) and not overwrite:
-        return f"Error: File '{path}' already exists and overwrite is False."
+        return f'Error: File \'{path}\' already exists and overwrite is False.'
 
     try:
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
@@ -114,15 +116,15 @@ def list_dir(path: str = '.') -> str:
     :return: Formatted list of contents.
     """
     if not os.path.exists(path):
-        return f"Error: Path '{path}' not found."
+        return f'Error: Path \'{path}\' not found.'
 
     try:
         items = os.listdir(path)
         formatted_items = []
         for i in items:
             is_dir = os.path.isdir(os.path.join(path, i))
-            prefix = "[DIR] " if is_dir else "      "
-            formatted_items.append(f"{prefix}{i}")
+            prefix = '[DIR] ' if is_dir else '      '
+            formatted_items.append(f'{prefix}{i}')
         formatted_items.sort()
         header = f'Contents of {os.path.abspath(path)}:\n'
         return header + '\n'.join(formatted_items)
@@ -168,7 +170,7 @@ def search_text(directory: str, query: str, pattern: str = '*') -> str:
 
     :param directory: Where to start searching.
     :param query: The text to find.
-    :param pattern: File glob pattern (e.g. '*.py').
+    :param pattern: File glob pattern (e.g. \'*.py\').
     :return: Search results.
     """
     try:
@@ -190,40 +192,42 @@ def search_text(directory: str, query: str, pattern: str = '*') -> str:
         return f'Search failed: {str(e)}'
 
 
-if __name__ == '__main__':
-    import argparse
-    import sys
-
-    parser = argparse.ArgumentParser(description="Eva's Coder CLI")
-    parser.add_argument("--func", required=True, help="Function to call")
-    parser.add_argument("--path", help="File/Dir path")
-    parser.add_argument("--content", help="Content to write")
-    parser.add_argument("--command", help="Shell command to run")
-    parser.add_argument("--query", help="Search query")
-    parser.add_argument("--pattern", default="*", help="File pattern for search")
-    parser.add_argument("--start", type=int, default=1, help="Start line")
-    parser.add_argument("--end", type=int, default=800, help="End line")
+def main():
+    """CLI entry point."""
+    parser = argparse.ArgumentParser(description='Eva\'s Coder CLI')
+    parser.add_argument('--func', required=True, help='Function to call')
+    parser.add_argument('--path', help='File/Dir path')
+    parser.add_argument('--content', help='Content to write')
+    parser.add_argument('--command', help='Shell command to run')
+    parser.add_argument('--query', help='Search query')
+    parser.add_argument('--pattern', default='*', help='File pattern for search')
+    parser.add_argument('--start', type=int, default=1, help='Start line')
+    parser.add_argument('--end', type=int, default=800, help='End line')
     parser.add_argument(
-        "--overwrite", type=str, default="True", help="Overwrite flag (True/False)"
+        '--overwrite', type=str, default='True', help='Overwrite flag (True/False)'
     )
 
     args = parser.parse_args()
 
     try:
-        if args.func == "read_file":
+        if args.func == 'read_file':
             print(read_file(args.path, args.start, args.end))
-        elif args.func == "write_file":
-            ov = args.overwrite.lower() == "true"
+        elif args.func == 'write_file':
+            ov = args.overwrite.lower() == 'true'
             print(write_file(args.path, args.content, ov))
-        elif args.func == "list_dir":
-            print(list_dir(args.path or "."))
-        elif args.func == "run_command":
+        elif args.func == 'list_dir':
+            print(list_dir(args.path or '.'))
+        elif args.func == 'run_command':
             print(run_command(args.command))
-        elif args.func == "search_text":
-            print(search_text(args.path or ".", args.query, args.pattern))
+        elif args.func == 'search_text':
+            print(search_text(args.path or '.', args.query, args.pattern))
         else:
-            print(f"Error: Unknown function '{args.func}'")
+            print(f'Error: Unknown function \'{args.func}\'')
             sys.exit(1)
     except Exception as e:
-        print(f"CLI Error: {str(e)}")
+        print(f'CLI Error: {str(e)}')
         sys.exit(1)
+
+
+if __name__ == '__main__':
+    main()

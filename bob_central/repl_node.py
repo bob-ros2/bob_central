@@ -70,7 +70,7 @@ class ReplNode(Node):
         result_container = [None]
 
         def run_target():
-            if code == "__RESET__":
+            if code == '__RESET__':
                 self._locals = {
                     'node': self,
                     'rclpy': rclpy,
@@ -80,10 +80,10 @@ class ReplNode(Node):
                     'time': __import__('time'),
                     'math': __import__('math')
                 }
-                result_container[0] = "REPL namespace has been reset."
-            elif code == "__HISTORY__":
+                result_container[0] = 'REPL namespace has been reset.'
+            elif code == '__HISTORY__':
                 keys = sorted([k for k in self._locals.keys() if not k.startswith('_')])
-                result_container[0] = "REPL HISTORY: " + ", ".join(keys)
+                result_container[0] = 'REPL HISTORY: ' + ', '.join(keys)
             else:
                 result_container[0] = self.execute_code(code)
 

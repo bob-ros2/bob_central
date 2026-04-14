@@ -13,78 +13,81 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-"""
-TTI (Text-to-Image) Node.
-
-Generates artwork using Stable Diffusion based on textual descriptions.
-"""
+"""ROS 2 Node for FLUX Text-to-Image models."""
 
 import os
-import torch
+
+from diffusers import StableDiffusionPipeline
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-from diffusers import StableDiffusionPipeline
+import torch
 
 
 class TTINode(Node):
-    """ROS 2 node for text-to-image generation."""
+    """ROS 2 Node for Stable Diffusion Image Generation."""
 
     def __init__(self):
         super().__init__('tti_node')
 
         # Parameters
-        self.declare_parameter(
-            'model_id', 'runwayml/stable-diffusion-v1-5')
-        self.declare_parameter('output_path', '/root/eva/media/eva_artist.jpg')
-        self.declare_parameter('device', 'cuda')
-        self.declare_parameter('width', 400)
-        self.declare_parameter('height', 304)
+        self.declare_parameter('model_path', '/models/stable-diffusion-v1-5')
+        self.declare_parameter('output_dir', '/root/eva/media/generated')
+        self.declare_parameter('device', 'cuda' if torch.cuda.is_available() else 'cpu')
 
-        self.model_id = self.get_parameter('model_id').value
-        self.output_path = self.get_parameter('output_path').value
+        self.model_path = self.get_parameter('model_path').value
+        self.output_dir = self.get_parameter('output_dir').value
         self.device = self.get_parameter('device').value
-        self.width = self.get_parameter('width').value
-        self.height = self.get_parameter('height').value
 
-        # Initialize Pipeline
-        self.get_logger().info(f'Loading model: {self.model_id}')
+        # Make sure output directory exists
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
+
+        # Load model
+        self.get_logger().info(f'Loading model from {self.model_path} on {self.device}...')
         try:
             self.pipe = StableDiffusionPipeline.from_pretrained(
-                self.model_id, torch_dtype=torch.float16)
-            self.pipe = self.pipe.to(self.device)
-            self.get_logger().info('TTI Pipeline ready.')
+                self.model_path, torch_dtype=torch.float16
+            ).to(self.device)
+            self.get_logger().info('Model loaded successfully.')
         except Exception as e:
-            self.get_logger().error(f'Failed to load TTI model: {e}')
+            self.get_logger().error(f'Failed to load model: {e}')
             self.pipe = None
 
-        # Subscriptions
+        # Subscriber
         self.create_subscription(String, '/eva/tti/prompt', self.prompt_cb, 10)
 
-        self.get_logger().info('TTI Node (Stable) initialized.')
+        # Publisher for the result path
+        self.pub_result = self.create_publisher(String, '/eva/tti/result', 10)
+
+        self.get_logger().info('TTI Node ready.')
 
     def prompt_cb(self, msg):
-        """Generate image based on prompt."""
-        if not self.pipe:
-            self.get_logger().error('Pipeline not initialized.')
+        """Handle incoming prompts and generate images."""
+        if self.pipe is None:
+            self.get_logger().error('Model not loaded, cannot generate image.')
             return
 
         prompt = msg.data
-        self.get_logger().info(f'Generating image for: {prompt}')
+        self.get_logger().info(f'Generating image for prompt: {prompt}')
 
         try:
-            os.makedirs(os.path.dirname(self.output_path), exist_ok=True)
-            image = self.pipe(
-                prompt, width=self.width, height=self.height).images[0]
-            image.save(self.output_path)
-            self.get_logger().info(f'Image saved to {self.output_path}')
+            image = self.pipe(prompt).images[0]
+            filename = f'gen_{torch.randint(0, 1000000, (1,)).item()}.png'
+            filepath = os.path.join(self.output_dir, filename)
+            image.save(filepath)
+
+            # Publish result
+            result_msg = String()
+            result_msg.data = filepath
+            self.pub_result.publish(result_msg)
+            self.get_logger().info(f'Image saved to {filepath}')
         except Exception as e:
-            self.get_logger().error(f'Image generation failed: {e}')
+            self.get_logger().error(f'Error during generation: {e}')
 
 
 def main(args=None):
-    """Run TTI node."""
+    """Entry point for TTINode."""
     rclpy.init(args=args)
     node = TTINode()
     try:
