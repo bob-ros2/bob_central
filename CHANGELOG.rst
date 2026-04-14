@@ -1,3 +1,16 @@
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package bob_central
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+0.6.0 (2026-04-14)
+------------------
+* Absolute Purity: Achieved 100% flake8 linter compliance across all nodes and scripts.
+* Enforced Google-style import ordering and single-quote coding standard.
+* Cleaned up obsolete and misplaced scripts (VLM robot controller, legacy monitoring, and internal observers).
+* Stabilized CI/CD pipeline by removing redundant build dependencies.
+* Contributors: Bob Ros, Antigravity AI
+
+
 0.5.0 (2026-04-11)
 ------------------
 * Implemented Recursive Thought (RLM Core): Introduced specialized expert personas (Architect, Critic, Planner, Debugger) for multi-step internal reasoning and decomposition.
