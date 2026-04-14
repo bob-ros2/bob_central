@@ -46,11 +46,14 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # Proxy CouchDB – Generic entry point for any database (Injecting Credentials)
-    location /couchdb/ {
-        proxy_pass http://192.168.1.10:5984/;
+    # Default Proxy: CouchDB (Catch-all for anything not matching /v1/ or /search)
+    location / {
+        proxy_pass http://192.168.1.10:5984;
         # admin:password -> Basic YWRtaW46cGFzc3dvcmQ=
         proxy_set_header Authorization "Basic YWRtaW46cGFzc3dvcmQ=";
         proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
