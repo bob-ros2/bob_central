@@ -38,7 +38,7 @@ class ArtObserverNode(Node):
         self.declare_parameter('image_path', '/root/eva/media/eva_artist.jpg')
         self.declare_parameter('pipe_path', '/tmp/photo_pipe')
         self.declare_parameter('fps', 1)
-        self.declare_parameter('img_size', [400, 304])
+        self.declare_parameter('img_size', [400, 400])
 
         self.image_path = self.get_parameter('image_path').value
         self.pipe_path = self.get_parameter('pipe_path').value
