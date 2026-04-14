@@ -14,6 +14,13 @@ Sends a text prompt to the Image generation subsystem.
 - **Arguments**: `prompt` (str) - detailed description of the scene.
 - **Returns**: Confirmation message with result path.
 
+### play_music
+Plays an audio file (mp3/wav) through the robot's mixer.
+- **Arguments**: 
+  - `file` (str) - path to the audio file.
+  - `loop` (bool, optional) - if true, loops the music.
+- **Returns**: Confirmation message.
+
 ## Usage
 To use this skill, call **`execute_skill_script()`** with the following parameters:
 - **`skill_name`**: `"media_artist"`
