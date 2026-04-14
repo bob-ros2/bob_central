@@ -39,11 +39,13 @@ class ArtObserverNode(Node):
         self.declare_parameter('pipe_path', '/tmp/photo_pipe')
         self.declare_parameter('fps', 1)
         self.declare_parameter('img_size', [400, 400])
+        self.declare_parameter('img_pos', [426, 10])
 
         self.image_path = self.get_parameter('image_path').value
         self.pipe_path = self.get_parameter('pipe_path').value
         self.fps = self.get_parameter('fps').value
         self.img_size = self.get_parameter('img_size').value
+        self.img_pos = self.get_parameter('img_pos').value
 
         # Publishers
         self.pub_events = self.create_publisher(
@@ -69,7 +71,7 @@ class ArtObserverNode(Node):
         config = {
             'type': 'VideoStream',
             'id': 'eva_art_background',
-            'area': [426, 10, self.img_size[0], self.img_size[1]],
+            'area': [self.img_pos[0], self.img_pos[1], self.img_size[0], self.img_size[1]],
             'topic': self.pipe_path,
             'encoding': 'rgb',
             'source_width': self.img_size[0],
