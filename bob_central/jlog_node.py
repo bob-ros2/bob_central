@@ -15,9 +15,9 @@
 
 """ROS 2 Node for logging JSON messages to CouchDB."""
 
-import os
-import json
 from datetime import datetime
+import json
+import os
 
 import rclpy
 from rclpy.node import Node

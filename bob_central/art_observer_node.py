@@ -20,9 +20,10 @@ Art Observer Node.
 Monitors artwork files and streams them to the dashboard.
 """
 
-import os
 import json
+import os
 import subprocess
+
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String

@@ -20,16 +20,16 @@ Status Daemon Node - Unified Telemetry Monitor.
 Provides a single-page transparent overlay with system and brain metrics.
 """
 
+from datetime import datetime
 import json
 import os
 import time
-from datetime import datetime
 
+from PIL import Image, ImageDraw, ImageFont
 import psutil
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String, UInt8MultiArray
-from PIL import Image, ImageDraw, ImageFont
 
 
 class StatusDaemonNode(Node):

@@ -21,10 +21,11 @@ Visualizes the LLM reasoning process on the dashboard.
 """
 
 import json
+
+from PIL import Image, ImageDraw, ImageFont
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String, UInt8MultiArray
-from PIL import Image, ImageDraw, ImageFont
 
 
 class ReasoningObserverNode(Node):

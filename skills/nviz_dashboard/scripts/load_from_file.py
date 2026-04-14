@@ -22,14 +22,15 @@ This script reads any dashboard JSON and applies it via ROS.
 import argparse
 import json
 import os
+import sys
+
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-import sys
 
 
 def sanitize_config(config_data):
-    """Convert modern/web JSON to Bob Nviz Industrial Standard (String, area array, snake_case)."""
+    """Convert modern/web JSON to Bob Nviz Industrial Standard."""
     if not isinstance(config_data, list):
         return config_data
 
@@ -71,9 +72,9 @@ def sanitize_config(config_data):
             if isinstance(val, str) and val.startswith('#'):
                 h = val.lstrip('#')
                 if len(h) == 6:  # RGB
-                    item[col_key] = [int(h[i:i+2], 16) for i in (0, 2, 4)] + [255]
+                    item[col_key] = [int(h[i:i + 2], 16) for i in (0, 2, 4)] + [255]
                 elif len(h) == 8:  # RGBA
-                    item[col_key] = [int(h[i:i+2], 16) for i in (0, 2, 4, 6)]
+                    item[col_key] = [int(h[i:i + 2], 16) for i in (0, 2, 4, 6)]
 
         sanitized.append(item)
     return sanitized
@@ -99,7 +100,7 @@ def publish_to_events_topic(config_data):
         print('Waiting for nviz subscriber (discovery)...')
         for _ in range(30):
             if publisher.get_subscription_count() > 0:
-                print(f'Subscriber found! Connection count: {publisher.get_subscription_count()}')
+                print(f'Subscriber found! Count: {publisher.get_subscription_count()}')
                 break
             rclpy.spin_once(node, timeout_sec=0.1)
 
