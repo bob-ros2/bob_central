@@ -48,3 +48,15 @@
     - --ros-args
     - -r
     - *twitch_ns
+- name: jlog
+  package: bob_central
+  executable: jlog
+  output: screen
+  arguments:
+    - --ros-args
+    - -r
+    - "db_ingest:=chat_raw"
+    - -r
+    - *twitch_ns
+    - -p
+    - "db_url:=http://admin:password@api-gateway:5984/memo_db"

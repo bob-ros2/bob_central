@@ -23,6 +23,7 @@ services:
       - TWITCH_CHAT_CHANNEL=bobassi
       # Passing the path to the Docker Secret
       - TWITCH_CHAT_CREDENTIALS=/run/secrets/twitch_credentials
+      - JLOG_DB_URL=http://admin:password@api-gateway:5984/memo_db
     secrets:
       - twitch_credentials
     restart: unless-stopped
