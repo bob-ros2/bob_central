@@ -57,7 +57,7 @@
   arguments:
     - --ros-args
     - -r
-    - "db_ingest:=chat_raw"
+    - "db_ingest:=json"
     - -r
     - *twitch_ns
     - -p
