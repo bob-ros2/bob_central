@@ -13,12 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from PIL import Image as PILImage
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
 from sensor_msgs.msg import Image
+from std_msgs.msg import String
 import torchvision.transforms as transforms
-from PIL import Image as PILImage
 
 
 class VLMLanguageController(Node):
@@ -72,14 +72,14 @@ class VLMLanguageController(Node):
             _ = transform(pil_image)
 
         except Exception as e:
-            self.get_logger().error(f"Error processing image: {e}")
+            self.get_logger().error(f'Error processing image: {e}')
 
     def command_callback(self, msg):
         """Handle incoming language command."""
-        self.get_logger().info(f"Received command: {msg.data}")
+        self.get_logger().info(f'Received command: {msg.data}')
         # Here, integrate with VLM to generate action
         # Example: use LLM to map text to robot motion plan
-        action = f"Executing: {msg.data}"
+        action = f'Executing: {msg.data}'
         self.action_pub.publish(String(data=action))
 
     def run(self):

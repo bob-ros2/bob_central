@@ -47,7 +47,7 @@ def register(module: Any, node: Any = None) -> List[Tool]:
     """
     _NodeContext.node = node
     node.get_logger().info(
-        '[Coder Tools] Eva\'s engineering hands are now active.'
+        "[Coder Tools] Eva's engineering hands are now active."
     )
     return default_register(module, node)
 
@@ -62,7 +62,7 @@ def read_file(path: str, start_line: int = 1, end_line: int = 800) -> str:
     :return: File content or error message.
     """
     if not os.path.exists(path):
-        return f'Error: File \'{path}\' not found.'
+        return f"Error: File '{path}' not found."
 
     try:
         with open(path, 'r', encoding='utf-8') as f:
@@ -95,7 +95,7 @@ def write_file(path: str, content: str, overwrite: bool = True) -> str:
     :return: Success or error message.
     """
     if os.path.exists(path) and not overwrite:
-        return f'Error: File \'{path}\' already exists and overwrite is False.'
+        return f"Error: File '{path}' already exists and overwrite is False."
 
     try:
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
@@ -116,7 +116,7 @@ def list_dir(path: str = '.') -> str:
     :return: Formatted list of contents.
     """
     if not os.path.exists(path):
-        return f'Error: Path \'{path}\' not found.'
+        return f"Error: Path '{path}' not found."
 
     try:
         items = os.listdir(path)
@@ -165,12 +165,12 @@ def run_command(command: str, timeout: float = 120.0) -> str:
 
 
 def search_text(directory: str, query: str, pattern: str = '*') -> str:
-    """
+    r"""
     Search for a string recursively in a directory using grep-like logic.
 
     :param directory: Where to start searching.
     :param query: The text to find.
-    :param pattern: File glob pattern (e.g. \'*.py\').
+    :param pattern: File glob pattern (e.g. '*.py').
     :return: Search results.
     """
     try:
@@ -194,7 +194,7 @@ def search_text(directory: str, query: str, pattern: str = '*') -> str:
 
 def main():
     """CLI entry point."""
-    parser = argparse.ArgumentParser(description='Eva\'s Coder CLI')
+    parser = argparse.ArgumentParser(description="Eva's Coder CLI")
     parser.add_argument('--func', required=True, help='Function to call')
     parser.add_argument('--path', help='File/Dir path')
     parser.add_argument('--content', help='Content to write')
@@ -222,7 +222,7 @@ def main():
         elif args.func == 'search_text':
             print(search_text(args.path or '.', args.query, args.pattern))
         else:
-            print(f'Error: Unknown function \'{args.func}\'')
+            print(f"Error: Unknown function '{args.func}'")
             sys.exit(1)
     except Exception as e:
         print(f'CLI Error: {str(e)}')
