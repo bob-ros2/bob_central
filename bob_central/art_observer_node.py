@@ -71,7 +71,10 @@ class ArtObserverNode(Node):
         config = {
             'type': 'VideoStream',
             'id': 'eva_art_background',
-            'area': [self.img_pos[0], self.img_pos[1], self.img_size[0], self.img_size[1]],
+            'area': [
+                self.img_pos[0], self.img_pos[1],
+                self.img_size[0], self.img_size[1]
+            ],
             'topic': self.pipe_path,
             'encoding': 'rgb',
             'source_width': self.img_size[0],

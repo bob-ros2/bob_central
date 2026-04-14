@@ -32,6 +32,7 @@ services:
       -p fifo_path:=$${WEBVIDEO_FIFO_PATH:-/tmp/smallchat_pipe} 
       -p ui_path:=$${WEBVIDEO_UI_PATH} 
       -p fifo_alpha:=$${WEBVIDEO_FIFO_ALPHA:-false} 
+      -r llm_reasoning:=/eva/llm_reasoning 
       -r llm_stream:=/eva/llm_stream 
       -r llm_tool_calls:=/eva/llm_tool_calls
       -r __ns:=/eva/streamer

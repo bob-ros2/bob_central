@@ -1,8 +1,26 @@
 #!/usr/bin/env python3
+# Copyright 2026 Bob Ros
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Utility to find FIFO pipes on the system."""
+
 import os
 import stat
 
+
 def find_fifos(path='/tmp'):
+    """Find all FIFO pipes in the given directory."""
     fifos = []
     try:
         for f in os.listdir(path):
@@ -13,5 +31,6 @@ def find_fifos(path='/tmp'):
         return [str(e)]
     return fifos
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     print(find_fifos())

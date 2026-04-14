@@ -13,24 +13,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""ROS 2 Node for logging JSON messages to CouchDB."""
+
+import os
+import json
+from datetime import datetime
+
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
-import json
 import requests
-from datetime import datetime
-import os
+from std_msgs.msg import String
+
 
 class JLogNode(Node):
+    """ROS 2 Node for logging JSON messages to CouchDB."""
+
     def __init__(self):
+        """Initialize the node and check CouchDB connection."""
         super().__init__('jlog_node')
-        
+
         # Konfiguration mit Priorität: ROS-Parameter > Umgebungsvariable > Default
         # Routing erfolgt über api-gateway (Port 8080), das die Credentials injiziert
         env_db_url = os.environ.get('JLOG_DB_URL', 'http://api-gateway:8080/memo_db')
         self.declare_parameter('db_url', env_db_url)
         self.db_url = self.get_parameter('db_url').value
-        
+
         # Sicherstellen, dass die DB existiert (PUT ist idempotent)
         try:
             self.get_logger().info(f'Prüfe Verbindung zu CouchDB: {self.db_url}')
@@ -41,50 +48,54 @@ class JLogNode(Node):
         # Subscriber auf dein JSON-String Topic
         self.subscription = self.create_subscription(
             String,
-            'db_ingest', 
+            'db_ingest',
             self.listener_callback,
             10)
-        
+
         self.get_logger().info(f'JLog Node gestartet. Database: {self.db_url}')
 
     def listener_callback(self, msg):
+        """Handle incoming JSON strings and send them to CouchDB."""
         try:
             # 1. JSON parsen
             payload = json.loads(msg.data)
-            
+
             # 2. CouchDB-Konformität herstellen (Vermeidung von illegal_docid/doc_validation)
             # Falls ein MongoDB-Style '_id' Objekt drin ist, entfernen wir es für die URL-ID
             doc_id = None
-            if "_id" in payload:
-                if isinstance(payload["_id"], dict) and "$oid" in payload["_id"]:
-                    doc_id = payload["_id"]["$oid"]
-                del payload["_id"]
-            
+            if '_id' in payload:
+                if isinstance(payload['_id'], dict) and '$oid' in payload['_id']:
+                    doc_id = payload['_id']['$oid']
+                del payload['_id']
+
             # Reserviertes '_ts' zu 'ts' umbenennen
-            if "_ts" in payload:
-                payload["ts"] = payload.pop("_ts")
-            elif "ts" not in payload:
+            if '_ts' in payload:
+                payload['ts'] = payload.pop('_ts')
+            elif 'ts' not in payload:
                 # Falls gar kein Zeitstempel da ist, fügen wir einen hinzu
-                payload["ts"] = datetime.now().isoformat()
+                payload['ts'] = datetime.now().isoformat()
 
             # 3. In CouchDB speichern
             # Wenn doc_id existiert, nutzen wir PUT (festgelegte ID), sonst POST (Auto-ID)
             if doc_id:
-                response = requests.put(f"{self.db_url}/{doc_id}", json=payload)
+                response = requests.put(f'{self.db_url}/{doc_id}', json=payload)
             else:
                 response = requests.post(self.db_url, json=payload)
 
             if response.status_code in [201, 202]:
                 self.get_logger().info('Daten erfolgreich in CouchDB gespeichert.')
             else:
-                self.get_logger().warn(f'CouchDB Antwort: {response.status_code} - {response.text}')
+                log_msg = f'CouchDB Antwort: {response.status_code} - {response.text[:50]}'
+                self.get_logger().warn(log_msg)
 
         except json.JSONDecodeError:
             self.get_logger().error('Fehler: Empfangener String ist kein gültiges JSON.')
         except Exception as e:
             self.get_logger().error(f'Unerwarteter Fehler: {e}')
 
+
 def main(args=None):
+    """Entry point for JLog Node."""
     rclpy.init(args=args)
     node = JLogNode()
     try:
@@ -94,6 +105,7 @@ def main(args=None):
     finally:
         node.destroy_node()
         rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()

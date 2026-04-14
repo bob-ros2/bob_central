@@ -45,85 +45,14 @@ To manage the complex set of services, a master management script is provided in
 | `compose-base.yaml` | Core logic (`eva-base`) and API Gateway (`eva-api-gate`). |
 | `compose-nviz.yaml` | Visual dashboard streamer (`eva-nviz-streamer`). |
 | `compose-tti.yaml` | Image generation engine (`eva-artist`). |
+| `compose-tbot.yaml` | Twitch Chatbot & Twitch Integration stack. |
+| `compose-dashboard.yaml` | Dedicated telemetry and dashboard automation. |
+| `compose-q3tts.yaml` | Text-to-Speech engine (Qwen3-TTS). |
 | `compose-gitea.yaml` | Local Git infrastructure and CI runner. |
-| `compose-inference.yaml` | LLM inference servers (Vision). |
+| `compose-inference.yaml` | LLM inference servers (Vision/Reasoning). |
 | `compose-qdrant.yaml` | Vector database for long-term memory. |
 
 ### Security Features
-* **Credential Isolation**: Pure separation of code and secrets via environment variables.
-* **`/root/eva` Sandbox**: All temporary files and generated assets are locked into a dedicated host volume.
-
-## System Architecture
-
-The following diagram illustrates the interaction between the Docker containers and the internal ROS 2 communication mesh:
-
-```mermaid
-graph TD
-    subgraph "Host / Docker Network (Project: eva)"
-        subgraph "Container: eva-api-gate (Nginx)"
-            GATE[API Gateway]
-        end
-
-        subgraph "Container: eva-inference (llama.cpp)"
-            VIS[eva-researcher-vision]
-        end
-
-        subgraph "Container: eva-base (Nucleus)"
-            direction TB
-            
-            subgraph "Namespace: /eva"
-                LOGIC["/eva/logic (Orchestrator)"]
-                BRAIN["/eva/brain_eva (bob_llm)"]
-                REPL["/eva/repl (Persistent Context)"]
-                VMGR["/eva/visual_status_manager"]
-            end
-
-            CLIENT["/eva/bob_chat_client"]
-            
-            subgraph "Namespace: /eva/streamer"
-                MIXER["/streamer/mixer"]
-                NVIZ["/streamer/nviz"]
-            end
-
-            TTI["/eva/tti (Artist)"]
-        end
-
-        subgraph "Container: eva-memory (Qdrant)"
-            QDRANT[(Qdrant Vector DB)]
-        end
-    end
-
-    %% Queries
-    CLIENT -- "/eva/user_query" --> LOGIC
-    LOGIC -- ".../query_timed" --> BRAIN
-    BRAIN -- ".../specialist_response" --> LOGIC
-    
-    %% Recursive / Persistent Work
-    BRAIN -- "Tool Call" --> REPL
-    REPL -- "Result" --> BRAIN
-    
-    %% Status / Dashboard
-    LOGIC -- "/eva/dashboard/visual_trigger" --> VMGR
-    VMGR -- "/eva/streamer/status_icon" --> NVIZ
-
-    %% Output to Client
-    BRAIN -- "/eva/llm_stream" --> CLIENT
-    
-    %% Inference / Proxy
-    GATE -- "Proxy" --> SUM
-    GATE -- "Proxy" --> VIS
-    BRAIN -- "REST API" --> GATE
-
-    %% Memory Access
-    BRAIN -- "REST / gRPC" --> QDRANT
-
-    %% Styling
-    style LOGIC fill:#c0392b,stroke:#333,stroke-width:3px,color:#fff
-    style BRAIN fill:#2980b9,stroke:#333,stroke-width:2px,color:#fff
-    style REPL fill:#e67e22,stroke:#333,stroke-width:2px,color:#fff
-    style VMGR fill:#16a085,stroke:#333,color:#fff
-    style CLIENT fill:#27ae60,stroke:#333,stroke-width:2px,color:#fff
-```
 
 ## ROS 2 API
 ### Nodes & Topics

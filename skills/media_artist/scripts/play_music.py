@@ -22,9 +22,9 @@ Broadcasts audio files to the master mixer via ROS topics.
 import os
 import argparse
 import subprocess
-import time
 
-def play_audio(file_path: str, topic: str = "/eva/streamer/mixer/in1", loop: bool = False) -> str:
+
+def play_audio(file_path: str, topic: str = '/eva/streamer/mixer/in1', loop: bool = False) -> str:
     """
     Play an audio file through the ROS audio pipeline.
 
@@ -34,39 +34,43 @@ def play_audio(file_path: str, topic: str = "/eva/streamer/mixer/in1", loop: boo
     :return: Status message.
     """
     if not os.path.exists(file_path):
-        return f"Error: Audio file not found at {file_path}"
+        return f'Error: Audio file not found at {file_path}'
 
     # Construct the command pipeline
     # 1. FFmpeg decodes to raw PCM 44.1kHz Stereo
     # 2. bob_audio convert node reads from stdin and publishes to ROS
-    loop_arg = "-stream_loop -1" if loop else ""
-    
+    loop_arg = '-stream_loop -1' if loop else ''
+
     ffmpeg_cmd = (
-        f"ffmpeg -re {loop_arg} -i \"{file_path}\" "
-        f"-f s16le -ar 44100 -ac 2 pipe:1"
+        f'ffmpeg -re {loop_arg} -i "{file_path}" '
+        f'-f s16le -ar 44100 -ac 2 pipe:1'
     )
-    
+
     convert_cmd = (
-        f"ros2 run bob_audio convert --ros-args "
-        f"-p mode:=stdin_to_ros "
-        f"-r out:={topic}"
+        f'ros2 run bob_audio convert --ros-args '
+        f'-p mode:=stdin_to_ros '
+        f'-r out:={topic}'
     )
-    
-    full_cmd = f"{ffmpeg_cmd} | {convert_cmd}"
+
+    full_cmd = f'{ffmpeg_cmd} | {convert_cmd}'
 
     try:
         # We start it as a background process
         process = subprocess.Popen(full_cmd, shell=True, preexec_fn=os.setsid)
-        return (f"Started playback of {os.path.basename(file_path)} on topic {topic}. "
-                f"PID: {process.pid}")
+        return (f'Started playback of {os.path.basename(file_path)} on topic {topic}. '
+                f'PID: {process.pid}')
     except Exception as e:
-        return f"Failed to start audio playback: {str(e)}"
+        return f'Failed to start audio playback: {str(e)}'
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Eva Music Player")
-    parser.add_argument("--file", type=str, required=True, help="Path to audio file")
-    parser.add_argument("--topic", type=str, default="/eva/streamer/mixer/in1", help="Target ROS topic")
-    parser.add_argument("--loop", action="store_true", help="Loop playback")
-    
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Eva Music Player')
+    parser.add_argument('--file', type=str, required=True, help='Path to audio file')
+    parser.add_argument(
+        '--topic', type=str, default='/eva/streamer/mixer/in1',
+        help='Target ROS topic'
+    )
+    parser.add_argument('--loop', action='store_true', help='Loop playback')
+
     args = parser.parse_args()
     print(play_audio(args.file, args.topic, args.loop))
