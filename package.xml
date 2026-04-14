@@ -24,7 +24,6 @@
   <depend>bob_nlp_tools</depend>
   <depend>bob_topic_tools</depend>
 
-  <test_depend>ament_cmake_test</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 
