@@ -27,23 +27,9 @@ The following files are available in `/root/eva/media`:
 
 ### play_music
 
-Plays an audio file through the robot's audio mixer.
+Plays an audio file through the robot's audio mixer by decoding it with FFmpeg
+and streaming raw PCM data (44.1kHz, stereo, 16-bit) to the mixer input topic.
 
-**IMPORTANT**: Do NOT guess service names or topic names.
-Music playback works by publishing the **absolute file path** to `/eva/streamer/control`.
-
-#### Correct method — publish to ROS topic:
-```json
-publish_topic_message({
-  "topic_name": "/eva/streamer/control",
-  "message_type": "std_msgs/msg/String",
-  "message_yaml": "data: '/root/eva/media/bobros_neo_piano_la_gauche_onetake_11042023.mp3'"
-})
-```
-
-This is the **only correct way** to start audio playback. No service call required.
-
-#### Alternative — play_music script:
 ```json
 execute_skill_script({
   "skill_name": "media_artist",
@@ -52,9 +38,14 @@ execute_skill_script({
 })
 ```
 
+**Options:**
+- `--file` (required): Absolute path to the audio file.
+- `--topic` (optional): Mixer input topic. Default: `/eva/streamer/in1`
+- `--loop` (optional): Loop playback indefinitely.
+
 ### list_media
 
-Lists all current media files in `/root/eva/media`. Use this to refresh the known file list.
+Lists all current media files in `/root/eva/media`.
 
 ```json
 execute_skill_script({
@@ -67,8 +58,6 @@ execute_skill_script({
 ### draw_image
 
 Sends a text prompt to the image generation subsystem.
-- **Arguments**: `prompt` (str) - detailed description of the scene.
-- **Returns**: Confirmation message with result path.
 
 ```json
 execute_skill_script({
@@ -83,5 +72,5 @@ The resulting image is saved to `/root/eva/media/eva_artist.jpg`.
 ## Music Playback Workflow
 
 1. Pick the file path from the **Known Media Files** list above.
-2. Publish it to `/eva/streamer/control` using `publish_topic_message`.
-3. Done. No service discovery needed.
+2. Call `play_music` with the file path.
+3. Done. The script handles FFmpeg decoding and ROS publishing internally.

@@ -16,65 +16,100 @@
 """
 Music Player Tool for Eva.
 
-Broadcasts audio files to the master mixer via ROS topics.
+Decodes an audio file via FFmpeg and streams raw PCM (44.1kHz Stereo 16-bit)
+as Int16MultiArray messages to the mixer input topic.
 """
 
 import argparse
+import array
 import os
 import subprocess
+import sys
+
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import Int16MultiArray
+
+# Chunk size: 4096 frames * 2 channels * 2 bytes = 16384 bytes per publish
+CHUNK_FRAMES = 4096
+CHUNK_BYTES = CHUNK_FRAMES * 2 * 2  # stereo, 16-bit
 
 
-def play_audio(
-    file_path: str, topic: str = '/eva/streamer/mixer/in1', loop: bool = False
-) -> str:
-    """
-    Play an audio file through the ROS audio pipeline.
+class MusicPlayer(Node):
+    """ROS 2 node that streams audio PCM data to the mixer."""
 
-    :param file_path: Path to the audio file (mp3, wav, etc.)
-    :param topic: ROS topic to publish to (should be a mixer input)
-    :param loop: Whether to loop the audio infinitely.
-    :return: Status message.
-    """
-    if not os.path.exists(file_path):
-        return f'Error: Audio file not found at {file_path}'
+    def __init__(self, file_path: str, topic: str, loop: bool):
+        """Initialize music player node."""
+        super().__init__('eva_music_player')
+        self.pub = self.create_publisher(Int16MultiArray, topic, 10)
+        self.file_path = file_path
+        self.loop = loop
+        self.topic = topic
 
-    # Construct the command pipeline
-    # 1. FFmpeg decodes to raw PCM 44.1kHz Stereo
-    # 2. bob_audio convert node reads from stdin and publishes to ROS
-    loop_arg = '-stream_loop -1' if loop else ''
+    def stream(self):
+        """Decode audio with FFmpeg and publish PCM chunks."""
+        loop_args = ['-stream_loop', '-1'] if self.loop else []
+        cmd = [
+            'ffmpeg', '-re',
+            *loop_args,
+            '-i', self.file_path,
+            '-f', 's16le',
+            '-ar', '44100',
+            '-ac', '2',
+            'pipe:1'
+        ]
 
-    ffmpeg_cmd = (
-        f'ffmpeg -re {loop_arg} -i "{file_path}" '
-        f'-f s16le -ar 44100 -ac 2 pipe:1'
-    )
+        self.get_logger().info(
+            f'Streaming {os.path.basename(self.file_path)} -> {self.topic}')
 
-    convert_cmd = (
-        f'ros2 run bob_audio convert --ros-args '
-        f'-p mode:=stdin_to_ros '
-        f'-r out:={topic}'
-    )
+        proc = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
 
-    full_cmd = f'{ffmpeg_cmd} | {convert_cmd}'
+        try:
+            while rclpy.ok():
+                raw = proc.stdout.read(CHUNK_BYTES)
+                if not raw:
+                    break
 
+                # Convert raw bytes to int16 array
+                samples = array.array('h', raw)
+                msg = Int16MultiArray()
+                msg.data = samples.tolist()
+                self.pub.publish(msg)
+
+                # Yield to ROS callbacks briefly
+                rclpy.spin_once(self, timeout_sec=0)
+
+        finally:
+            proc.terminate()
+            self.get_logger().info('Playback finished.')
+
+
+def main():
+    """Entry point."""
+    parser = argparse.ArgumentParser(description='Eva Music Player')
+    parser.add_argument('--file', type=str, required=True,
+                        help='Path to audio file (mp3, wav, etc.)')
+    parser.add_argument('--topic', type=str, default='/eva/streamer/in1',
+                        help='Target ROS mixer input topic')
+    parser.add_argument('--loop', action='store_true',
+                        help='Loop playback indefinitely')
+    args = parser.parse_args()
+
+    if not os.path.exists(args.file):
+        print(f'Error: File not found: {args.file}', file=sys.stderr)
+        sys.exit(1)
+
+    rclpy.init()
+    player = MusicPlayer(args.file, args.topic, args.loop)
     try:
-        # We start it as a background process
-        process = subprocess.Popen(full_cmd, shell=True, preexec_fn=os.setsid)
-        return (
-            f'Started playback of {os.path.basename(file_path)} on topic {topic}. '
-            f'PID: {process.pid}'
-        )
-    except Exception as e:
-        return f'Failed to start audio playback: {str(e)}'
+        player.stream()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        player.destroy_node()
+        rclpy.shutdown()
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Eva Music Player')
-    parser.add_argument('--file', type=str, required=True, help='Path to audio file')
-    parser.add_argument(
-        '--topic', type=str, default='/eva/streamer/mixer/in1',
-        help='Target ROS topic'
-    )
-    parser.add_argument('--loop', action='store_true', help='Loop playback')
-
-    args = parser.parse_args()
-    print(play_audio(args.file, args.topic, args.loop))
+    main()
