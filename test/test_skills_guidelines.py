@@ -32,6 +32,8 @@ SKILLS_ROOT = os.path.join(os.path.dirname(__file__), '..', 'skills')
 SKILLS_ROOT = os.path.normpath(SKILLS_ROOT)
 
 ALLOWED_IN_SKILLS_ROOT = {'.gitkeep', 'TEMPLATE_SPEC.md'}
+# Skills that generate their metadata at runtime
+SKILLS_WITHOUT_MANDATORY_MD = {'knowledge_graph'}
 
 
 def get_skill_dirs():
@@ -79,6 +81,8 @@ def test_skill_dirs_have_skill_md():
     """Every skill directory must contain a SKILL.md file."""
     missing = []
     for skill in get_skill_dirs():
+        if skill in SKILLS_WITHOUT_MANDATORY_MD:
+            continue
         skill_md = os.path.join(SKILLS_ROOT, skill, 'SKILL.md')
         if not os.path.isfile(skill_md):
             missing.append(f'skills/{skill}/SKILL.md')
