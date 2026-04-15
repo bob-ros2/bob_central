@@ -13,24 +13,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import array
+import json
 import os
+import queue
 import subprocess
 import threading
 import time
-import queue
-import sys
 
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Int16MultiArray, String
 
+
 CHUNK_FRAMES = 4096
 CHUNK_BYTES = CHUNK_FRAMES * 2 * 2  # stereo, 16-bit
 
+
 def get_metadata(file_path: str) -> dict:
-    cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', file_path]
+    cmd = ['ffprobe', '-v', '-quiet', '-print_format', 'json', '-show_format', file_path]
     try:
         res = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
         data = json.loads(res.stdout)
@@ -41,10 +42,11 @@ def get_metadata(file_path: str) -> dict:
             'file': os.path.basename(file_path),
             'title': tags.get('title', tags.get('TITLE', os.path.basename(file_path))),
             'artist': tags.get('artist', tags.get('ARTIST', 'Unknown Artist')),
-            'duration': f'{int(dur//60)}:{int(dur%60):02d}'
+            'duration': f'{int(dur // 60)}:{int(dur % 60):02d}'
         }
     except Exception:
         return {'title': os.path.basename(file_path), 'artist': 'Unknown', 'duration': '?:??'}
+
 
 class MusicDaemon(Node):
     """Background Daemon that processes a strict Queue, ensuring 1 song plays at real-time pace."""
@@ -53,7 +55,8 @@ class MusicDaemon(Node):
         super().__init__('eva_music_daemon')
         self.pub_audio = self.create_publisher(Int16MultiArray, audio_topic, 10)
         self.pub_status = self.create_publisher(String, status_topic, 10)
-        self.sub_request = self.create_subscription(String, '/eva/media/play_request', self.on_request, 10)
+        self.sub_request = self.create_subscription(
+            String, '/eva/media/play_request', self.on_request, 10)
 
         self.audio_topic = audio_topic
         self.task_queue = queue.Queue()
@@ -90,10 +93,10 @@ class MusicDaemon(Node):
                 task = self.task_queue.get(timeout=1.0)
                 self.skip_event.clear()
                 self._play_task(task['files'], task['loop'], task['loop_all'])
-                
+
                 # Clear status when task completes naturally (not skipped)
                 if not self.skip_event.is_set():
-                    self.pub_status.publish(String(data=""))
+                    self.pub_status.publish(String(data=''))
             except queue.Empty:
                 pass
             except Exception as e:
@@ -107,8 +110,9 @@ class MusicDaemon(Node):
                         self._stream_file(f)
                 else:
                     self._stream_file(f)
-                    if self.skip_event.is_set(): break
-            
+                    if self.skip_event.is_set():
+                        break
+
             if not loop_all or self.skip_event.is_set():
                 break
 
@@ -124,8 +128,9 @@ class MusicDaemon(Node):
             'ffmpeg', '-i', file_path,
             '-f', 's16le', '-ar', '44100', '-ac', '2', 'pipe:1'
         ]
-        self.current_proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-        
+        self.current_proc = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+
         chunk_duration = CHUNK_FRAMES / 44100.0  # Time per chunk: ~0.0928 seconds
         start_time = time.time()
         chunks_played = 0
@@ -148,14 +153,15 @@ class MusicDaemon(Node):
                 samples = array.array('h', raw)
                 self.pub_audio.publish(Int16MultiArray(data=samples.tolist()))
                 chunks_played += 1
-                
+
                 # Small spin to handle incoming stop requests during stream
                 rclpy.spin_once(self, timeout_sec=0)
-                
+
         finally:
             self.current_proc.terminate()
             self.current_proc.wait()
             self.current_proc = None
+
 
 def main(args=None):
     rclpy.init(args=args)
@@ -167,6 +173,7 @@ def main(args=None):
     finally:
         daemon.destroy_node()
         rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()
