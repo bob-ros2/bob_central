@@ -97,7 +97,7 @@ class ArtObserverNode(Node):
         self.pub_events.publish(msg)
 
     def _streaming_loop(self):
-        """Persistent loop to push frames into the pipe at a steady rate."""
+        """Persist loop to push frames into the pipe at a steady rate."""
         frame_time = 1.0 / self.fps
         fifo = None
 
