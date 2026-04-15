@@ -27,9 +27,9 @@ The following files are available in `/root/eva/media`:
 
 ### play_music
 
-Plays an audio file through the robot's audio mixer by decoding it with FFmpeg
-and streaming raw PCM data (44.1kHz, stereo, 16-bit) to the mixer input topic.
+Plays audio files through the robot's mixer. Decodes with FFmpeg, streams PCM to ROS.
 
+**Play a single song:**
 ```json
 execute_skill_script({
   "skill_name": "media_artist",
@@ -38,10 +38,48 @@ execute_skill_script({
 })
 ```
 
+**Loop a single song:**
+```json
+execute_skill_script({
+  "skill_name": "media_artist",
+  "script_path": "scripts/play_music.py",
+  "args": "--file '/root/eva/media/bobros_neo_piano_la_gauche_onetake_11042023.mp3' --loop"
+})
+```
+
+**Play all audio files in a directory (playlist):**
+```json
+execute_skill_script({
+  "skill_name": "media_artist",
+  "script_path": "scripts/play_music.py",
+  "args": "--file '/root/eva/media/'"
+})
+```
+
+**Loop entire playlist:**
+```json
+execute_skill_script({
+  "skill_name": "media_artist",
+  "script_path": "scripts/play_music.py",
+  "args": "--file '/root/eva/media/' --loop-all"
+})
+```
+
+**Show song metadata (title, artist, album, duration) without playing:**
+```json
+execute_skill_script({
+  "skill_name": "media_artist",
+  "script_path": "scripts/play_music.py",
+  "args": "--file '/root/eva/media/bobros_neo_piano_la_gauche_onetake_11042023.mp3' --info"
+})
+```
+
 **Options:**
-- `--file` (required): Absolute path to the audio file.
+- `--file` (required, repeatable): Audio file or directory. Can be specified multiple times.
 - `--topic` (optional): Mixer input topic. Default: `/eva/streamer/in1`
-- `--loop` (optional): Loop playback indefinitely.
+- `--loop`: Loop the current song indefinitely.
+- `--loop-all`: Loop the entire playlist indefinitely.
+- `--info`: Show metadata only, do not play.
 
 ### list_media
 
@@ -68,9 +106,3 @@ execute_skill_script({
 ```
 
 The resulting image is saved to `/root/eva/media/eva_artist.jpg`.
-
-## Music Playback Workflow
-
-1. Pick the file path from the **Known Media Files** list above.
-2. Call `play_music` with the file path.
-3. Done. The script handles FFmpeg decoding and ROS publishing internally.
