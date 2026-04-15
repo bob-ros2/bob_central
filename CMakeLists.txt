@@ -25,6 +25,11 @@ install(
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
+
+  find_package(ament_cmake_pytest REQUIRED)
+  ament_add_pytest_test(test_skills_guidelines test/test_skills_guidelines.py
+    TIMEOUT 30
+  )
 endif()
 
 ament_package()
