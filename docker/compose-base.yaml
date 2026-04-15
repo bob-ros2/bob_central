@@ -36,6 +36,7 @@ services:
       - QT_X11_NO_MITSHM=1
       - MASTER_SEARXNG_URL=http://192.168.1.10:9080/search
       - MASTER_SEARXNG_LANGUAGE=en-US
+      - BOB_LAUNCH_AUTOABORT=0
     deploy:
       resources:
         reservations:

@@ -14,6 +14,7 @@
 - name: logic
   package: bob_central
   executable: orchestrator
+  respawn: true
   output: screen
   arguments:
     - --ros-args
@@ -42,6 +43,7 @@
 - name: brain_eva
   package: bob_llm
   executable: llm
+  respawn: true
   output: screen
   parameters:
     api_url: *api_orchestrator
@@ -51,14 +53,11 @@
     system_prompt_file: "//PKGSHARE:bob_central/prompts/orchestrator.md"
     stream: true
     max_tool_calls: 30
-    max_tokens: 8000
+    max_tokens: 6000
     max_history_length: 25
     temperature: 0.2
     presence_penalty: 1.2
     skill_dir: "/ros2_ws/src/bob_central/skills"
-    width: 400
-    height: 304
-    output_path: "/root/eva/media/eva_artist.jpg"
     tool_interfaces: 
        - "//PKGSHARE:bob_llm/config/skill_tools.py"
        - "//PKGSHARE:bob_llm/config/ros_cli_tools.py"
@@ -79,6 +78,7 @@
 - name: brain_bobassi
   package: bob_llm
   executable: llm
+  respawn: true
   output: screen
   parameters:
     api_url: *api_orchestrator
@@ -109,6 +109,7 @@
 - name: repl
   package: bob_central
   executable: repl
+  respawn: true
   output: screen
   arguments:
     - --ros-args
@@ -135,10 +136,23 @@
 - name: art_observer
   package: bob_central
   executable: art_observer
+  respawn: true
   output: screen
   parameters:
     image_path: "/root/eva/media/eva_artist.jpg"
-    img_size: [400, 304]
+    img_size: [320, 320]
+    img_pos: [480, 20]
+  arguments:
+    - --ros-args
+    - -r
+    - *eva_ns
+
+# Music Daemon Node
+- name: music_daemon
+  package: bob_central
+  executable: music_daemon
+  respawn: true
+  output: screen
   arguments:
     - --ros-args
     - -r

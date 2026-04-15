@@ -14,229 +14,94 @@
 # limitations under the License.
 
 """
-Music Player Tool for Eva.
+Music Player Client for Eva.
 
-Decodes audio files via FFmpeg and streams raw PCM (44.1kHz Stereo 16-bit)
-as Int16MultiArray messages to the mixer input topic.
-
-Supports single files, playlists, looping, and metadata display.
+Publishes playback requests to the music daemon queue.
 """
 
 import argparse
-import array
 import json
 import os
-import subprocess
 import sys
+import time
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Int16MultiArray
-
-# Chunk size: 4096 frames * 2 channels * 2 bytes = 16384 bytes per publish
-CHUNK_FRAMES = 4096
-CHUNK_BYTES = CHUNK_FRAMES * 2 * 2  # stereo, 16-bit
+from std_msgs.msg import String
 
 AUDIO_EXTENSIONS = ('.mp3', '.wav', '.ogg', '.flac', '.aac', '.m4a')
 
-
-def get_metadata(file_path: str) -> dict:
-    """Extract metadata from an audio file using ffprobe."""
-    cmd = [
-        'ffprobe', '-v', 'quiet',
-        '-print_format', 'json',
-        '-show_format',
-        file_path
-    ]
-    try:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
-        data = json.loads(result.stdout)
-        fmt = data.get('format', {})
-        tags = fmt.get('tags', {})
-        duration = float(fmt.get('duration', 0))
-        minutes = int(duration // 60)
-        seconds = int(duration % 60)
-        return {
-            'file': os.path.basename(file_path),
-            'path': file_path,
-            'title': tags.get('title', tags.get('TITLE', '-')),
-            'artist': tags.get('artist', tags.get('ARTIST', '-')),
-            'album': tags.get('album', tags.get('ALBUM', '-')),
-            'duration': f'{minutes}:{seconds:02d}',
-            'duration_sec': duration,
-        }
-    except Exception:
-        return {
-            'file': os.path.basename(file_path),
-            'path': file_path,
-            'title': '-', 'artist': '-', 'album': '-',
-            'duration': '?:??', 'duration_sec': 0,
-        }
-
-
-def print_metadata(meta: dict):
-    """Print metadata for a single track."""
-    print(f'  File:     {meta["file"]}')
-    print(f'  Title:    {meta["title"]}')
-    print(f'  Artist:   {meta["artist"]}')
-    print(f'  Album:    {meta["album"]}')
-    print(f'  Duration: {meta["duration"]}')
-
-
 def resolve_files(paths: list) -> list:
-    """Resolve a list of paths to audio files. Expands directories."""
     files = []
     for p in paths:
+        if not os.path.exists(p): continue
         if os.path.isdir(p):
             for f in sorted(os.listdir(p)):
-                if f.lower().endswith(AUDIO_EXTENSIONS):
-                    files.append(os.path.join(p, f))
-        elif os.path.isfile(p):
-            files.append(p)
+                if f.lower().endswith(AUDIO_EXTENSIONS): files.append(os.path.abspath(os.path.join(p, f)))
+        elif p.lower().endswith(AUDIO_EXTENSIONS):
+            files.append(os.path.abspath(p))
         else:
-            print(f'Warning: not found: {p}', file=sys.stderr)
+            try:
+                with open(p, 'r') as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith('#'):
+                            if not os.path.isabs(line): line = os.path.join(os.path.dirname(os.path.abspath(p)), line)
+                            if os.path.exists(line): files.append(os.path.abspath(line))
+            except Exception: pass
     return files
 
-
-class MusicPlayer(Node):
-    """ROS 2 node that streams audio PCM data to the mixer."""
-
-    def __init__(self, topic: str):
-        """Initialize music player node."""
-        super().__init__('eva_music_player')
-        self.pub = self.create_publisher(Int16MultiArray, topic, 10)
-        self.topic = topic
-
-    def stream_file(self, file_path: str) -> bool:
-        """Decode and stream a single audio file. Returns True if completed."""
-        meta = get_metadata(file_path)
-        self.get_logger().info(
-            f'Now playing: {meta["title"]} - {meta["artist"]} '
-            f'[{meta["duration"]}] -> {self.topic}')
-
-        cmd = [
-            'ffmpeg', '-re',
-            '-i', file_path,
-            '-f', 's16le',
-            '-ar', '44100',
-            '-ac', '2',
-            'pipe:1'
-        ]
-
-        proc = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-
-        try:
-            while rclpy.ok():
-                raw = proc.stdout.read(CHUNK_BYTES)
-                if not raw:
-                    break
-
-                samples = array.array('h', raw)
-                msg = Int16MultiArray()
-                msg.data = samples.tolist()
-                self.pub.publish(msg)
-                rclpy.spin_once(self, timeout_sec=0)
-        except KeyboardInterrupt:
-            proc.terminate()
-            return False
-        finally:
-            proc.terminate()
-            proc.wait()
-
-        return True
-
-    def play(self, files: list, loop: bool = False, loop_all: bool = False):
-        """Play a list of files with optional looping."""
-        if not files:
-            self.get_logger().error('No audio files to play.')
-            return
-
-        self.get_logger().info(
-            f'Playlist: {len(files)} track(s)')
-
-        while True:
-            for i, f in enumerate(files):
-                self.get_logger().info(
-                    f'Track {i + 1}/{len(files)}')
-
-                if loop:
-                    # Loop single track forever
-                    while rclpy.ok():
-                        if not self.stream_file(f):
-                            return
-                else:
-                    if not self.stream_file(f):
-                        return
-
-            if not loop_all:
-                break
-            self.get_logger().info('Playlist loop: restarting from track 1.')
-
-        self.get_logger().info('Playlist finished.')
-
-
-def main():
-    """Entry point."""
-    parser = argparse.ArgumentParser(
-        description='Eva Music Player',
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=(
-            'Examples:\n'
-            '  # Play single file:\n'
-            '  play_music.py --file /root/eva/media/song.mp3\n\n'
-            '  # Show metadata only:\n'
-            '  play_music.py --file /root/eva/media/song.mp3 --info\n\n'
-            '  # Play all audio in a directory:\n'
-            '  play_music.py --file /root/eva/media/\n\n'
-            '  # Loop a single song:\n'
-            '  play_music.py --file /root/eva/media/song.mp3 --loop\n\n'
-            '  # Play playlist and loop it:\n'
-            '  play_music.py --file a.mp3 --file b.mp3 --loop-all\n'
-        ))
-    parser.add_argument('--file', type=str, action='append', required=True,
-                        help='Audio file or directory (can be repeated)')
-    parser.add_argument('--topic', type=str, default='/eva/streamer/in1',
-                        help='Target ROS mixer input topic')
-    parser.add_argument('--loop', action='store_true',
-                        help='Loop the current song indefinitely')
-    parser.add_argument('--loop-all', action='store_true',
-                        help='Loop the entire playlist indefinitely')
-    parser.add_argument('--info', action='store_true',
-                        help='Show metadata only, do not play')
-    args = parser.parse_args()
-
+def run_client(args):
+    """Client mode: Resolves files and publishes JSON to daemon."""
     files = resolve_files(args.file)
     if not files:
-        print('Error: No audio files found.', file=sys.stderr)
-        sys.exit(1)
-
-    # Info mode: just print metadata
-    if args.info:
-        print(f'=== {len(files)} track(s) ===\n')
-        total = 0.0
-        for i, f in enumerate(files):
-            meta = get_metadata(f)
-            print(f'[{i + 1}]')
-            print_metadata(meta)
-            total += meta['duration_sec']
-            print()
-        minutes = int(total // 60)
-        seconds = int(total % 60)
-        print(f'Total duration: {minutes}:{seconds:02d}')
+        print("Error: No files found.", file=sys.stderr)
         return
 
-    # Playback mode
     rclpy.init()
-    player = MusicPlayer(args.topic)
-    try:
-        player.play(files, loop=args.loop, loop_all=args.loop_all)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        player.destroy_node()
-        rclpy.shutdown()
+    node = Node('eva_music_client')
+    pub = node.create_publisher(String, '/eva/media/play_request', 10)
+    
+    # Wait max 2 seconds for the daemon subscriber to arrive
+    print("Connecting to Music Daemon...")
+    start_wait = time.time()
+    while pub.get_subscription_count() == 0:
+        if time.time() - start_wait > 2.0:
+            print("Warning: Daemon not found! Is 'music_daemon' running in the background?")
+            break
+        time.sleep(0.1)
 
+    req = {
+        'files': files,
+        'loop': args.loop,
+        'loop_all': args.loop_all,
+        'enqueue': args.enqueue
+    }
+    
+    pub.publish(String(data=json.dumps(req)))
+    print(f"Sent request for {len(files)} file(s).")
+    
+    # Tiny spin to give time for the message to leave publisher queue
+    start_time = time.time()
+    while time.time() - start_time < 0.2:
+        rclpy.spin_once(node, timeout_sec=0.1)
+        
+    node.destroy_node()
+    rclpy.shutdown()
+
+def main():
+    parser = argparse.ArgumentParser(description='Eva Music Player (Queue/Topic Based)')
+    parser.add_argument('--file', type=str, action='append', help='Audio file or playlist')
+    parser.add_argument('--enqueue', action='store_true', help='Add to queue instead of interrupting')
+    parser.add_argument('--loop', action='store_true')
+    parser.add_argument('--loop-all', action='store_true')
+    args = parser.parse_args()
+
+    if not args.file:
+        parser.print_help()
+        sys.exit(1)
+    
+    run_client(args)
 
 if __name__ == '__main__':
     main()

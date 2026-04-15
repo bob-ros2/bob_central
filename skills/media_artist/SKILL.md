@@ -5,83 +5,64 @@ description: Direct interface to the robot's creative visual generation system (
 
 # Media Artist Skill
 
-This skill enables Eva to express her creative vision by generating high-quality images via the
-integrated Flux/Stable Diffusion bridge and to play audio files through the streamer mixer.
+Eva can use this skill to generate images and play audio files.
 
-## Known Media Files
+## Known Media Repository (temporary / dynamic)
 
-The following files are available in `/root/eva/media`:
+> **Note:** The directory `/root/eva/media/` is continuously updated – the listing below is only an example. Use `list_media` to obtain the current file list.
 
-**Audio:**
-- `/root/eva/media/bobros_neo_piano_la_gauche_onetake_11042023.mp3`
-
-**Images:**
-- `/root/eva/media/eva_artist.jpg` (last generated image)
-- `/root/eva/media/eva_vision.jpg` (last vision capture)
-- `/root/eva/media/status_bg.png`
-- `/root/eva/media/status_ready.png`
-
-> Use `list_media` to refresh this list if new files may have been added.
+```
+/root/eva/media/
+├─ a_song_file.mp3
+├─ eva_artist.jpg
+├─ eva_vision.jpg
+├─ status_bg.png
+└─ status_ready.png
+```
 
 ## Functions
 
-### play_music
+### `play_music`
 
-Plays audio files through the robot's mixer. Decodes with FFmpeg, streams PCM to ROS.
+Sends a playback request to the background `music_daemon`. The daemon strictly processes one song at a time using a queue, preventing any overlapping streams or blocking issues. You can clear the queue and start a new song immediately, or use `--enqueue` to add it to the waitlist. The daemon handles the actual audio streaming to `/eva/streamer/in1` and broadcasts the title to `/eva/streamer/current_song`.
 
-**Play a single song:**
+#### Invocation by Eva (JSON example for `execute_skill_script`)
+
 ```json
 execute_skill_script({
   "skill_name": "media_artist",
   "script_path": "scripts/play_music.py",
-  "args": "--file '/root/eva/media/bobros_neo_piano_la_gauche_onetake_11042023.mp3'"
+  "args": "--file '/root/eva/media/a_song_file.mp3'"
 })
 ```
 
-**Loop a single song:**
-```json
-execute_skill_script({
-  "skill_name": "media_artist",
-  "script_path": "scripts/play_music.py",
-  "args": "--file '/root/eva/media/bobros_neo_piano_la_gauche_onetake_11042023.mp3' --loop"
-})
+#### Options (arguments)
+
+- `--file` : audio file, directory, or playlist file (repeatable). *required*.
+- `--audio-topic` : ROS topic for PCM data (default: `/eva/streamer/in1`).
+- `--status-topic` : ROS string topic for title broadcast (default: `/eva/streamer/current_song`).
+- `--loop` : loop the specified song indefinitely.
+- `--loop-all` : loop the entire playlist indefinitely.
+- `--enqueue` : add the file to the currently playing queue instead of interrupting the current playback immediately.
+
+**CRITICAL NOTE FOR EVA:** Do NOT use `--list` or run python commands here. If you need to see what files exist, you MUST run the `scripts/list_media.py` script instead!
+
+#### Playlist file
+
+A playlist is a simple text file with one path per line. Lines starting with `#` are comments.
+
+Example `my_playlist.txt`:
+
+```
+my_song.mp3
+another-one.mp3
+# this is a comment
+oster-lied.mp3
 ```
 
-**Play all audio files in a directory (playlist):**
-```json
-execute_skill_script({
-  "skill_name": "media_artist",
-  "script_path": "scripts/play_music.py",
-  "args": "--file '/root/eva/media/'"
-})
-```
+Paths may be relative to the playlist location or absolute.
 
-**Loop entire playlist:**
-```json
-execute_skill_script({
-  "skill_name": "media_artist",
-  "script_path": "scripts/play_music.py",
-  "args": "--file '/root/eva/media/' --loop-all"
-})
-```
-
-**Show song metadata (title, artist, album, duration) without playing:**
-```json
-execute_skill_script({
-  "skill_name": "media_artist",
-  "script_path": "scripts/play_music.py",
-  "args": "--file '/root/eva/media/bobros_neo_piano_la_gauche_onetake_11042023.mp3' --info"
-})
-```
-
-**Options:**
-- `--file` (required, repeatable): Audio file or directory. Can be specified multiple times.
-- `--topic` (optional): Mixer input topic. Default: `/eva/streamer/in1`
-- `--loop`: Loop the current song indefinitely.
-- `--loop-all`: Loop the entire playlist indefinitely.
-- `--info`: Show metadata only, do not play.
-
-### list_media
+### `list_media`
 
 Lists all current media files in `/root/eva/media`.
 
@@ -93,9 +74,9 @@ execute_skill_script({
 })
 ```
 
-### draw_image
+### `draw_image`
 
-Sends a text prompt to the image generation subsystem.
+Generates an image via the Moondream/Flux backend.
 
 ```json
 execute_skill_script({
@@ -106,3 +87,7 @@ execute_skill_script({
 ```
 
 The resulting image is saved to `/root/eva/media/eva_artist.jpg`.
+
+---
+
+**Note for Eva:** Publishing to `/eva/streamer/current_song` allows the UI to display the currently playing title.

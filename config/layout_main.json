@@ -18,9 +18,9 @@
   {
     "id": "eva_art_background",
     "type": "VideoStream",
-    "area": [426, 10, 428, 350],
-    "source_width": 428,
-    "source_height": 350,
+    "area": [480, 20, 320, 320],
+    "source_width": 320,
+    "source_height": 320,
     "topic": "/tmp/photo_pipe",
     "encoding": "rgb"
   },
