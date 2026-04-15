@@ -13,24 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 """
 Art Observer Node.
 
-Monitors artwork files and streams them to the dashboard.
+Monitors artwork files and streams them to the dashboard without flickering.
+Uses a persistent buffer to ensure seamless transitions.
 """
 
 import json
 import os
-import subprocess
+import threading
+import time
 
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
+from PIL import Image
 
 
 class ArtObserverNode(Node):
-    """ROS 2 node for monitoring and streaming artwork."""
+    """ROS 2 node for monitoring and streaming artwork seamlessly."""
 
     def __init__(self):
         super().__init__('art_observer')
@@ -38,7 +40,7 @@ class ArtObserverNode(Node):
         # Parameters
         self.declare_parameter('image_path', '/root/eva/media/eva_artist.jpg')
         self.declare_parameter('pipe_path', '/tmp/photo_pipe')
-        self.declare_parameter('fps', 1)
+        self.declare_parameter('fps', 2)  # Slightly higher for snappier updates
         self.declare_parameter('img_size', [400, 400])
         self.declare_parameter('img_pos', [426, 10])
 
@@ -54,18 +56,27 @@ class ArtObserverNode(Node):
 
         # State
         self.last_mtime = 0
-        self.ffmpeg_proc = None
+        self.image_buffer = None
+        self.buffer_lock = threading.Lock()
+        self.running = True
 
         # Setup pipe
         if not os.path.exists(self.pipe_path):
             os.mkfifo(self.pipe_path)
             self.get_logger().info(f'Created pipe: {self.pipe_path}')
 
-        # Start monitoring
-        self.create_timer(2.0, self.check_art)
-        self.create_timer(30.0, self.register_layer)
+        # Initial load
+        self.check_art()
 
-        self.get_logger().info('Art Observer Node started.')
+        # Start monitoring and registration timers
+        self.create_timer(1.0, self.check_art)
+        self.create_timer(15.0, self.register_layer)
+
+        # Start the streaming thread
+        self.stream_thread = threading.Thread(target=self._streaming_loop, daemon=True)
+        self.stream_thread.start()
+
+        self.get_logger().info('Art Observer Node started (Seamless Mode).')
 
     def register_layer(self):
         """Register the artwork layer with the streamer."""
@@ -85,32 +96,57 @@ class ArtObserverNode(Node):
         msg.data = json.dumps([config])
         self.pub_events.publish(msg)
 
-    def start_stream(self):
-        """Start the FFmpeg stream for the artwork."""
-        if self.ffmpeg_proc:
-            self.ffmpeg_proc.terminate()
+    def _streaming_loop(self):
+        """Persistent loop to push frames into the pipe at a steady rate."""
+        frame_time = 1.0 / self.fps
+        fifo = None
 
-        # Command to stream image at low FPS
-        cmd = [
-            'ffmpeg', '-re', '-loop', '1', '-i', self.image_path,
-            '-vf', f'scale={self.img_size[0]}:{self.img_size[1]}',
-            '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-r', str(self.fps),
-            '-y', self.pipe_path
-        ]
+        while rclpy.ok() and self.running:
+            try:
+                # Open pipe (blocks until reader is ready)
+                if fifo is None:
+                    # O_NONBLOCK prevents deadlocks if no reader, 
+                    # but we'll use regular blocking open for predictable ROS behavior
+                    fifo = open(self.pipe_path, 'wb')
 
-        self.get_logger().info(f'Starting stream: {self.image_path}')
-        self.ffmpeg_proc = subprocess.Popen(
-            cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                with self.buffer_lock:
+                    if self.image_buffer is not None:
+                        fifo.write(self.image_buffer)
+                        fifo.flush()
+
+                time.sleep(frame_time)
+
+            except (IOError, BrokenPipeError):
+                fifo = None
+                time.sleep(1.0)
+            except Exception as e:
+                self.get_logger().error(f'Stream loop error: {e}')
+                time.sleep(1.0)
 
     def check_art(self):
-        """Check for file changes."""
+        """Check for file changes and update buffer."""
         if not os.path.exists(self.image_path):
             return
 
-        mtime = os.path.getmtime(self.image_path)
-        if mtime > self.last_mtime:
-            self.last_mtime = mtime
-            self.start_stream()
+        try:
+            mtime = os.path.getmtime(self.image_path)
+            if mtime > self.last_mtime:
+                # Load and Resize Image
+                with Image.open(self.image_path) as img:
+                    # Ensure RGB and correct size
+                    img = img.convert('RGB').resize(
+                        (self.img_size[0], self.img_size[1]), 
+                        Image.Resampling.LANCZOS
+                    )
+                    raw_data = img.tobytes()
+                
+                with self.buffer_lock:
+                    self.image_buffer = raw_data
+                
+                self.last_mtime = mtime
+                self.get_logger().info(f'Updated artwork buffer: {self.image_path}')
+        except Exception as e:
+            self.get_logger().warn(f'Failed to reload art: {e}')
 
 
 def main(args=None):
@@ -122,8 +158,7 @@ def main(args=None):
     except KeyboardInterrupt:
         pass
     finally:
-        if node.ffmpeg_proc:
-            node.ffmpeg_proc.terminate()
+        node.running = False
         node.destroy_node()
         rclpy.shutdown()
 
