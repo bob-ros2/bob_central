@@ -25,10 +25,10 @@ import os
 import threading
 import time
 
+from PIL import Image
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-from PIL import Image
 
 
 class ArtObserverNode(Node):
@@ -105,8 +105,7 @@ class ArtObserverNode(Node):
             try:
                 # Open pipe (blocks until reader is ready)
                 if fifo is None:
-                    # O_NONBLOCK prevents deadlocks if no reader, 
-                    # but we'll use regular blocking open for predictable ROS behavior
+                    # O_NONBLOCK prevents deadlocks if no reader
                     fifo = open(self.pipe_path, 'wb')
 
                 with self.buffer_lock:
@@ -135,14 +134,14 @@ class ArtObserverNode(Node):
                 with Image.open(self.image_path) as img:
                     # Ensure RGB and correct size
                     img = img.convert('RGB').resize(
-                        (self.img_size[0], self.img_size[1]), 
+                        (self.img_size[0], self.img_size[1]),
                         Image.Resampling.LANCZOS
                     )
                     raw_data = img.tobytes()
-                
+
                 with self.buffer_lock:
                     self.image_buffer = raw_data
-                
+
                 self.last_mtime = mtime
                 self.get_logger().info(f'Updated artwork buffer: {self.image_path}')
         except Exception as e:
