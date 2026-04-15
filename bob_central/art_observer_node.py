@@ -40,9 +40,9 @@ class ArtObserverNode(Node):
         # Parameters
         self.declare_parameter('image_path', '/root/eva/media/eva_artist.jpg')
         self.declare_parameter('pipe_path', '/tmp/photo_pipe')
-        self.declare_parameter('fps', 2)  # Slightly higher for snappier updates
-        self.declare_parameter('img_size', [400, 400])
-        self.declare_parameter('img_pos', [426, 10])
+        self.declare_parameter('fps', 5)  # Higher FPS for video stability
+        self.declare_parameter('img_size', [320, 320])
+        self.declare_parameter('img_pos', [480, 20])
 
         self.image_path = self.get_parameter('image_path').value
         self.pipe_path = self.get_parameter('pipe_path').value
@@ -68,9 +68,11 @@ class ArtObserverNode(Node):
         # Initial load
         self.check_art()
 
-        # Start monitoring and registration timers
+        # Start monitoring
         self.create_timer(1.0, self.check_art)
-        self.create_timer(15.0, self.register_layer)
+
+        # Register once at startup
+        self.register_layer()
 
         # Start the streaming thread
         self.stream_thread = threading.Thread(target=self._streaming_loop, daemon=True)
