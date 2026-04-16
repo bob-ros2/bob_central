@@ -28,13 +28,17 @@ import sys
 from typing import Any, List
 
 from bob_llm.tool_utils import register as default_register, Tool
-import rclpy
+try:
+    import rclpy  # noqa: F401
+    RCLPY_AVAILABLE = True
+except ImportError:
+    RCLPY_AVAILABLE = False
 
 
 class _NodeContext:
     """Internal node context."""
 
-    node: rclpy.node.Node = None
+    node: Any = None
 
 
 def register(module: Any, node: Any = None) -> List[Tool]:
