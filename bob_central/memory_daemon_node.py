@@ -41,7 +41,7 @@ class MemoryDaemonNode(Node):
         super().__init__('memory_daemon')
 
         # Parameters
-        env_db_url = os.environ.get('JLOG_DB_URL', 'http://api-gateway:8080/memo_db')
+        env_db_url = os.environ.get('JLOG_DB_URL', 'http://api-gateway:8080/memo_test_db')
         self.declare_parameter('db_url', env_db_url)
         self.declare_parameter('cache_ttl', 900)  # 15 minutes TTL
         self.declare_parameter('history_limit', 5)
@@ -92,22 +92,17 @@ class MemoryDaemonNode(Node):
     def fetch_user_history(self, username):
         """Query CouchDB for the latest messages from this user."""
         try:
-            # Mango Query to find messages by user_name in metadata list
+            # Mango Query: Top-level $and is safer for metadata list matching
             query = {
                 'selector': {
-                    'metadata': {
-                        '$and': [
-                            {'$elemMatch': {'key': 'user_name', 'value': username}},
-                            {'$elemMatch': {'key': 'type', 'value': 'event_message'}}
-                        ]
-                    }
+                    '$and': [
+                        {'metadata': {'$elemMatch': {'key': 'user_name', 'value': username}}},
+                        {'metadata': {'$elemMatch': {'key': 'type', 'value': 'event_message'}}}
+                    ]
                 },
-                'sort': [{'ts': 'desc'}],
                 'limit': self.history_limit
             }
 
-            # First, ensure an index exists for performance (idempotent in CouchDB)
-            # Actually, standard _find might work, but let's be safe.
             # We assume api-gateway handles credentials
             search_url = f'{self.db_url}/_find'
             response = requests.post(search_url, json=query, timeout=3.0)
@@ -118,6 +113,7 @@ class MemoryDaemonNode(Node):
                     summary = f'Keine Rezente Historie für {username} gefunden.'
                 else:
                     items = []
+                    # CouchDB natural order is usually sufficient for short-term
                     for doc in docs:
                         strip_str = f'event_message {username} '
                         cleaned_data = doc.get('data', '').replace(strip_str, '')
@@ -132,7 +128,8 @@ class MemoryDaemonNode(Node):
 
                 self.broadcast_context(username, summary)
             else:
-                self.get_logger().warn(f'CouchDB Query failed: {response.status_code}')
+                log_err = f'CouchDB Query failed ({response.status_code}): {response.text}'
+                self.get_logger().error(log_err)
 
         except Exception as e:
             self.get_logger().error(f'Error fetching user history: {e}')
