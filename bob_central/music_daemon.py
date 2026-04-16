@@ -154,13 +154,15 @@ class MusicDaemon(Node):
                 self.pub_audio.publish(Int16MultiArray(data=samples.tolist()))
                 chunks_played += 1
 
-                # Small spin to handle incoming stop requests during stream
-                rclpy.spin_once(self, timeout_sec=0)
-
         finally:
-            self.current_proc.terminate()
-            self.current_proc.wait()
-            self.current_proc = None
+            if self.current_proc:
+                try:
+                    self.current_proc.terminate()
+                    self.current_proc.wait(timeout=1.0)
+                except subprocess.TimeoutExpired:
+                    self.current_proc.kill()
+                finally:
+                    self.current_proc = None
 
 
 def main(args=None):
