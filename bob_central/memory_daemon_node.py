@@ -75,18 +75,22 @@ class MemoryDaemonNode(Node):
             return
 
         username = match.group(1)
-        self.get_logger().debug(f'Detected query from user: {username}')
+        self.get_logger().debug(f'Matched username: {username} in query')
 
         # Check Cache
         now = time.time()
         if username in self.user_cache:
             entry = self.user_cache[username]
-            if now - entry['timestamp'] < self.cache_ttl:
+            elapsed = now - entry['timestamp']
+            if elapsed < self.cache_ttl:
+                self.get_logger().debug(f'Cache HIT for {username} (Age: {elapsed:.1f}s)')
                 # Cache valid, broadcast it
                 self.broadcast_context(username, entry['summary'])
                 return
+            self.get_logger().debug(f'Cache EXPIRED for {username}')
 
         # Fetch from CouchDB
+        self.get_logger().debug(f'Cache MISS for {username}. Fetching from CouchDB...')
         self.fetch_user_history(username)
 
     def fetch_user_history(self, username):
@@ -103,12 +107,16 @@ class MemoryDaemonNode(Node):
                 'limit': self.history_limit
             }
 
+            self.get_logger().debug(f'Sending Mango Query: {json.dumps(query)}')
+
             # We assume api-gateway handles credentials
             search_url = f'{self.db_url}/_find'
             response = requests.post(search_url, json=query, timeout=3.0)
 
             if response.status_code == 200:
                 docs = response.json().get('docs', [])
+                self.get_logger().debug(f'CouchDB returned {len(docs)} documents.')
+
                 if not docs:
                     summary = f'Keine Rezente Historie für {username} gefunden.'
                 else:
@@ -116,8 +124,10 @@ class MemoryDaemonNode(Node):
                     # CouchDB natural order is usually sufficient for short-term
                     for doc in docs:
                         strip_str = f'event_message {username} '
-                        cleaned_data = doc.get('data', '').replace(strip_str, '')
+                        content = doc.get('data', '')
+                        cleaned_data = content.replace(strip_str, '')
                         items.append(f'- {cleaned_data}')
+                        self.get_logger().debug(f'Fetched doc: {cleaned_data[:50]}...')
                     summary = '\n'.join(items)
 
                 # Update Cache
@@ -144,6 +154,7 @@ class MemoryDaemonNode(Node):
         msg = String()
         msg.data = json.dumps(context_data)
         self.pub_context.publish(msg)
+        self.get_logger().debug(f'Context published: {username} -> {len(summary)} bytes')
         self.get_logger().info(f'Context broadcasted for user: {username}')
 
 

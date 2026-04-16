@@ -166,6 +166,8 @@
   output: screen
   arguments:
     - --ros-args
+    - --log-level
+    - debug
     - -r
     - "user_query:=/eva/user_query"
     - -r
