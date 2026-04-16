@@ -14,6 +14,8 @@
 
 from datetime import datetime
 import json
+import re
+import time
 
 import rclpy
 from rclpy.node import Node
@@ -41,6 +43,8 @@ class OrchestratorNode(Node):
         self.query_queue = []
         self.was_streamed = False
         self.busy_since = None  # Timestamp for watchdog
+        self.user_contexts = {}  # { "username": "context_str" }
+        self.user_regex = re.compile(r'^([^ ]+):.*$')
 
         # QoS for high-speed streaming (Volatile, Reliable, Depth 100)
         qos_stream = rclpy.qos.QoSProfile(
@@ -84,6 +88,14 @@ class OrchestratorNode(Node):
             10
         )
 
+        # Context Support (ESTM)
+        self.sub_user_context = self.create_subscription(
+            String,
+            '/eva/memory/active_user_context',
+            self.context_callback,
+            10
+        )
+
         # Feedback topic for status updates and rejected queries
         self.pub_rejected = self.create_publisher(
             String, 'rejected_queries', 10)
@@ -111,6 +123,18 @@ class OrchestratorNode(Node):
         """Pass internal tokens to public stream and mark as streamed."""
         self.was_streamed = True
         self.pub_llm_stream.publish(msg)
+
+    def context_callback(self, msg):
+        """Update the local user context cache."""
+        try:
+            data = json.loads(msg.data)
+            username = data.get('user_name')
+            context = data.get('context')
+            if username and context:
+                self.user_contexts[username] = context
+                self.get_logger().debug(f'Updated context for {username}')
+        except Exception as e:
+            self.get_logger().error(f'Error updating context: {e}')
 
     def user_query_callback(self, msg):
         """Receive and route user queries."""
@@ -194,9 +218,22 @@ class OrchestratorNode(Node):
         else:
             verbosity = 'CONCISE (Be brief, max 2-3 sentences for fast speech)'
 
+        # User Context Injection
+        user_ctx_str = ''
+        match = self.user_regex.match(query)
+        if match:
+            username = match.group(1)
+            # Give the memory daemon a tiny moment to broadcast if it's a fresh query
+            # (Only if we don't have it yet for this session/recent time)
+            if username not in self.user_contexts:
+                time.sleep(0.3)
+
+            history = self.user_contexts.get(username, 'Keine rezenten Informationen.')
+            user_ctx_str = f" [User '{username}' History:\n{history}]"
+
         sys_ctx = (f'[System Context: Current Real Time is '
                    f'{day_of_week}, {time_str}. '
-                   f'Verbosity Preference: {verbosity}] ')
+                   f'Verbosity Preference: {verbosity}.{user_ctx_str}] ')
         enriched_query = sys_ctx + query
 
         routing_data = {'role': 'user', 'content': enriched_query}

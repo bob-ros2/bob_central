@@ -157,3 +157,16 @@
     - --ros-args
     - -r
     - *eva_ns
+
+# Eva Short-Term Memory Daemon (ESTM)
+- name: memory_daemon
+  package: bob_central
+  executable: memory_daemon
+  respawn: true
+  output: screen
+  arguments:
+    - --ros-args
+    - -r
+    - "user_query:=/eva/user_query"
+    - -r
+    - *eva_ns
