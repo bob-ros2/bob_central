@@ -19,6 +19,7 @@ Memory Daemon Node - Eva's Volatile Short-Term Memory Hub.
 Automatically fetches user history from CouchDB when a query is detected.
 """
 
+from datetime import datetime
 import json
 import os
 import re
@@ -123,10 +124,12 @@ class MemoryDaemonNode(Node):
                     items = []
                     # CouchDB natural order is usually sufficient for short-term
                     for doc in docs:
+                        ts = doc.get('ts', time.time())
+                        dt_str = datetime.fromtimestamp(ts).strftime('%d.%m. %H:%M')
                         strip_str = f'event_message {username} '
                         content = doc.get('data', '')
                         cleaned_data = content.replace(strip_str, '')
-                        items.append(f'- {cleaned_data}')
+                        items.append(f'- ({dt_str}): {cleaned_data}')
                         self.get_logger().debug(f'Fetched doc: {cleaned_data[:50]}...')
                     summary = '\n'.join(items)
 
