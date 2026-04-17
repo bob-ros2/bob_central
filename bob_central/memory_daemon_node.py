@@ -42,7 +42,7 @@ class MemoryDaemonNode(Node):
         super().__init__('memory_daemon')
 
         # Parameters
-        env_db_url = os.environ.get('JLOG_DB_URL', 'http://api-gateway:8080/memo_test_db')
+        env_db_url = os.environ.get('JLOG_DB_URL', 'http://api-gateway:8080/memo_db')
         self.declare_parameter('db_url', env_db_url)
         self.declare_parameter('cache_ttl', 900)  # 15 minutes TTL
         self.declare_parameter('history_limit', 5)
@@ -97,14 +97,16 @@ class MemoryDaemonNode(Node):
     def fetch_user_history(self, username):
         """Query CouchDB for the latest messages from this user."""
         try:
-            # Mango Query: Top-level $and is safer for metadata list matching
+            # Mango Query: Explicit sorting by 'ts' to handle migrated Mongo data
             query = {
                 'selector': {
                     '$and': [
                         {'metadata': {'$elemMatch': {'key': 'user_name', 'value': username}}},
-                        {'metadata': {'$elemMatch': {'key': 'type', 'value': 'event_message'}}}
+                        {'metadata': {'$elemMatch': {'key': 'type', 'value': 'event_message'}}},
+                        {'ts': {'$gt': None}}  # Required for sort index to be used
                     ]
                 },
+                'sort': [{'ts': 'desc'}],
                 'limit': self.history_limit
             }
 
@@ -122,15 +124,17 @@ class MemoryDaemonNode(Node):
                     summary = f'Keine Rezente Historie für {username} gefunden.'
                 else:
                     items = []
-                    # CouchDB natural order is usually sufficient for short-term
+                    # CouchDB natural order is no longer reliable due to mixed IDs.
+                    # We use explicit ts-based sorting and reverse for logical display.
                     for doc in docs:
+                        ts_str = doc.get('ts', '')
                         try:
-                            # Ensure timestamp is a float (fixes 'str' object cannot be interpreted as an integer)
-                            ts = float(doc.get('ts', time.time()))
-                        except (TypeError, ValueError):
-                            ts = time.time()
+                            # Parse the unified ISO string format
+                            dt = datetime.fromisoformat(ts_str)
+                            dt_display = dt.strftime('%d.%m. %H:%M')
+                        except (ValueError, TypeError):
+                            dt_display = '??.??. ??:??'
 
-                        dt_str = datetime.fromtimestamp(ts).strftime('%d.%m. %H:%M')
                         content = doc.get('data', '')
 
                         # First try to strip the standard message prefix
@@ -138,13 +142,15 @@ class MemoryDaemonNode(Node):
                         cleaned_data = content.replace(strip_str, '')
 
                         # Then handle the specific join event formatting as requested
-                        # Mapping "event_join 0 username join" -> "event_join 0 username"
                         join_prefix = f'event_join 0 {username}'
                         if f'{join_prefix} join' in cleaned_data:
                             cleaned_data = cleaned_data.replace(f'{join_prefix} join', join_prefix)
 
-                        items.append(f'- ({dt_str}): {cleaned_data}')
+                        items.append(f'- ({dt_display}): {cleaned_data}')
                         self.get_logger().debug(f'Fetched doc: {cleaned_data[:50]}...')
+                    
+                    # Reverse so oldest is at the top, newest at the bottom (natural conversation flow)
+                    items.reverse()
                     summary = '\n'.join(items)
 
                 # Update Cache
