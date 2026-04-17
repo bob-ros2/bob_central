@@ -223,13 +223,12 @@ class OrchestratorNode(Node):
         match = self.user_regex.match(query)
         if match:
             username = match.group(1)
-            # Give the memory daemon a tiny moment to broadcast if it's a fresh query
-            # (Only if we don't have it yet for this session/recent time)
-            if username not in self.user_contexts:
-                time.sleep(0.3)
+            # 0.8s wait to ensure CouchDB response and ROS broadcast arrive.
+            time.sleep(0.8)
 
             history = self.user_contexts.get(username, 'Keine rezenten Informationen.')
             user_ctx_str = f" [User '{username}' History:\n{history}]"
+            self.get_logger().info(f'Injected context for {username} ({len(history)} bytes)')
 
         sys_ctx = (f'[System Context: Current Real Time is '
                    f'{day_of_week}, {time_str}. '
