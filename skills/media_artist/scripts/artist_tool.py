@@ -44,12 +44,15 @@ def draw_image(prompt: str) -> str:
     # Wait a moment for connection
     time.sleep(1.0)
     publisher.publish(msg)
+    
+    # Keep the node alive for a moment to ensure delivery over the bridge
+    time.sleep(2.0)
 
     node.destroy_node()
     return (
-        f"Image prompt '{prompt}' sent to TTI subsystem. "
-        f"The result will be saved to '/root/eva/media/eva_artist.jpg' after a few "
-        f'seconds. You can use your vision tools to inspect it there.'
+        f"Image prompt '{prompt}' successfully injected into the TTI pipeline. "
+        f"The result will be generated at '/root/eva/media/eva_artist.jpg'. "
+        f"You can use your vision tools to inspect it there."
     )
 
 
