@@ -41,18 +41,17 @@ def draw_image(prompt: str) -> str:
     msg = String()
     msg.data = prompt
 
-    # Wait a moment for connection
-    time.sleep(1.0)
+    # Use ROS spin to allow discovery to finish before publishing
+    rclpy.spin_once(node, timeout_sec=1.5)
     publisher.publish(msg)
-    
-    # Keep the node alive for a moment to ensure delivery over the bridge
-    time.sleep(2.0)
+    # Give it a tiny moment to flush the buffer
+    rclpy.spin_once(node, timeout_sec=0.5)
 
     node.destroy_node()
     return (
-        f"Image prompt '{prompt}' successfully injected into the TTI pipeline. "
-        f"The result will be generated at '/root/eva/media/eva_artist.jpg'. "
-        f"You can use your vision tools to inspect it there."
+        f"Image prompt '{prompt}' sent to TTI subsystem. "
+        f"The result will be saved to '/root/eva/media/eva_artist.jpg' after a few "
+        f'seconds. You can use your vision tools to inspect it there.'
     )
 
 
