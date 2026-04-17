@@ -102,7 +102,10 @@ class MemoryDaemonNode(Node):
                 'selector': {
                     '$and': [
                         {'metadata': {'$elemMatch': {'key': 'user_name', 'value': username}}},
-                        {'metadata': {'$elemMatch': {'key': 'type', 'value': {'$in': ['event_message', 'event_join']}}}},
+                        {'metadata': {'$elemMatch': {'key': 'type', 'value': {'$in': [
+                            'event_message', 'event_join', 'event_ready',
+                            'eventsub_channelfollow', 'eventsub_subscription', 'eventsub_raid'
+                        ]}}}},
                         {'ts': {'$gt': None}}  # Required for sort index to be used
                     ]
                 },
@@ -136,26 +139,40 @@ class MemoryDaemonNode(Node):
                             dt_display = '??.??. ??:??'
 
                         content = doc.get('data', '')
-
-                        # Clean up technical prefixes for all event types
-                        # Format is usually: "event_type [id] username [extra]"
-                        cleaned_data = content
-                        prefixes = [
-                            f'event_message {username} ',
-                            f'event_join 0 {username} ', # Join with trailing space
-                            f'event_join 0 {username}'   # Join without trailing space
-                        ]
-                        
-                        for p in prefixes:
-                            if cleaned_data.startswith(p):
-                                cleaned_data = cleaned_data[len(p):].strip()
+                        event_type = ''
+                        # Extract event type from metadata if possible
+                        for m in doc.get('metadata', []):
+                            if m.get('key') == 'type':
+                                event_type = m.get('value')
                                 break
+
+                        # Clean up technical prefixes
+                        # Pattern is usually: "type ID username [message]"
+                        cleaned_data = content
                         
-                        # Handle the specific case: "event_join 0 username join" -> "hat den Channel betreten"
-                        if not cleaned_data and 'event_join' in content:
+                        # Generic cleanup: split by space and remove first 3 parts if they match type/username
+                        parts = content.split(' ')
+                        if len(parts) >= 3:
+                            # Verify if first part is an event type we know
+                            if parts[0] in event_type or parts[0].startswith('event'):
+                                # Join the rest
+                                cleaned_data = ' '.join(parts[3:]).strip()
+                        
+                        # Humanize events with empty or technical content
+                        if event_type == 'event_join':
                             cleaned_data = "ist dem Channel beigetreten."
-                        elif cleaned_data == 'join':
-                            cleaned_data = "ist dem Channel beigetreten."
+                        elif event_type == 'event_ready':
+                            cleaned_data = "ist startklar (System Ready)."
+                        elif event_type == 'eventsub_channelfollow':
+                            cleaned_data = "ist ein neuer Follower! 🎉"
+                        elif event_type == 'eventsub_subscription':
+                            cleaned_data = "hat den Kanal abonniert! 💎"
+                        elif event_type == 'eventsub_raid':
+                            cleaned_data = f"hat einen RAID gestartet! ⚔️"
+                        
+                        # Fallback for empty strings (e.g. from messages that were just the prefix)
+                        if not cleaned_data:
+                            cleaned_data = content
 
                         items.append(f'- ({dt_display}): {cleaned_data}')
                         self.get_logger().debug(f'Fetched doc: {cleaned_data[:50]}...')
