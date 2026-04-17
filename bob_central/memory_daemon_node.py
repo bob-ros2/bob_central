@@ -102,7 +102,7 @@ class MemoryDaemonNode(Node):
                 'selector': {
                     '$and': [
                         {'metadata': {'$elemMatch': {'key': 'user_name', 'value': username}}},
-                        {'metadata': {'$elemMatch': {'key': 'type', 'value': 'event_message'}}},
+                        {'metadata': {'$elemMatch': {'key': 'type', 'value': {'$in': ['event_message', 'event_join']}}}},
                         {'ts': {'$gt': None}}  # Required for sort index to be used
                     ]
                 },
@@ -137,14 +137,25 @@ class MemoryDaemonNode(Node):
 
                         content = doc.get('data', '')
 
-                        # First try to strip the standard message prefix
-                        strip_str = f'event_message {username} '
-                        cleaned_data = content.replace(strip_str, '')
-
-                        # Then handle the specific join event formatting as requested
-                        join_prefix = f'event_join 0 {username}'
-                        if f'{join_prefix} join' in cleaned_data:
-                            cleaned_data = cleaned_data.replace(f'{join_prefix} join', join_prefix)
+                        # Clean up technical prefixes for all event types
+                        # Format is usually: "event_type [id] username [extra]"
+                        cleaned_data = content
+                        prefixes = [
+                            f'event_message {username} ',
+                            f'event_join 0 {username} ', # Join with trailing space
+                            f'event_join 0 {username}'   # Join without trailing space
+                        ]
+                        
+                        for p in prefixes:
+                            if cleaned_data.startswith(p):
+                                cleaned_data = cleaned_data[len(p):].strip()
+                                break
+                        
+                        # Handle the specific case: "event_join 0 username join" -> "hat den Channel betreten"
+                        if not cleaned_data and 'event_join' in content:
+                            cleaned_data = "ist dem Channel beigetreten."
+                        elif cleaned_data == 'join':
+                            cleaned_data = "ist dem Channel beigetreten."
 
                         items.append(f'- ({dt_display}): {cleaned_data}')
                         self.get_logger().debug(f'Fetched doc: {cleaned_data[:50]}...')
