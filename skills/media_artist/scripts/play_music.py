@@ -35,6 +35,8 @@ AUDIO_EXTENSIONS = ('.mp3', '.wav', '.ogg', '.flac', '.m4a')
 def resolve_files(paths: list) -> list:
     files = []
     for p in paths:
+        # Strip potential surrounding quotes from AI agent calls
+        p = p.strip("'").strip('"')
         if not os.path.exists(p):
             continue
         if os.path.isdir(p):
@@ -54,7 +56,7 @@ def resolve_files(paths: list) -> list:
                                 files.append(os.path.abspath(line))
             else:
                 files.append(os.path.abspath(p))
-    return sorted(list(set(files)))
+    return sorted(set(files))
 
 
 def run_client(args):
