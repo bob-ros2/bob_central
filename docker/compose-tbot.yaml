@@ -15,11 +15,15 @@ services:
     build:
       context: ../
       dockerfile: ./docker/Dockerfile.tbot
+      args:
+        - CACHE_BUST=${CACHE_BUST:-1}
     container_name: eva-tbot
     networks:
       - eva-net
+    env_file:
+      - ../.env
     environment:
-      - ROS_DOMAIN_ID=50
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
       - TWITCH_CHAT_CHANNEL=bobassi
       # Passing the path to the Docker Secret
       - TWITCH_CHAT_CREDENTIALS=/run/secrets/twitch_credentials

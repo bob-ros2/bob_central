@@ -20,8 +20,10 @@ WORKDIR /ros2_ws
 RUN mkdir -p /ros2_ws/src
 
 # 1. Clone Repositories
+ARG CACHE_BUST=1
 # Repos: bob_launch, bob_topic_tools, tioros
-RUN git clone https://github.com/bob-ros2/bob_launch /ros2_ws/src/bob_launch && \
+RUN echo "Cloning with Cache Bust: $CACHE_BUST" && \
+    git clone https://github.com/bob-ros2/bob_launch /ros2_ws/src/bob_launch && \
     git clone https://github.com/bob-ros2/bob_topic_tools /ros2_ws/src/bob_topic_tools && \
     git clone https://github.com/bob-ros2/tioros /ros2_ws/src/tioros
 
