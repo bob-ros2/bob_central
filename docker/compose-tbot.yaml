@@ -29,6 +29,8 @@ services:
       - TWITCH_CHAT_CREDENTIALS=/run/secrets/twitch_credentials
     secrets:
       - twitch_credentials
+    volumes:
+      - /blue/dev/tioros/ros2_ws/src/tioros:/ros2_ws/src/tioros
     restart: unless-stopped
     logging:
       driver: "json-file"
