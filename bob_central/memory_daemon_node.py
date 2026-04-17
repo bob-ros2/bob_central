@@ -124,11 +124,25 @@ class MemoryDaemonNode(Node):
                     items = []
                     # CouchDB natural order is usually sufficient for short-term
                     for doc in docs:
-                        ts = doc.get('ts', time.time())
+                        try:
+                            # Ensure timestamp is a float (fixes 'str' object cannot be interpreted as an integer)
+                            ts = float(doc.get('ts', time.time()))
+                        except (TypeError, ValueError):
+                            ts = time.time()
+
                         dt_str = datetime.fromtimestamp(ts).strftime('%d.%m. %H:%M')
-                        strip_str = f'event_message {username} '
                         content = doc.get('data', '')
+
+                        # First try to strip the standard message prefix
+                        strip_str = f'event_message {username} '
                         cleaned_data = content.replace(strip_str, '')
+
+                        # Then handle the specific join event formatting as requested
+                        # Mapping "event_join 0 username join" -> "event_join 0 username"
+                        join_prefix = f'event_join 0 {username}'
+                        if f'{join_prefix} join' in cleaned_data:
+                            cleaned_data = cleaned_data.replace(f'{join_prefix} join', join_prefix)
+
                         items.append(f'- ({dt_str}): {cleaned_data}')
                         self.get_logger().debug(f'Fetched doc: {cleaned_data[:50]}...')
                     summary = '\n'.join(items)
