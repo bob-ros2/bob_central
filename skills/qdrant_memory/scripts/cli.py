@@ -37,6 +37,7 @@ def main():
     ])
     parser.add_argument('--collection', type=str, help='Collection name')
     parser.add_argument('--text', type=str, help='Text to save')
+    parser.add_argument('--metadata', type=str, help='JSON metadata string')
     parser.add_argument('--doc_id', type=str, help='Document ID')
     parser.add_argument('--limit', type=int, default=10, help='Result limit')
 
@@ -46,7 +47,16 @@ def main():
         if not args.collection or not args.text:
             print('Error: --collection and --text are required for save')
             sys.exit(1)
-        doc_id = save_text(args.collection, args.text)
+        
+        metadata = None
+        if args.metadata:
+            try:
+                metadata = json.loads(args.metadata)
+            except json.JSONDecodeError as e:
+                print(f'Error: Failed to parse metadata JSON: {e}')
+                sys.exit(1)
+
+        doc_id = save_text(args.collection, args.text, metadata=metadata)
         if doc_id:
             print(f'Document saved with ID: {doc_id}')
         else:
