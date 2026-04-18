@@ -47,7 +47,7 @@ def main():
         if not args.collection or not args.text:
             print('Error: --collection and --text are required for save')
             sys.exit(1)
-        
+
         metadata = None
         if args.metadata:
             try:

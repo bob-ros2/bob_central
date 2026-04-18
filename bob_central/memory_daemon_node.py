@@ -149,15 +149,17 @@ class MemoryDaemonNode(Node):
                         # Clean up technical prefixes
                         # Pattern is usually: "type ID username [message]"
                         cleaned_data = content
-                        
-                        # Generic cleanup: split by space and remove first 3 parts if they match type/username
+
+                        # Generic cleanup: split by space and remove first 3
+                        # parts if they match type/username
                         parts = content.split(' ')
                         if len(parts) >= 3:
                             # Verify if first part is an event type we know
-                            if parts[0] in event_type or parts[0].startswith('event'):
+                            if (parts[0] in event_type or
+                                    parts[0].startswith('event')):
                                 # Join the rest
                                 cleaned_data = ' '.join(parts[3:]).strip()
-                        
+
                         # Humanize events with empty or technical content
                         if event_type == 'event_join':
                             cleaned_data = "ist dem Channel beigetreten."
@@ -168,16 +170,18 @@ class MemoryDaemonNode(Node):
                         elif event_type == 'eventsub_subscription':
                             cleaned_data = "hat den Kanal abonniert! 💎"
                         elif event_type == 'eventsub_raid':
-                            cleaned_data = f"hat einen RAID gestartet! ⚔️"
-                        
-                        # Fallback for empty strings (e.g. from messages that were just the prefix)
+                            cleaned_data = "hat einen RAID gestartet! ⚔️"
+
+                        # Fallback for empty strings
                         if not cleaned_data:
                             cleaned_data = content
 
                         items.append(f'- ({dt_display}): {cleaned_data}')
-                        self.get_logger().debug(f'Fetched doc: {cleaned_data[:50]}...')
-                    
-                    # Reverse so oldest is at the top, newest at the bottom (natural conversation flow)
+                        self.get_logger().debug(
+                            f'Fetched doc: {cleaned_data[:50]}...')
+
+                    # Reverse so oldest is at the top, newest at the bottom
+                    # (natural conversation flow)
                     items.reverse()
                     summary = '\n'.join(items)
 

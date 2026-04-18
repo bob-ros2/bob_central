@@ -16,7 +16,6 @@
 """Artist Tool for Eva."""
 
 import argparse
-import time
 
 import rclpy
 from rclpy.node import Node
