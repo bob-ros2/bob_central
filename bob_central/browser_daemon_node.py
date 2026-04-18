@@ -15,8 +15,6 @@
 
 import asyncio
 import json
-import os
-import sys
 
 import numpy as np
 import cv2
@@ -71,7 +69,9 @@ class BrowserDaemonNode(Node):
             viewport={'width': self.width, 'height': self.height}
         )
         self.page = await self.browser_context.new_page()
-        self.get_logger().info(f'Browser started (Headless Chromium, {self.width}x{self.height}).')
+        self.get_logger().info(
+            f'Browser started (Headless Chromium, {self.width}x{self.height}).'
+        )
         
         # Go to a default page
         await self.page.goto('https://www.google.com')
@@ -82,7 +82,10 @@ class BrowserDaemonNode(Node):
         try:
             cmd_data = json.loads(msg.data)
             # We use the loop from the main thread
-            asyncio.run_coroutine_threadsafe(self.process_command(cmd_data), asyncio.get_event_loop())
+            asyncio.run_coroutine_threadsafe(
+                self.process_command(cmd_data), 
+                asyncio.get_event_loop()
+            )
         except Exception as e:
             self.get_logger().error(f'Failed to parse command: {e}')
 
@@ -103,7 +106,8 @@ class BrowserDaemonNode(Node):
             elif command == 'scroll':
                 direction = cmd_data.get('direction', 'down')
                 amount = cmd_data.get('amount', 500)
-                await self.page.evaluate(f'window.scrollBy(0, {amount if direction == "down" else -amount})')
+                scroll_script = f'window.scrollBy(0, {amount if direction == "down" else -amount})'
+                await self.page.evaluate(scroll_script)
             elif command == 'screenshot':
                 pass # Always publish after action
             
