@@ -1,48 +1,49 @@
+---
+name: browser_agent
+description: "Control a headless Playwright browser to interact with websites and stream results to Twitch."
+version: "1.0.0"
+category: "system"
+---
+
 # Browser Agent Skill
 
-This skill allows Eva to browse the internet, interact with websites, and display results in the Twitch stream via a headless Playwright/Chromium engine.
+## Goal
+Enable Eva to autonomously browse the internet, interact with web elements, and visually share the results with the audience on the Twitch stream.
+
+## Description
+This skill leverages a dedicated ROS 2 node (`browser_daemon_node.py`) running in a Playwright-enabled container. It captures high-resolution screenshots (1280x720) in BGR8 format and publishes them directly to the Nviz streaming pipeline via the `/eva/streamer/web_image` topic.
 
 ## Usage
-The skill is controlled by sending JSON commands to the `/eva/browser/command` topic.
+The skill is executed via the `browser_tool.py` script which handles the ROS 2 message dispatch.
 
-## Commands
-
-### Open a URL
-Navigates to the specified website.
-```json
-{"command": "open", "url": "https://www.wikipedia.org"}
+```python
+execute_skill_script("browser_agent", "scripts/browser_tool.py", "open --url 'https://www.wikipedia.org'")
+execute_skill_script("browser_agent", "scripts/browser_tool.py", "type --selector 'input[name=\"search\"]' --text 'Bob Ros'")
+execute_skill_script("browser_agent", "scripts/browser_tool.py", "click --selector 'button#search-button'")
+execute_skill_script("browser_agent", "scripts/browser_tool.py", "scroll --direction 'down' --amount 500")
 ```
 
-### Click an Element
-Clicks on a specific CSS selector.
-```json
-{"command": "click", "selector": "button#search-button"}
-```
+## Parameters
+| Argument | Type | Description |
+|----------|------|-------------|
+| `command`| str  | The action to perform: `open`, `click`, `type`, `scroll`, `screenshot` |
+| `--url`  | str  | URL to navigate to (required for `open`) |
+| `--selector` | str | CSS selector for interaction (required for `click`, `type`) |
+| `--text` | str  | Text to input (required for `type`) |
+| `--direction`| str | Scroll direction: `up` or `down` (default: `down`) |
+| `--amount`| int | Pixels to scroll (default: 500) |
 
-### Type Text
-Fills an input field with text.
-```json
-{"command": "type", "selector": "input[name='search']", "text": "Bob Ros ROS 2"}
-```
+## Requirements
+- **Container**: `eva-browser` running the `Dockerfile.playwright` image.
+- **Network**: Must be part of the `eva-net` bridge with access to `ROS_DOMAIN_ID`.
+- **Target Topic**: `/eva/streamer/web_image` must be active for visual output.
 
-### Scroll
-Scrolls the page up or down.
-```json
-{"command": "scroll", "direction": "down", "amount": 500}
-```
+## Technical Details
+- **Engine**: Playwright (Headless Chromium).
+- **Communication**: ROS 2 `std_msgs/String` for commands, `sensor_msgs/Image` (BGR8) for output.
+- **Synchronization**: Uses `rclpy.spin_once` with a buffer to ensure reliable delivery across the Docker bridge.
 
-### Refresh / Screenshot
-Forces a visual update.
-```json
-{"command": "screenshot"}
-```
-
-## Stream Integration
-The browser snapshots are published to `/eva/streamer/web_image` as BGR8 images, which are automatically picked up by the Nviz streaming pipeline for display on the Twitch channel.
-
-## Examples
-To search for something, Eva should:
-1. `open` the search engine.
-2. `type` the query.
-3. `click` the submit button.
-4. `scroll` to see results.
+## Best Practices
+- **Wait for Load**: Use the `open` command first and allow a few seconds for the stream to update.
+- **Selectors**: Use unique CSS selectors (IDs preferred) for reliable clicking and typing.
+- **Resolution**: Viewport is fixed to 1280x720 to match the stream layout.
