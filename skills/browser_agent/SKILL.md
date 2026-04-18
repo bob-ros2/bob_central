@@ -10,7 +10,7 @@ category: "system"
 Enable Eva to autonomously browse the internet, interact with web elements, and visually share the results with the audience on the Twitch stream.
 
 ## Description
-This skill leverages a dedicated ROS 2 node (`browser_daemon_node.py`) running in a Playwright-enabled container. It captures high-resolution screenshots (1280x720) in BGR8 format and publishes them directly to the Nviz streaming pipeline via the `/eva/streamer/web_image` topic.
+This skill leverages a dedicated ROS 2 node (`browser_daemon_node.py`) running in a Playwright-enabled container. It captures high-resolution screenshots (1280x720) in BGR8 format and publishes them directly to the Nviz streaming pipeline via the `/eva/streamer/browser_image` topic.
 
 ## Usage
 The skill is executed via the `browser_tool.py` script which handles the ROS 2 message dispatch.
@@ -35,7 +35,7 @@ execute_skill_script("browser_agent", "scripts/browser_tool.py", "scroll --direc
 ## Requirements
 - **Container**: `eva-browser` running the `Dockerfile.browser` image.
 - **Network**: Must be part of the `eva-net` bridge with access to `ROS_DOMAIN_ID`.
-- **Target Topic**: `/eva/streamer/web_image` must be active for visual output.
+- **Target Topic**: `/eva/streamer/browser_image` must be active for visual output.
 
 ## Technical Details
 - **Engine**: Playwright (Headless Chromium).

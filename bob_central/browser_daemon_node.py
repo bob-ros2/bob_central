@@ -55,7 +55,7 @@ class BrowserDaemonNode(Node):
         
         # Publishers
         self.pub_image = self.create_publisher(
-            Image, '/eva/streamer/web_image', 10)
+            Image, '/eva/streamer/browser_image', 10)
         
         # Subscriptions
         self.sub_command = self.create_subscription(
