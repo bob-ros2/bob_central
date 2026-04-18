@@ -1,0 +1,26 @@
+# -- Eva Face System (Visualization & Expression) --
+name: eva-face
+
+networks:
+  eva-net:
+    external: true
+
+services:
+  face:
+    image: ghcr.io/bob-ros2/bob-face:latest
+    container_name: eva-face
+    networks:
+      - eva-net
+    env_file:
+      - ../.env
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+      - DISPLAY=$DISPLAY
+      - QT_X11_NO_MITSHM=1
+    command: >
+      bash -c "source /opt/ros/humble/setup.bash && 
+               if [ -f /ros2_ws/install/setup.bash ]; then source /ros2_ws/install/setup.bash; fi &&
+               ros2 launch bob_launch generic.launch.py config:=/ros2_ws/src/bob_central/launch/face_launch.yaml"
+    volumes:
+      - ../launch/face_launch.yaml:/ros2_ws/src/bob_central/launch/face_launch.yaml
+    restart: unless-stopped

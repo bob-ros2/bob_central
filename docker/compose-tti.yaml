@@ -23,8 +23,10 @@ services:
     container_name: eva-artist
     networks:
       - eva-net
+    env_file:
+      - ../.env
     environment:
-      - ROS_DOMAIN_ID=50 # Synched with your setup
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID} # Synched with your setup
       - TTI_MODEL_TYPE=sdxl_turbo
       - TTI_MODELS_PATH=/models
       - TTI_OUTPUT_PATH=/root/eva/media/eva_artist.jpg

@@ -2,14 +2,29 @@
   {
     "id": "status_icon",
     "type": "Bitmap",
-    "area": [810, 10, 32, 32],
+    "area": [
+      810,
+      10,
+      32,
+      32
+    ],
     "topic": "/eva/streamer/status_icon",
-    "color": [0, 255, 220, 255]
+    "color": [
+      0,
+      255,
+      220,
+      255
+    ]
   },
   {
     "id": "smallchat_video",
     "type": "VideoStream",
-    "area": [0, 0, 426, 480],
+    "area": [
+      0,
+      0,
+      426,
+      480
+    ],
     "source_width": 426,
     "source_height": 480,
     "topic": "/tmp/smallchat_pipe",
@@ -18,18 +33,47 @@
   {
     "id": "eva_art_background",
     "type": "VideoStream",
-    "area": [480, 20, 320, 320],
+    "area": [
+      480,
+      20,
+      320,
+      320
+    ],
     "source_width": 320,
     "source_height": 320,
     "topic": "/tmp/photo_pipe",
-    "encoding": "rgb"
+    "encoding": "bgr"
+  },
+  {
+    "id": "face_area",
+    "type": "MarkerLayer",
+    "topic": "/eva/face/marker_array_raw",
+    "area": [
+      480,
+      20,
+      320,
+      320
+    ],
+    "scale": 800.0,
+    "offset_y": -50,
+    "exclude_ns": "face_0_0,face_0_1"
   },
   {
     "id": "system_status",
     "type": "Bitmap",
-    "area": [426, 360, 428, 120],
+    "area": [
+      426,
+      360,
+      428,
+      120
+    ],
     "topic": "/eva/streamer/data/system_status",
     "depth": 8,
-    "color": [0, 255, 150, 255]
+    "color": [
+      0,
+      255,
+      150,
+      255
+    ]
   }
 ]

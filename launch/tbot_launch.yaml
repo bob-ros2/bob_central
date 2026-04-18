@@ -61,4 +61,4 @@
     - -r
     - *twitch_ns
     - -p
-    - "db_url:=http://api-gateway:8080/memo_test_db"
+    - "db_url:=http://api-gateway:8080/memo_db"

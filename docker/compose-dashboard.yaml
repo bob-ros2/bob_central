@@ -11,8 +11,10 @@ services:
     networks:
       - eva-net
     restart: unless-stopped
+    env_file:
+      - ../.env
     environment:
-      - ROS_DOMAIN_ID=50
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
       # Webvideo Config
       - WEBVIDEO_WIDTH=426
       - WEBVIDEO_HEIGHT=480

@@ -18,13 +18,15 @@ services:
     restart: unless-stopped
     secrets:
       - twitch_key
+    env_file:
+      - ../.env
     environment:
       # Twitch Config
       - TWITCH_STREAM_KEY_FILE=/run/secrets/twitch_key
       - INGEST_SERVER=rtmp://live-fra.twitch.tv/app/
       # ROS Config
       - NAMESPACE=/eva/streamer
-      - ROS_DOMAIN_ID=50
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
       # Nviz Config
       - NVIZ_WIDTH=854
       - NVIZ_HEIGHT=480
