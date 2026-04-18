@@ -18,6 +18,8 @@ COMPOSE_FILES=(
     "compose-tti.yaml"
     "compose-q3tts.yaml"
     "compose-tbot.yaml"
+    "compose.face.yaml"
+    "compose-browser.yaml"
 )
 
 # Build the docker-compose command with all files and a fixed project name

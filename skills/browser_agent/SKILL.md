@@ -1,7 +1,6 @@
 ---
 name: browser_agent
 description: "Control a headless Playwright browser to interact with websites and stream results to Twitch."
-version: "1.0.0"
 category: "system"
 ---
 
@@ -34,7 +33,7 @@ execute_skill_script("browser_agent", "scripts/browser_tool.py", "scroll --direc
 | `--amount`| int | Pixels to scroll (default: 500) |
 
 ## Requirements
-- **Container**: `eva-browser` running the `Dockerfile.playwright` image.
+- **Container**: `eva-browser` running the `Dockerfile.browser` image.
 - **Network**: Must be part of the `eva-net` bridge with access to `ROS_DOMAIN_ID`.
 - **Target Topic**: `/eva/streamer/web_image` must be active for visual output.
 
