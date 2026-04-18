@@ -19,10 +19,10 @@ RUN apt-get update && apt-get install -y \
     python3-colcon-common-extensions \
     && rm -rf /var/lib/apt/lists/*
 
-# Install specific python dependencies
+# Install specific python dependencies (Fix: numpy < 2 for cv_bridge compatibility)
 RUN pip3 install \
     opencv-python \
-    numpy \
+    "numpy<2" \
     playwright
 
 # Prepare workplace

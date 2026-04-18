@@ -41,7 +41,7 @@ class BrowserDaemonNode(Node):
         # State
         self.playwright = None
         self.browser = None
-        self.context = None
+        self.browser_context = None
         self.page = None
         self.bridge = CvBridge()
         
@@ -67,10 +67,10 @@ class BrowserDaemonNode(Node):
         """Initialize Playwright and open a blank page."""
         self.playwright = await async_playwright().start()
         self.browser = await self.playwright.chromium.launch(headless=True)
-        self.context = await self.browser.new_context(
+        self.browser_context = await self.browser.new_context(
             viewport={'width': self.width, 'height': self.height}
         )
-        self.page = await self.context.new_page()
+        self.page = await self.browser_context.new_page()
         self.get_logger().info(f'Browser started (Headless Chromium, {self.width}x{self.height}).')
         
         # Go to a default page
