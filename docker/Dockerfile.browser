@@ -22,19 +22,15 @@ RUN apt-get update && apt-get install -y \
 # Install specific python dependencies
 RUN pip3 install \
     opencv-python \
-    numpy
-
-# Set up environment
-ENV ROS_DISTRO=humble
-ENV PYTHONPATH=/opt/ros/humble/lib/python3.10/site-packages
-ENV LD_LIBRARY_PATH=/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib
+    numpy \
+    playwright
 
 # Prepare workplace
 WORKDIR /ros2_ws
 COPY . /ros2_ws/src/bob_central
 
-# Install playwright browsers (already mostly in base image, but ensure it's set up)
-RUN playwright install chromium
+# Install playwright chromium and its system dependencies
+RUN python3 -m playwright install --with-deps chromium
 
 # Entrypoint setup
 ENTRYPOINT ["/bin/bash", "-c", "source /opt/ros/humble/setup.bash && exec \"$@\""]
