@@ -25,10 +25,9 @@ import os
 import re
 import time
 
-import requests
-
 import rclpy
 from rclpy.node import Node
+import requests
 from std_msgs.msg import String
 
 
