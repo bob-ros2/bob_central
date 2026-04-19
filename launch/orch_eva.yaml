@@ -181,7 +181,7 @@
   respawn: true
   output: screen
   parameters:
-    idle_threshold: 600.0
+    idle_threshold: 3000.0
   arguments:
     - --ros-args
     - --log-level
