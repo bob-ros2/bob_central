@@ -107,28 +107,41 @@ class AgencyDaemonNode(Node):
 
             # Fetch context from curiosity/tasks to make the trigger dynamic
             cur_note = None
+            needs_approval = False
             try:
-                # Try tasks first, then curiosity
-                docs = get_all_texts(collection='tasks', limit=1)
-                if not docs:
-                    docs = get_all_texts(collection='curiosity', limit=1)
+                # Try APPROVED tasks first (The Governance Layer)
+                docs = get_all_texts(collection='tasks', limit=10)
+                approved_tasks = [d for d in docs if d.get('metadata', {}).get('status') == 'approved']
 
-                if docs:
-                    cur_note = docs[0].get('text', '')[:200]
+                if approved_tasks:
+                    cur_note = approved_tasks[0].get('text', '')[:200]
+                else:
+                    # Fallback to curiosity as 'proposed' ideas
+                    docs = get_all_texts(collection='curiosity', limit=1)
+                    if docs:
+                        cur_note = docs[0].get('text', '')[:200]
+                        needs_approval = True
             except Exception as e:
-                self.get_logger().error(f'Failed to fetch dynamic context: {e}')
+                self.get_logger().error(f'Failed to fetch dynamic context with governance: {e}')
 
             # Reset timer after triggering so we don't spam
             self.last_activity_ts = now
 
             impulse_msg = String()
             if cur_note:
-                impulse_msg.data = (
-                    f'Internal_Agency: The environment is quiet. Your internal drive '
-                    f'draws you towards: "{cur_note}". '
-                    f'Explore this, research it, or implement logic for it. '
-                    f'Voice your reflections and actions in the stream.'
-                )
+                if needs_approval:
+                    impulse_msg.data = (
+                        f'Internal_Agency: The environment is quiet. You have a proposed '
+                        f'inspiration: "{cur_note}". Explore this conceptually and research '
+                        f'its merit, but DO NOT IMPLEMENT logic yet. Wait for USER approval. '
+                        f'Share your research reflections in the stream.'
+                    )
+                else:
+                    impulse_msg.data = (
+                        f'Internal_Agency: APPROVED TASK FOUND. Your mission is: "{cur_note}". '
+                        f'Proceed with implementation. Use your Coder skill to draft logic '
+                        f'and share your progress directly on the stream.'
+                    )
             else:
                 impulse_msg.data = (
                     'Internal_Agency: System is quiet. Reflect on your current state, '
@@ -154,3 +167,5 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
+"import os "
+import os  
