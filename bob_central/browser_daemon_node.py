@@ -18,9 +18,9 @@ import json
 
 import cv2
 import numpy as np
-from playwright.async_api import async_playwright
 
 from cv_bridge import CvBridge
+from playwright.async_api import async_playwright
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
