@@ -106,12 +106,12 @@ class AgencyDaemonNode(Node):
             )
 
             # Fetch context from curiosity collection to make the trigger smart
-            cur_note = 'deinen eigenen Zielen'
+            cur_note = 'your personal objectives'
             try:
                 docs = get_all_texts(collection='curiosity', limit=1)
                 if docs:
                     text_snippet = docs[0].get('text', '')[:100]
-                    cur_note = f"deinem Ziel: '{text_snippet}...'"
+                    cur_note = f"your goal: '{text_snippet}...'"
             except Exception as e:
                 self.get_logger().error(f'Failed to fetch curiosity context: {e}')
 
@@ -120,9 +120,9 @@ class AgencyDaemonNode(Node):
 
             impulse_msg = String()
             impulse_msg.data = (
-                f'Internal_Agency: Die Umgebung ist ruhig. Nutze die Zeit, '
-                f'um dich mit {cur_note} zu beschäftigen. '
-                f'Handle autonom und teile deine Gedanken im Stream.'
+                f'Internal_Agency: The environment is quiet. Take this time '
+                f'to focus on {cur_note}. '
+                f'Act autonomously and share your thoughts in the stream.'
             )
             self.pub_impulse.publish(impulse_msg)
 
