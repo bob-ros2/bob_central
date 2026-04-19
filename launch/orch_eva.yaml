@@ -193,7 +193,7 @@
 # Eva's Auditory Synthesis Engine (Alarm & Telemetry)
 - name: synth_node
   package: bob_synth
-  executable: synth_node
+  executable: synth
   respawn: true
   output: screen
   arguments:
