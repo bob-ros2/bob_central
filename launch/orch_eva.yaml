@@ -6,6 +6,7 @@
 
 - &eva_ns    "__ns:=/eva"
 - &tts_ns    "__ns:=/eva/tts"
+- &synth_ns  "__ns:=/eva/sounds"
 - &log_level "debug"
 
 # --- THE UNIFIED BRAIN-MESH ---
@@ -202,5 +203,16 @@
     - info
     - -r
     - "audio_out:=/eva/streamer/in2"
+    - -r
+    - *synth_ns
+
+# Bridge: Security Alerts -> BobSynth configuration
+- name: alarm_bridge
+  package: bob_central
+  executable: /ros2_ws/src/bob_central/skills/security_monitor/scripts/alarm_bobsynth.py
+  respawn: true
+  output: screen
+  arguments:
+    - --ros-args
     - -r
     - *eva_ns
