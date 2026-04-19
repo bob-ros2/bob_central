@@ -16,16 +16,15 @@
 import asyncio
 import json
 
-import numpy as np
 import cv2
+import numpy as np
+from playwright.async_api import async_playwright
 
 import rclpy
-from rclpy.node import Node
-from std_msgs.msg import String
-from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
-
-from playwright.async_api import async_playwright
+from rclpy.node import Node
+from sensor_msgs.msg import Image
+from std_msgs.msg import String
 
 
 class BrowserDaemonNode(Node):

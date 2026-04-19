@@ -19,14 +19,15 @@ Memory Daemon Node - Eva's Volatile Short-Term Memory Hub.
 Automatically fetches user history from CouchDB when a query is detected.
 """
 
+from datetime import datetime
 import json
 import os
 import re
 import time
-from datetime import datetime
+
+import requests
 
 import rclpy
-import requests
 from rclpy.node import Node
 from std_msgs.msg import String
 
