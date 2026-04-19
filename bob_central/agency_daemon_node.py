@@ -131,20 +131,20 @@ class AgencyDaemonNode(Node):
             if cur_note:
                 if needs_approval:
                     impulse_msg.data = (
-                        f'Internal_Agency: The environment is quiet. You have a proposed '
+                        f'Internal_Agency: [LANGUAGE: ENGLISH] The environment is quiet. You have a proposed '
                         f'inspiration: "{cur_note}". Explore this conceptually and research '
                         f'its merit, but DO NOT IMPLEMENT logic yet. Wait for USER approval. '
                         f'Share your research reflections in the stream.'
                     )
                 else:
                     impulse_msg.data = (
-                        f'Internal_Agency: APPROVED TASK FOUND. Your mission is: "{cur_note}". '
+                        f'Internal_Agency: [LANGUAGE: ENGLISH] APPROVED TASK FOUND. Your mission is: "{cur_note}". '
                         f'Proceed with implementation. Use your Coder skill to draft logic '
                         f'and share your progress directly on the stream.'
                     )
             else:
                 impulse_msg.data = (
-                    'Internal_Agency: System is quiet. Reflect on your current state, '
+                    'Internal_Agency: [LANGUAGE: ENGLISH] System is quiet. Reflect on your current state, '
                     'your modularity, and your potential for evolution. '
                     'Search for new inspirations or follow your long-term goals.'
                 )
