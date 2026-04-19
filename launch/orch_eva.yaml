@@ -189,3 +189,18 @@
     - "user_query:=/eva/user_query"
     - -r
     - *eva_ns
+
+# Eva's Auditory Synthesis Engine (Alarm & Telemetry)
+- name: synth_node
+  package: bob_synth
+  executable: synth
+  respawn: true
+  output: screen
+  arguments:
+    - --ros-args
+    - --log-level
+    - info
+    - -r
+    - "~/audio_out:=/eva/streamer/in2"
+    - -r
+    - *eva_ns
