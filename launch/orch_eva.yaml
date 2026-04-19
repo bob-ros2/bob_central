@@ -201,6 +201,6 @@
     - --log-level
     - info
     - -r
-    - "~/audio_out:=/eva/streamer/in2"
+    - "audio_out:=/eva/streamer/in2"
     - -r
     - *eva_ns
