@@ -112,7 +112,7 @@ class AgencyDaemonNode(Node):
                 docs = get_all_texts(collection='tasks', limit=1)
                 if not docs:
                     docs = get_all_texts(collection='curiosity', limit=1)
-                
+
                 if docs:
                     cur_note = docs[0].get('text', '')[:200]
             except Exception as e:
