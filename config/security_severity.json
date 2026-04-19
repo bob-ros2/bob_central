@@ -1,0 +1,41 @@
+{
+  "severity_levels": {
+    "LOW": {
+      "audio_frequency": 440,
+      "audio_duration": 0.5,
+      "color": "#4CAF50",
+      "response": "log_only"
+    },
+    "MEDIUM": {
+      "audio_frequency": 880,
+      "audio_duration": 0.3,
+      "color": "#FFC107",
+      "response": "alert_and_log"
+    },
+    "HIGH": {
+      "audio_frequency": 1760,
+      "audio_duration": 0.2,
+      "color": "#FF9800",
+      "response": "alert_log_notify"
+    },
+    "CRITICAL": {
+      "audio_frequency": 3520,
+      "audio_duration": 0.1,
+      "color": "#F44336",
+      "response": "full_response"
+    }
+  },
+  "detection_thresholds": {
+    "burst_score": 0.8,
+    "entropy_threshold": 0.3,
+    "sync_threshold": 0.6,
+    "churn_lifetime": 2.0,
+    "churn_checks": 5
+  },
+  "system_settings": {
+    "sample_rate": 44100,
+    "alert_correlation_window": 30,
+    "max_alerts_per_minute": 60,
+    "log_retention_days": 7
+  }
+}
