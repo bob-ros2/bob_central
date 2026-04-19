@@ -23,7 +23,10 @@ services:
     environment:
       # Twitch Config
       - TWITCH_STREAM_KEY_FILE=/run/secrets/twitch_key
-      - INGEST_SERVER=rtmp://live-fra.twitch.tv/app/
+      #- INGEST_SERVER=rtmp://live-fra.twitch.tv/app/
+      # Test Mode
+      # ffplay -listen 1 -protocol_whitelist file,rtmp,tcp rtmp://0.0.0.0:1234
+      - INGEST_SERVER=rtmp://192.168.1.47:1234
       # ROS Config
       - NAMESPACE=/eva/streamer
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}

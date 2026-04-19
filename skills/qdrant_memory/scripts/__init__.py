@@ -28,11 +28,15 @@ except ImportError:
     QDRANT_AVAILABLE = False
 
 
+# Defined base collections for Eva's core memory functions
+ALLOWED_COLLECTIONS = ['tasks', 'curiosity', 'long_term', 'chat_history']
+
+
 class QdrantMemory:
-    """Main Qdrant memory management class."""
+    """Main Qdrant memory management class with whitelisted collections."""
 
     def __init__(self, http_url: Optional[str] = None):
-        """Initialize Qdrant client."""
+        """Initialize Qdrant client and ensure base collections exist."""
         if not QDRANT_AVAILABLE:
             raise ImportError(
                 'qdrant-client package not installed. '
@@ -44,13 +48,21 @@ class QdrantMemory:
         )
         self.client = QdrantClient(url=self.http_url)
 
+        # Ensure base collections exist on startup
+        for coll in ALLOWED_COLLECTIONS:
+            self._ensure_collection(coll)
+
     def _ensure_collection(self, collection: str, vector_size: int = 1) -> bool:
-        """Ensure collection exists."""
+        """Ensure collection exists, respecting the whitelist."""
         try:
             collections = self.client.get_collections().collections
             collection_names = [c.name for c in collections]
 
             if collection not in collection_names:
+                # Optional: Strict enforcing could be added here
+                # if collection not in ALLOWED_COLLECTIONS:
+                #     print(f"Warning: Collection {collection} not in whitelist.")
+
                 self.client.create_collection(
                     collection_name=collection,
                     vectors_config=VectorParams(
@@ -58,7 +70,7 @@ class QdrantMemory:
                         distance=Distance.COSINE
                     )
                 )
-                return True
+                print(f"Collection '{collection}' initialized.")
             return True
         except Exception as e:
             print(f'Error ensuring collection {collection}: {e}')

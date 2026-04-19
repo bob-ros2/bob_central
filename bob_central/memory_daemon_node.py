@@ -19,15 +19,15 @@ Memory Daemon Node - Eva's Volatile Short-Term Memory Hub.
 Automatically fetches user history from CouchDB when a query is detected.
 """
 
-from datetime import datetime
 import json
 import os
 import re
 import time
+from datetime import datetime
 
 import rclpy
-from rclpy.node import Node
 import requests
+from rclpy.node import Node
 from std_msgs.msg import String
 
 
@@ -39,10 +39,12 @@ class MemoryDaemonNode(Node):
     """
 
     def __init__(self):
+        """Initialize parameters and communications."""
         super().__init__('memory_daemon')
 
         # Parameters
-        env_db_url = os.environ.get('JLOG_DB_URL', 'http://api-gateway:8080/memo_db')
+        db_default = 'http://api-gateway:8080/memo_db'
+        env_db_url = os.environ.get('JLOG_DB_URL', db_default)
         self.declare_parameter('db_url', env_db_url)
         self.declare_parameter('cache_ttl', 900)  # 15 minutes TTL
         self.declare_parameter('history_limit', 5)
@@ -64,7 +66,7 @@ class MemoryDaemonNode(Node):
         # Subscriptions
         # We listen to user_query to trigger active fetching
         self.create_subscription(
-            String, '/eva/user_query', self.query_callback, 10
+            String, 'user_query', self.query_callback, 10
         )
 
         self.get_logger().info(f'Memory Daemon started (Cache TTL: {self.cache_ttl}s)')
@@ -97,7 +99,7 @@ class MemoryDaemonNode(Node):
     def fetch_user_history(self, username):
         """Query CouchDB for the latest messages from this user."""
         try:
-            # Mango Query: Explicit sorting by 'ts' to handle migrated Mongo data
+            # Mango Query: Explicit sorting by 'ts'
             query = {
                 'selector': {
                     '$and': [
@@ -106,7 +108,7 @@ class MemoryDaemonNode(Node):
                             'event_message', 'event_join', 'event_ready',
                             'eventsub_channelfollow', 'eventsub_subscription', 'eventsub_raid'
                         ]}}}},
-                        {'ts': {'$gt': None}}  # Required for sort index to be used
+                        {'ts': {'$gt': None}}
                     ]
                 },
                 'sort': [{'ts': 'desc'}],
@@ -127,12 +129,9 @@ class MemoryDaemonNode(Node):
                     summary = f'Keine Rezente Historie für {username} gefunden.'
                 else:
                     items = []
-                    # CouchDB natural order is no longer reliable due to mixed IDs.
-                    # We use explicit ts-based sorting and reverse for logical display.
                     for doc in docs:
                         ts_str = doc.get('ts', '')
                         try:
-                            # Parse the unified ISO string format
                             dt = datetime.fromisoformat(ts_str)
                             dt_display = dt.strftime('%d.%m. %H:%M')
                         except (ValueError, TypeError):
@@ -140,48 +139,33 @@ class MemoryDaemonNode(Node):
 
                         content = doc.get('data', '')
                         event_type = ''
-                        # Extract event type from metadata if possible
                         for m in doc.get('metadata', []):
                             if m.get('key') == 'type':
                                 event_type = m.get('value')
                                 break
 
-                        # Clean up technical prefixes
-                        # Pattern is usually: "type ID username [message]"
                         cleaned_data = content
-
-                        # Generic cleanup: split by space and remove first 3
-                        # parts if they match type/username
                         parts = content.split(' ')
                         if len(parts) >= 3:
-                            # Verify if first part is an event type we know
-                            if (parts[0] in event_type or
-                                    parts[0].startswith('event')):
-                                # Join the rest
+                            if parts[0] in event_type or parts[0].startswith('event'):
                                 cleaned_data = ' '.join(parts[3:]).strip()
 
-                        # Humanize events with empty or technical content
                         if event_type == 'event_join':
-                            cleaned_data = "ist dem Channel beigetreten."
+                            cleaned_data = 'ist dem Channel beigetreten.'
                         elif event_type == 'event_ready':
-                            cleaned_data = "ist startklar (System Ready)."
+                            cleaned_data = 'ist startklar (System Ready).'
                         elif event_type == 'eventsub_channelfollow':
-                            cleaned_data = "ist ein neuer Follower! 🎉"
+                            cleaned_data = 'ist ein neuer Follower! 🎉'
                         elif event_type == 'eventsub_subscription':
-                            cleaned_data = "hat den Kanal abonniert! 💎"
+                            cleaned_data = 'hat den Kanal abonniert! 💎'
                         elif event_type == 'eventsub_raid':
-                            cleaned_data = "hat einen RAID gestartet! ⚔️"
+                            cleaned_data = 'hat einen RAID gestartet! ⚔️'
 
-                        # Fallback for empty strings
                         if not cleaned_data:
                             cleaned_data = content
 
                         items.append(f'- ({dt_display}): {cleaned_data}')
-                        self.get_logger().debug(
-                            f'Fetched doc: {cleaned_data[:50]}...')
 
-                    # Reverse so oldest is at the top, newest at the bottom
-                    # (natural conversation flow)
                     items.reverse()
                     summary = '\n'.join(items)
 
