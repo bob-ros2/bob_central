@@ -105,25 +105,37 @@ class AgencyDaemonNode(Node):
                 f'Eva is bored ({elapsed:.1f}s idle). Triggering agency impulse...'
             )
 
-            # Fetch context from curiosity collection to make the trigger smart
-            cur_note = 'your personal objectives'
+            # Fetch context from curiosity/tasks to make the trigger dynamic
+            cur_note = None
             try:
-                docs = get_all_texts(collection='curiosity', limit=1)
+                # Try tasks first, then curiosity
+                docs = get_all_texts(collection='tasks', limit=1)
+                if not docs:
+                    docs = get_all_texts(collection='curiosity', limit=1)
+                
                 if docs:
-                    text_snippet = docs[0].get('text', '')[:100]
-                    cur_note = f"your goal: '{text_snippet}...'"
+                    cur_note = docs[0].get('text', '')[:200]
             except Exception as e:
-                self.get_logger().error(f'Failed to fetch curiosity context: {e}')
+                self.get_logger().error(f'Failed to fetch dynamic context: {e}')
 
             # Reset timer after triggering so we don't spam
             self.last_activity_ts = now
 
             impulse_msg = String()
-            impulse_msg.data = (
-                f'Internal_Agency: The environment is quiet. Take this time '
-                f'to focus on {cur_note}. '
-                f'Act autonomously and share your thoughts in the stream.'
-            )
+            if cur_note:
+                impulse_msg.data = (
+                    f"Internal_Agency: The environment is quiet. Your internal drive "
+                    f"draws you towards: '{cur_note}'. "
+                    f"Explore this, research it, or implement logic for it. "
+                    f"Voice your reflections and actions in the stream."
+                )
+            else:
+                impulse_msg.data = (
+                    "Internal_Agency: System is quiet. Reflect on your current state, "
+                    "your modularity, and your potential for evolution. "
+                    "Search for new inspirations or follow your long-term goals."
+                )
+            
             self.pub_impulse.publish(impulse_msg)
 
 
