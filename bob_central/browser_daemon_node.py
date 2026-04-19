@@ -20,8 +20,8 @@ import cv2
 import numpy as np
 from playwright.async_api import async_playwright
 
-import rclpy
 from cv_bridge import CvBridge
+import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
