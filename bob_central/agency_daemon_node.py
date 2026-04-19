@@ -110,19 +110,22 @@ class AgencyDaemonNode(Node):
             needs_approval = False
             try:
                 # Try APPROVED tasks first (The Governance Layer)
-                docs = get_all_texts(collection='tasks', limit=10)
+                docs = get_all_texts(collection='tasks', limit=20)
                 approved_tasks = [d for d in docs if d.get('metadata', {}).get('status') == 'approved']
-
+                
                 if approved_tasks:
-                    cur_note = approved_tasks[0].get('text', '')[:200]
+                    # Pick a random one to avoid loops
+                    import random
+                    cur_note = random.choice(approved_tasks).get('text', '')[:200]
                 else:
                     # Fallback to curiosity as 'proposed' ideas
-                    docs = get_all_texts(collection='curiosity', limit=1)
+                    docs = get_all_texts(collection='curiosity', limit=20)
                     if docs:
-                        cur_note = docs[0].get('text', '')[:200]
+                        import random
+                        cur_note = random.choice(docs).get('text', '')[:200]
                         needs_approval = True
             except Exception as e:
-                self.get_logger().error(f'Failed to fetch dynamic context with governance: {e}')
+                self.get_logger().error(f'Failed to fetch dynamic context with shuffling: {e}')
 
             # Reset timer after triggering so we don't spam
             self.last_activity_ts = now
