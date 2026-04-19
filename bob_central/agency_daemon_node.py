@@ -124,8 +124,8 @@ class AgencyDaemonNode(Node):
             impulse_msg = String()
             if cur_note:
                 impulse_msg.data = (
-                    f"Internal_Agency: The environment is quiet. Your internal drive "
-                    f"draws you towards: '{cur_note}'. "
+                    f'Internal_Agency: The environment is quiet. Your internal drive '
+                    f'draws you towards: \'{cur_note}\'. '
                     f'Explore this, research it, or implement logic for it. '
                     f'Voice your reflections and actions in the stream.'
                 )
