@@ -14,12 +14,10 @@
 # limitations under the License.
 
 import asyncio
-import json
-
 import cv2
-import numpy as np
-
 from cv_bridge import CvBridge
+import json
+import numpy as np
 from playwright.async_api import async_playwright
 import rclpy
 from rclpy.node import Node
