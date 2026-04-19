@@ -209,7 +209,7 @@
 # Bridge: Security Alerts -> BobSynth configuration
 - name: alarm_bridge
   package: bob_central
-  executable: /ros2_ws/src/bob_central/skills/security_monitor/scripts/alarm_bobsynth.py
+  executable: alarm_bridge
   respawn: true
   output: screen
   arguments:
