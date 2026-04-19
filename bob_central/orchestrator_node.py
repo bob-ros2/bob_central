@@ -35,6 +35,7 @@ class OrchestratorNode(Node):
         # Parameters
         self.declare_parameter('enable_queuing', False)
         self.declare_parameter('reject_if_busy', True)
+        self.declare_parameter('busy_timeout', 300.0)
 
         # State
         self.is_busy = False
@@ -178,10 +179,11 @@ class OrchestratorNode(Node):
         msg.data = json.dumps(status)
         self.pub_status.publish(msg)
 
-        # WATCHDOG: Reset Busy state if stuck for too long (> 180s)
+        # WATCHDOG: Reset Busy state if stuck for too long
         if self.is_busy and self.busy_since:
+            busy_timeout = self.get_parameter('busy_timeout').value
             elapsed = (self.get_clock().now() - self.busy_since).nanoseconds / 1e9
-            if elapsed > 180.0:
+            if elapsed > busy_timeout:
                 self.get_logger().error(
                     f'WATCHDOG: Busy state stuck for {elapsed:.1f}s. Resetting to IDLE.')
                 self.is_busy = False
