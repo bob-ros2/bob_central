@@ -22,12 +22,14 @@ Automatically fetches user history from CouchDB when a query is detected.
 from datetime import datetime
 import json
 import os
+import re
+import time
+
+import requests
+
 import rclpy
 from rclpy.node import Node
-import re
-import requests
 from std_msgs.msg import String
-import time
 
 
 class MemoryDaemonNode(Node):

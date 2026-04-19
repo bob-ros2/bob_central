@@ -124,18 +124,18 @@ class AgencyDaemonNode(Node):
             impulse_msg = String()
             if cur_note:
                 impulse_msg.data = (
-                    f"Internal_Agency: The environment is quiet. Your internal drive "
-                    f"draws you towards: '{cur_note}'. "
-                    f"Explore this, research it, or implement logic for it. "
-                    f"Voice your reflections and actions in the stream."
+                    f'Internal_Agency: The environment is quiet. Your internal drive '
+                    f'draws you towards: \'{cur_note}\'. '
+                    f'Explore this, research it, or implement logic for it. '
+                    f'Voice your reflections and actions in the stream.'
                 )
             else:
                 impulse_msg.data = (
-                    "Internal_Agency: System is quiet. Reflect on your current state, "
-                    "your modularity, and your potential for evolution. "
-                    "Search for new inspirations or follow your long-term goals."
+                    'Internal_Agency: System is quiet. Reflect on your current state, '
+                    'your modularity, and your potential for evolution. '
+                    'Search for new inspirations or follow your long-term goals.'
                 )
-            
+
             self.pub_impulse.publish(impulse_msg)
 
 
