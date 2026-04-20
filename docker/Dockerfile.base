@@ -26,6 +26,7 @@ RUN apt-get update && apt-get install -y \
     procps \
     psmisc \
     openssh-client \
+    libasound2-dev \
     && rm -rf /var/lib/apt/lists/* \
     && git config --global --add safe.directory '*'
 
@@ -66,7 +67,8 @@ RUN echo "Cache bust: $CACHE_BUST" && \
 COPY . /ros2_ws/src/bob_central
 
 RUN . /opt/ros/${ROS_DISTRO}/setup.sh && \
-    colcon build --symlink-install --packages-select bob_llm bob_central bob_launch bob_synth
+    colcon build --symlink-install --packages-select bob_llm bob_central bob_launch bob_synth \
+    --event-handlers console_direct+
 
 # -- Entrypoint Script --
 RUN echo "#!/bin/bash\nservice cron start\nsource /opt/ros/\${ROS_DISTRO}/setup.bash\nsource /ros2_ws/install/setup.bash\nexec \"\$@\"" > /ros_entrypoint.sh \
