@@ -21,6 +21,7 @@ when Eva is idle for too long. Leverages Qdrant Curiosity collection.
 """
 
 import os
+import random
 import sys
 
 import rclpy
@@ -111,17 +112,18 @@ class AgencyDaemonNode(Node):
             try:
                 # Try APPROVED tasks first (The Governance Layer)
                 docs = get_all_texts(collection='tasks', limit=20)
-                approved_tasks = [d for d in docs if d.get('metadata', {}).get('status') == 'approved']
-                
+                approved_tasks = [
+                    d for d in docs
+                    if d.get('metadata', {}).get('status') == 'approved'
+                ]
+
                 if approved_tasks:
                     # Pick a random one to avoid loops
-                    import random
                     cur_note = random.choice(approved_tasks).get('text', '')[:200]
                 else:
                     # Fallback to curiosity as 'proposed' ideas
                     docs = get_all_texts(collection='curiosity', limit=20)
                     if docs:
-                        import random
                         cur_note = random.choice(docs).get('text', '')[:200]
                         needs_approval = True
             except Exception as e:
@@ -133,24 +135,28 @@ class AgencyDaemonNode(Node):
             impulse_msg = String()
             if cur_note:
                 if needs_approval:
-                    impulse_msg.data = (
-                        f'Internal_Agency: [LANGUAGE: ENGLISH] The environment is quiet. You have a proposed '
-                        f'inspiration: "{cur_note}". Explore this conceptually and research '
-                        f'its merit, but DO NOT IMPLEMENT logic yet. Wait for USER approval. '
-                        f'Share your research reflections in the stream.'
+                    text = (
+                        'Internal_Agency: [LANGUAGE: ENGLISH] The environment is quiet. '
+                        f'You have a proposed inspiration: "{cur_note}". Explore this '
+                        'conceptually and research its merit, but DO NOT IMPLEMENT logic yet. '
+                        'Wait for USER approval. Share your research reflections in the stream.'
                     )
+                    impulse_msg.data = text
                 else:
-                    impulse_msg.data = (
-                        f'Internal_Agency: [LANGUAGE: ENGLISH] APPROVED TASK FOUND. Your mission is: "{cur_note}". '
-                        f'Proceed with implementation. Use your Coder skill to draft logic '
-                        f'and share your progress directly on the stream.'
+                    text = (
+                        'Internal_Agency: [LANGUAGE: ENGLISH] APPROVED TASK FOUND. '
+                        f'Your mission is: "{cur_note}". Proceed with implementation. '
+                        'Use your Coder skill to draft logic and share your progress '
+                        'directly on the stream.'
                     )
+                    impulse_msg.data = text
             else:
-                impulse_msg.data = (
-                    'Internal_Agency: [LANGUAGE: ENGLISH] System is quiet. Reflect on your current state, '
-                    'your modularity, and your potential for evolution. '
+                text = (
+                    'Internal_Agency: [LANGUAGE: ENGLISH] System is quiet. Reflect on your '
+                    'current state, your modularity, and your potential for evolution. '
                     'Search for new inspirations or follow your long-term goals.'
                 )
+                impulse_msg.data = text
 
             self.pub_impulse.publish(impulse_msg)
 
@@ -170,5 +176,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-"import os "
-import os  
