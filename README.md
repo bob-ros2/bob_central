@@ -1,6 +1,7 @@
 # ROS Package [bob_central](https://github.com/bob-ros2/bob_central)
-[![ROS 2 CI](https://github.com/bob-ros2/bob_central/actions/workflows/ros2_ci.yml/badge.svg)](https://github.com/bob-ros2/bob_central/actions/workflows/ros2_ci.yml)
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![CI](https://github.com/bob-ros2/bob_central/actions/workflows/ros2_ci.yml/badge.svg)](https://github.com/bob-ros2/bob_central/actions/workflows/ros2_ci.yml)
+[![amd64](https://img.shields.io/github/actions/workflow/status/bob-ros2/bob_central/docker.yml?label=amd64&logo=docker)](https://github.com/bob-ros2/bob_central/actions/workflows/docker.yml)
+[![arm64](https://img.shields.io/github/actions/workflow/status/bob-ros2/bob_central/docker.yml?label=arm64&logo=docker)](https://github.com/bob-ros2/bob_central/actions/workflows/docker.yml)
 
 This package is a **General Central Orchestration Brain-Mesh System** designed for building and hosting self-evolving, autonomous AI entities within isolated container environments. It represents an AI deeply integrated into a **ROS 2 environment**, leveraging the full power of the ROS 2 ecosystem (topics, services, and parameters) for real-world interaction and self-monitoring.
 # bob_central (v0.5.0)
