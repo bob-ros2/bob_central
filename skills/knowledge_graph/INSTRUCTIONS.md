@@ -1,22 +1,15 @@
-# Knowledge Graph - Initial Setup
+# Knowledge Graph - Manuals & Documentation
 
-This skill is ephemeral and relies on dynamically fetched documentation. 
-Follow these steps to initialize or update the knowledge base.
+This skill allows Eva to dynamically bridge technical documentation from GitHub into the ROS 2 mesh.
 
 ## 1. Purpose
-Eva uses the `knowledge_graph` to access technical manuals for all Bob ROS packages. Since the documentation is fetched from GitHub, it is not stored in the main repository.
+Eva uses the `knowledge_graph` to access technical manuals for all Bob ROS packages. These are fetched on-demand using the `read_manual.py` tool.
 
-## 2. Initial Setup
-Run the following command to build the `SKILL.md` and fetch all manuals:
-```bash
-python3 scripts/sync.py
-```
+## 2. Usage
+There is no manual sync required. Eva uses the following tools autonomously:
+- **Reader Tool**: `scripts/read_manual.py` to fetch and parse specific manuals.
+- **Config**: Repository URLs and source addresses are managed via:
+  `/config/knowledge_repos.yaml`
 
-## 3. After Sync
-Once the sync is complete, Eva will automatically detect the new `SKILL.md` and gain access to:
-- **Index**: A full list of available manuals.
-- **Reader Tool**: `scripts/read_manual.py` to load specific docs.
-
-## 4. Repositories
-The list of synced repositories is maintained in:
-`/config/knowledge_repos.yaml`
+## 3. Dynamic Knowledge
+Eva will use her curiosity impulse to research these manuals when the system is idle or when explicitly requested by the user.
