@@ -16,7 +16,6 @@ services:
     env_file:
       - ../.env
     environment:
-      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-50}
       - BROWSER_VIEWPORT_WIDTH=1280
       - BROWSER_VIEWPORT_HEIGHT=720
     volumes:

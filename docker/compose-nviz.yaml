@@ -29,7 +29,6 @@ services:
       - INGEST_SERVER=rtmp://192.168.1.47:1234
       # ROS Config
       - NAMESPACE=/eva/streamer
-      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
       # Nviz Config
       - NVIZ_WIDTH=854
       - NVIZ_HEIGHT=480
