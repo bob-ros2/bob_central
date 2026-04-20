@@ -4,7 +4,7 @@
 [![arm64](https://img.shields.io/github/actions/workflow/status/bob-ros2/bob_central/docker.yml?label=arm64&logo=docker)](https://github.com/bob-ros2/bob_central/actions/workflows/docker.yml)
 
 This package is a **General Central Orchestration Brain-Mesh System** designed for building and hosting self-evolving, autonomous AI entities within isolated container environments. It represents an AI deeply integrated into a **ROS 2 environment**, leveraging the full power of the ROS 2 ecosystem (topics, services, and parameters) for real-world interaction and self-monitoring.
-# bob_central (v0.5.0)
+# bob_central
 
 **The Central Nervous System of the Bob ROS Ecosystem.**
 
@@ -22,7 +22,7 @@ At its heart, `bob_central` manages a "Brain-Mesh" of interconnected specialized
 - **Self-Evolution Framework**: Pure ROS 2 native infrastructure for agents to modify and expand their own capabilities.
 
 ## Recursive Thought (RLM)
-Version 0.5.0 introduces the **Recursive Language Model** core. Eva can now use the `perform_thought` tool to consult internal specialists before executing sensitive actions. This enables high-level planning and risk assessment within the same conversational turn.
+The **Recursive Language Model** core enables Eva to use the `perform_thought` tool to consult internal specialists before executing sensitive actions.
 
 ## Persistent Engineering (REPL)
 The `repl_kernel` skill provides Eva with a permanent engineering workspace. 
