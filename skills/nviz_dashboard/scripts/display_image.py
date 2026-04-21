@@ -92,12 +92,13 @@ def main():
     subprocess.run(['pkill', '-9', '-f', pipe_path], check=False)
     time.sleep(0.5)
 
-    # 3. Start FFmpeg background process (Reduced to 1 Hz for efficiency)
+    # 3. Start FFmpeg background process
+    # Stream the image at 1 FPS to keep nviz active without causing flickering
     w, h = args.area[2], args.area[3]
     ffmpeg_cmd = [
-        'ffmpeg', '-y', '-loop', '1', '-re', '-i', args.path,
+        'ffmpeg', '-y', '-re', '-stream_loop', '-1', '-i', args.path,
         '-vf', f'scale={w}:{h},format=rgb24',
-        '-r', '1',
+        '-r', '2',
         '-f', 'rawvideo',
         pipe_path
     ]
