@@ -54,6 +54,11 @@ ARG CACHE_BUST=1
 # 1. Clone Bob's engine dependencies & install their requirements
 RUN apt-get update && apt-get install -y \
     ros-${ROS_DISTRO}-rosidl-default-generators \
+    ros-${ROS_DISTRO}-rosidl-generator-c \
+    ros-${ROS_DISTRO}-rosidl-generator-cpp \
+    ros-${ROS_DISTRO}-rosidl-typesupport-c \
+    ros-${ROS_DISTRO}-rosidl-typesupport-cpp \
+    ros-${ROS_DISTRO}-builtin-interfaces \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
