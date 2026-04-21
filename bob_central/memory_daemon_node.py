@@ -245,16 +245,18 @@ class MemoryDaemonNode(Node):
             return []
 
     def broadcast_context(self, username, summary):
-        """Publish the context for the orchestrator to consume."""
+        """Publish the context for the orchestrator to consume with high priority formatting."""
+        # Force the LLM to see this as a primary knowledge source
+        enhanced_summary = f"[REMARK: This user is '{username}'. Historical context from CouchDB: {summary}]"
+        
         context_data = {
             'user_name': username,
-            'context': summary,
-            'source': 'ESTM / CouchDB'
+            'context': enhanced_summary,
+            'source': 'CouchDB Social Archive'
         }
         msg = String()
         msg.data = json.dumps(context_data)
         self.pub_context.publish(msg)
-        self.get_logger().debug(f'Context published: {username} -> {len(summary)} bytes')
         self.get_logger().info(f'Context broadcasted for user: {username}')
 
 
