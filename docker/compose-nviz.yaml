@@ -20,13 +20,12 @@ services:
       - twitch_key
     env_file:
       - ../.env
+    # Twitch Config
     environment:
-      # Twitch Config
+      # Twitch Config from Secret
       - TWITCH_STREAM_KEY_FILE=/run/secrets/twitch_key
+      - TWITCH_STREAM_KEY_FILE_NAME=/run/secrets/twitch_key
       - INGEST_SERVER=rtmp://live-fra.twitch.tv/app/
-      # Test Mode
-      # ffplay -listen 1 -protocol_whitelist file,rtmp,tcp rtmp://0.0.0.0:1234
-      #- INGEST_SERVER=rtmp://192.168.1.47:1234
       # ROS Config
       - NAMESPACE=/eva/streamer
       # Nviz Config
@@ -42,10 +41,9 @@ services:
       - AUDIO_PIPE=/tmp/audio_pipe
       - AUDIO_MASTER_PATH=/tmp/audio_master_pipe
 
-    # Use custom entrypoint to bridge secrets
-    entrypoint: [ "/ros2_ws/src/bob_central/docker/nviz_entrypoint.sh" ]
+    # Original Launch Command
+    command: [ "/ros2_ws/src/bob_nviz/scripts/start_stream.sh" ]
     volumes:
-      - /blue/dev/bob_topic_tools/ros2_ws/src/bob_central:/ros2_ws/src/bob_central
       - /tmp/eva:/tmp
     logging:
       driver: "json-file"
