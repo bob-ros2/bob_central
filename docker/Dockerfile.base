@@ -41,7 +41,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # -- Install Python Dependencies for Eva --
 # Leverage Docker layer caching for requirements
 COPY requirements.txt /tmp/requirements.txt
-RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
+RUN pip3 install --no-cache-dir -r /tmp/requirements.txt flake8 flake8-quotes flake8-import-order
 
 # -- ROS 2 Workspace Setup --
 # Context must be set to repo root (..) in compose file
