@@ -42,7 +42,7 @@
     "source_width": 320,
     "source_height": 320,
     "topic": "/tmp/photo_pipe",
-    "encoding": "bgr"
+    "encoding": "rgb"
   },
   {
     "id": "face_area",
