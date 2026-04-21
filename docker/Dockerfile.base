@@ -41,7 +41,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # -- Install Python Dependencies for Eva --
 # Leverage Docker layer caching for requirements
 COPY requirements.txt /tmp/requirements.txt
-RUN pip3 install --no-cache-dir -r /tmp/requirements.txt flake8 flake8-quotes flake8-import-order
+RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
 
 # -- ROS 2 Workspace Setup --
 # Context must be set to repo root (..) in compose file
@@ -52,6 +52,11 @@ RUN mkdir -p /ros2_ws/src
 ARG CACHE_BUST=1
 
 # 1. Clone Bob's engine dependencies & install their requirements
+RUN apt-get update && apt-get install -y \
+    ros-${ROS_DISTRO}-rosidl-default-generators \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN echo "Cache bust: $CACHE_BUST" && \
     git clone https://github.com/bob-ros2/bob_llm /ros2_ws/src/bob_llm && \
     if [ -f /ros2_ws/src/bob_llm/requirements.txt ]; then pip3 install --no-cache-dir -r /ros2_ws/src/bob_llm/requirements.txt; fi
@@ -67,7 +72,9 @@ RUN echo "Cache bust: $CACHE_BUST" && \
 # 2. Copy current local repo (bob_central) into workspace
 COPY . /ros2_ws/src/bob_central
 
-RUN . /opt/ros/${ROS_DISTRO}/setup.sh && \
+# 3. Clean and Build (Force clean to avoid symlink/copy mismatches)
+RUN rm -rf /ros2_ws/build /ros2_ws/install /ros2_ws/log && \
+    . /opt/ros/${ROS_DISTRO}/setup.sh && \
     colcon build --symlink-install --packages-select bob_llm bob_central bob_launch bob_synth \
     --event-handlers console_direct+
 
