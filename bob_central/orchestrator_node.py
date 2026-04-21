@@ -129,7 +129,7 @@ class OrchestratorNode(Node):
         """Update the local user context cache."""
         try:
             data = json.loads(msg.data)
-            username = data.get('user_name')
+            username = data.get('user_name', '').lower()
             context = data.get('context')
             if username and context:
                 self.user_contexts[username] = context
@@ -224,13 +224,15 @@ class OrchestratorNode(Node):
         user_ctx_str = ''
         match = self.user_regex.match(query)
         if match:
-            username = match.group(1)
-            # 0.8s wait to ensure CouchDB response and ROS broadcast arrive.
-            time.sleep(0.8)
+            username = match.group(1).lower()  # Force lowercase for matching
+            # 1.2s wait to ensure CouchDB response and ROS broadcast arrive.
+            time.sleep(1.2)
 
-            history = self.user_contexts.get(username, 'Keine rezenten Informationen.')
+            history = self.user_contexts.get(username, 'Keine rezenten Informationen verfügbar.')
             user_ctx_str = f" [User '{username}' History:\n{history}]"
             self.get_logger().info(f'Injected context for {username} ({len(history)} bytes)')
+            if username == 'bobassi':
+                user_ctx_str += " [REMARK: This user is Bobassi, your host and core supporter. Treat with priority and familiarity.]"
 
         sys_ctx = (f'[System Context: Current Real Time is '
                    f'{day_of_week}, {time_str}. '
