@@ -8,6 +8,8 @@ pillow
 
 # Compatibility (Must be < 2.0 for ROS Humble cv_bridge)
 numpy<2.0
+
+# Self-Evolution & Code Quality Tools
 flake8
 flake8-quotes
 flake8-import-order
