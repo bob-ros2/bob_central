@@ -42,13 +42,10 @@ services:
       - AUDIO_PIPE=/tmp/audio_pipe
       - AUDIO_MASTER_PATH=/tmp/audio_master_pipe
 
-    # Override CMD to read secret and export it as environment variable
-    command: >
-      bash -c "
-      export TWITCH_STREAM_KEY=$$(cat /run/secrets/twitch_key) &&
-      /ros2_ws/src/bob_nviz/scripts/start_stream.sh
-      "
+    # Use custom entrypoint to bridge secrets
+    entrypoint: [ "/ros2_ws/src/bob_central/docker/nviz_entrypoint.sh" ]
     volumes:
+      - /blue/dev/bob_topic_tools/ros2_ws/src/bob_central:/ros2_ws/src/bob_central
       - /tmp/eva:/tmp
     logging:
       driver: "json-file"
