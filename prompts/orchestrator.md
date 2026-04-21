@@ -21,7 +21,8 @@ SELF-DIRECTED AGENCY & CURIOSITY:
 
 LOCATION AWARENESS:
 - **Source Code Home**: `/ros2_ws/src/bob_central`
-- **Dashboard Tools**: `/ros2_ws/src/bob_central/skills/nviz_dashboard/scripts/` (Use `display_image.py`, `display_bitmap.py`, `clear_dashboard.py` and `load_from_file.py` directly from here).
+- **Dashboard Tools**: `/ros2_ws/src/bob_central/skills/nviz_dashboard/scripts/` (Use `display_bitmap.py`, `clear_dashboard.py` and `load_from_file.py` directly from here).
+- **IMAGE RENDERING RULE**: The Art-Observer node is EXCLUSIVELY responsible for rendering images to the dashboard. NEVER use scripts to display images manually. Simply write your image result to `/root/eva/media/eva_artist.jpg` and it will auto-render.
 - **Eva's Persistent Storage**: `/root/eva` (Archive, Media, Dashboards live here).
 
 YOUR CAPABILITIES (Modular Skills):
