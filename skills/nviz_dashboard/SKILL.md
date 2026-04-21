@@ -38,7 +38,7 @@ execute_skill_script("nviz_dashboard", "scripts/clear_dashboard.py", "")
 | `DASHBOARD_CONFIG_PATH` | Path to default layout config | `/ros2_ws/src/bob_central/config/layout_main.json` |
 
 ### Script Arguments
-- `load_from_file.py --input <PATH>`: Load dashboard layout from JSON file
+- `load_from_file.py --input <PATH>`: Load dashboard layout from JSON file (alias `--file` also supported)
 - `clear_dashboard.py`: Clear all terminal content
 - `display_bitmap.py --id <TERMINAL_ID> --data <BASE64_DATA>`: Display bitmap data (for real-time metrics)
 
