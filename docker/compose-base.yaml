@@ -60,7 +60,6 @@ services:
       - eva-net
     env_file:
       - ../.env
-    environment:
     command: ros2 launch bob_launch generic.launch.py config:=/ros2_ws/src/bob_central/launch/orch_status.yaml
     volumes:
       - ../:/ros2_ws/src/bob_central
