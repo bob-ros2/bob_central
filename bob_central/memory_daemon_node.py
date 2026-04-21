@@ -196,9 +196,8 @@ class MemoryDaemonNode(Node):
             query_oldest = {
                 'selector': {
                     '$and': [
-                        {'metadata': {'$elemMatch': {'key': 'user_name', 'value': username}}},
-                        {'metadata': {'$elemMatch': {'key': 'type', 'value': 'event_message'}}},
-                        {'ts': {'$gt': None}}
+                        {'metadata': {'$elemMatch': {'key': 'user_name', 'value': { '$regex': f'(?i)^{username}$' }}}},
+                        {'metadata': {'$elemMatch': {'key': 'type', 'value': 'event_message'}}}
                     ]
                 },
                 'sort': [{'ts': 'asc'}],
@@ -213,11 +212,37 @@ class MemoryDaemonNode(Node):
                 if docs:
                     ts = docs[0].get('ts', '').split('T')[0]
                     msg = docs[0].get('data', '...')
-                    insight = f"Bekannt seit {ts}. Erste Nachricht: '{msg[:40]}...'"
+                    insight = f"Bekannt seit {ts}. Erste Nachricht: '{msg[:50]}...'"
             return insight
         except Exception as e:
             self.get_logger().warn(f'Could not fetch sub-insights for {username}: {e}')
             return "Wiederkehrender User."
+
+    def search_user_history(self, username, query=None, limit=10):
+        """Search the entire CouchDB history for a specific user and optional keywords."""
+        try:
+            selector = {
+                'metadata': {'$elemMatch': {'key': 'user_name', 'value': { '$regex': f'(?i)^{username}$' }}}
+            }
+            
+            if query:
+                selector['data'] = {'$regex': f'(?i){query}'}
+                
+            query_json = {
+                'selector': selector,
+                'sort': [{'ts': 'desc'}],
+                'limit': limit
+            }
+            
+            search_url = f'{self.db_url}/_find'
+            res = requests.post(search_url, json=query_json, timeout=3.0)
+            
+            if res.status_code == 200:
+                return res.json().get('docs', [])
+            return []
+        except Exception as e:
+            self.get_logger().error(f'CouchDB Search failed: {e}')
+            return []
 
     def broadcast_context(self, username, summary):
         """Publish the context for the orchestrator to consume."""
