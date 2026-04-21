@@ -1,65 +1,73 @@
 ---
 name: nviz_dashboard
-description: "VISUAL dashboard orchestration. Use this ONLY to display assets (terminals, images, streams) for the HUMAN creator to see. Not for internal logging."
-version: "1.2.0"
-category: "system"
----
+description: Dashboard visualization system for terminal layouts, images, and bitmaps.
+version: "1.0.0"
+category: "visualization"
 
-# Dashboard Control Skill (nviz)
+# Nviz Dashboard Skill
 
 ## Goal
-To provide a modular, high-performance interface for manipulating the Eva Dashboard (nviz), enabling real-time system visualization, image display, and automated layout transitions.
+Provide a unified interface for managing the visual dashboard layout and content display.
 
 ## Description
-This skill wraps the `bob_nviz` software renderer into easy-to-use CLI tools. It handles JSON event generation, FIFO pipe management for video streams, and raw bitmap rendering. It supports complex layouts split between static system information and dynamic media zones ("Eva Action Spot").
+This skill enables Eva to control the multi-terminal dashboard visualization system. It supports:
+- Loading dashboard layouts from JSON configuration files
+- Displaying images and bitmaps on specific terminals
+- Clearing dashboard content
+- Managing persistent dashboard state
+
+## IMPORTANT ARCHITECTURAL RULE
+**Image Rendering**: The Art-Observer node (`art_observer_node.py`) is exclusively responsible for rendering images to the dashboard. NEVER attempt manual image rendering via scripts. Simply write your image result to `/root/eva/media/eva_artist.jpg` and the Art-Observer will automatically handle the seamless, flicker-free stream.
 
 ## Usage
 
-### 1. Visual Status Terminal (Telemetry)
-Renders a live terminal-style overlay on the dashboard. Use for visual monitoring only.
-```bash
-python3 scripts/render_dashboard_telemetry.py --id "System_Monitor" --area 428 360 426 120 --topic "/eva/orchestrator/status" --title "EVA_TELEMETRY" --daemon
+### Skill Execution via Eva
+```python
+# Load primary layout (MANDATORY before any visual operations)
+execute_skill_script("nviz_dashboard", "scripts/load_from_file.py", "--input /ros2_ws/src/bob_central/config/layout_main.json")
+
+# Clear all terminals
+execute_skill_script("nviz_dashboard", "scripts/clear_dashboard.py", "")
 ```
 
-### 2. High-Resolution Images
-Streams an image file (JPG/PNG) to a specific canvas area.
-```bash
-python3 scripts/display_image.py --path "/root/eva/media/render.png" --area 511 50 256 256 --id "action_spot"
-```
+## Parameters
 
-### 3. Layout Management
-Loads a complete dashboard configuration from a JSON file.
-```bash
-python3 scripts/load_from_file.py --input "config/layout_standard.json"
-```
+### Environment Variables
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DASHBOARD_CONFIG_PATH` | Path to default layout config | `/ros2_ws/src/bob_central/config/layout_main.json` |
 
-### 4. Canvas Maintenance
-Clears the entire dashboard or specific elements by ID.
-```bash
-python3 scripts/clear_dashboard.py --all
-```
-
-## Parameters (display_status_terminal.py)
-| Parameter | Description |
-|-----------|-------------|
-| `--id` | Unique identifier for the dashboard layer. |
-| `--area` | Position and size: `[x y w h]`. |
-| `--topic` | ROS String topic to listen for JSON data updates. |
-| `--pipe` | Path to the FIFO pipe for video stream data. |
-| `--json` | Optional: One-shot JSON string for immediate display. |
-| `--keep-alive` | Seconds to hold the layer open after a one-shot update. |
-
-## Requirements
-- **bob_nviz**: ROS 2 node must be running (normally in `eva-nviz-streamer` container).
-- **FIFO Pipes**: Writing permissions to `/tmp/` for raw byte streaming.
-- **Pillow (PIL)**: Python library for image rendering and text overlays.
+### Script Arguments
+- `load_from_file.py --input <PATH>`: Load dashboard layout from JSON file
+- `clear_dashboard.py`: Clear all terminal content
+- `display_bitmap.py --id <TERMINAL_ID> --data <BASE64_DATA>`: Display bitmap data (for real-time metrics)
 
 ## Technical Details
-- **Rendering Strategy**: Uses `PIL` to render text/JSON onto a raw buffer equal to the target area size (No scaling to prevent artifacts).
-- **Communication**: Publishes layout metadata to `/eva/streamer/events` and streams raw RGB888 bytes into the specified Unix FIFO pipe.
-- **Orchestrator Integration**: The Orchestrator publishes its state to `/eva/orchestrator/status`, which this skill can visualize in real-time.
 
-## Best Practices
-- **Area Alignment**: Ensure the `w/h` in `--area` matches the `source_width/height` in the JSON configuration (performed automatically by these scripts).
-- **Clean Starts**: Use `clear_dashboard.py --all` before loading a completely new layout to prevent layer overlap issues.
-- **Manual Control**: While data topics are live, Eva can start/stop specialized monitors (like `display_status_terminal.py`) manually to focus on specific debugging info.
+### Architecture
+The dashboard uses a layered architecture:
+1. **Layout Manager**: Handles terminal positioning and sizing
+2. **Art-Observer Node**: Dedicated persistent process for artwork and image streaming
+3. **Reasoning Viz**: Separate node for the LLM thought stream visualization
+
+### Data Flow for Images
+```
+Image Source (e.g. Media Artist) → /root/eva/media/eva_artist.jpg → Art-Observer Node → Dashboard
+```
+
+## Examples
+
+### Correct Image Update Workflow
+```python
+# 1. Generate artwork or system image
+# Write result to /root/eva/media/eva_artist.jpg
+
+# 2. DONE.
+# The Art-Observer automatically detects the file change and streams it.
+```
+
+## Integration Notes
+- Art-Observer runs as part of `orch_eva.yaml` launch configuration
+- Positioned at [480, 20] with size [320, 320] by default
+- Streams at 5 FPS for smooth transitions
+- Uses RGB encoding for high-quality display
