@@ -8,3 +8,6 @@ pillow
 
 # Compatibility (Must be < 2.0 for ROS Humble cv_bridge)
 numpy<2.0
+flake8
+flake8-quotes
+flake8-import-order
