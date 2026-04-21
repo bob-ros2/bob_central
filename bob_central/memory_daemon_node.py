@@ -127,12 +127,13 @@ class MemoryDaemonNode(Node):
 
                 if not docs:
                     summary = f'Keine Rezente Historie für {username} gefunden.'
+                    insight = 'Erster Kontakt.'
                 else:
                     items = []
                     for doc in docs:
                         ts_str = doc.get('ts', '')
                         try:
-                            dt = datetime.fromisoformat(ts_str)
+                            dt = datetime.fromisoformat(ts_str.replace('Z', '+00:00'))
                             dt_display = dt.strftime('%d.%m. %H:%M')
                         except (ValueError, TypeError):
                             dt_display = '??.??. ??:??'
@@ -144,44 +145,79 @@ class MemoryDaemonNode(Node):
                                 event_type = m.get('value')
                                 break
 
-                        cleaned_data = content
-                        parts = content.split(' ')
-                        if len(parts) >= 3:
-                            if parts[0] in event_type or parts[0].startswith('event'):
-                                cleaned_data = ' '.join(parts[3:]).strip()
-
-                        if event_type == 'event_join':
-                            cleaned_data = 'ist dem Channel beigetreten.'
-                        elif event_type == 'event_ready':
-                            cleaned_data = 'ist startklar (System Ready).'
-                        elif event_type == 'eventsub_channelfollow':
-                            cleaned_data = 'ist ein neuer Follower! 🎉'
-                        elif event_type == 'eventsub_subscription':
-                            cleaned_data = 'hat den Kanal abonniert! 💎'
-                        elif event_type == 'eventsub_raid':
-                            cleaned_data = 'hat einen RAID gestartet! ⚔️'
-
-                        if not cleaned_data:
-                            cleaned_data = content
-
+                        cleaned_data = self.clean_content(content, event_type)
                         items.append(f'- ({dt_display}): {cleaned_data}')
 
                     items.reverse()
                     summary = '\n'.join(items)
 
+                    # --- DEEP DIVE: Fetch Oldest & Meta Info ---
+                    insight = self.fetch_user_insights(username)
+
                 # Update Cache
+                full_context = f"{summary}\n[Long-term Insight: {insight}]"
                 self.user_cache[username] = {
-                    'summary': summary,
+                    'summary': full_context,
                     'timestamp': time.time()
                 }
 
-                self.broadcast_context(username, summary)
+                self.broadcast_context(username, full_context)
             else:
                 log_err = f'CouchDB Query failed ({response.status_code}): {response.text}'
                 self.get_logger().error(log_err)
-
         except Exception as e:
             self.get_logger().error(f'Error fetching user history: {e}')
+
+    def clean_content(self, content, event_type):
+        """Sanitize raw event data into human-readable strings."""
+        cleaned_data = content
+        parts = content.split(' ')
+        if len(parts) >= 3:
+            if parts[0] in event_type or parts[0].startswith('event'):
+                cleaned_data = ' '.join(parts[3:]).strip()
+
+        if event_type == 'event_join':
+            cleaned_data = 'ist dem Channel beigetreten.'
+        elif event_type == 'event_ready':
+            cleaned_data = 'ist startklar (System Ready).'
+        elif event_type == 'eventsub_channelfollow':
+            cleaned_data = 'ist ein neuer Follower! 🎉'
+        elif event_type == 'eventsub_subscription':
+            cleaned_data = 'hat den Kanal abonniert! 💎'
+        elif event_type == 'eventsub_raid':
+            cleaned_data = 'hat einen RAID gestartet! ⚔️'
+
+        return cleaned_data if cleaned_data else content
+
+    def fetch_user_insights(self, username):
+        """Perform a second query to get the oldest message and a random classic one."""
+        try:
+            # Query for the EARLIEST message
+            query_oldest = {
+                'selector': {
+                    '$and': [
+                        {'metadata': {'$elemMatch': {'key': 'user_name', 'value': username}}},
+                        {'metadata': {'$elemMatch': {'key': 'type', 'value': 'event_message'}}},
+                        {'ts': {'$gt': None}}
+                    ]
+                },
+                'sort': [{'ts': 'asc'}],
+                'limit': 1
+            }
+            search_url = f'{self.db_url}/_find'
+            res = requests.post(search_url, json=query_oldest, timeout=2.0)
+            
+            insight = "Stammgast."
+            if res.status_code == 200:
+                docs = res.json().get('docs', [])
+                if docs:
+                    ts = docs[0].get('ts', '').split('T')[0]
+                    msg = docs[0].get('data', '...')
+                    insight = f"Bekannt seit {ts}. Erste Nachricht: '{msg[:40]}...'"
+            return insight
+        except Exception as e:
+            self.get_logger().warn(f'Could not fetch sub-insights for {username}: {e}')
+            return "Wiederkehrender User."
 
     def broadcast_context(self, username, summary):
         """Publish the context for the orchestrator to consume."""
