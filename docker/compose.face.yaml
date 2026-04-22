@@ -27,3 +27,4 @@ services:
 
 volumes:
   face-models:
+    external: true
