@@ -22,4 +22,8 @@ services:
                ros2 launch bob_launch generic.launch.py config:=/ros2_ws/src/bob_central/launch/face_launch.yaml"
     volumes:
       - ../launch/face_launch.yaml:/ros2_ws/src/bob_central/launch/face_launch.yaml
+      - face-models:/models
     restart: unless-stopped
+
+volumes:
+  face-models:
