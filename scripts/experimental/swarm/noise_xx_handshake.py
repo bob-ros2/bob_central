@@ -69,9 +69,8 @@ class SymmetricState:
         temp = hmac.new(self.ck, b'', hashlib.sha256).digest()
         out1 = hmac.new(temp, b'\x01', hashlib.sha256).digest()
         out2 = hmac.new(temp, out1 + b'\x02', hashlib.sha256).digest()
-        c1 = TransportCipher(out1)
-        c2 = TransportCipher(out2)
-        return c1, c2
+        # In Noise XX: out1 is sender key (initiator), out2 is receiver key
+        return TransportCipher(out1), TransportCipher(out2)
 
 
 class TransportCipher:
@@ -198,7 +197,11 @@ class NoiseXXHandshake:
         return s_bytes, plaintext
 
     def finalize(self) -> Tuple[TransportCipher, TransportCipher]:
-        return self.symmetric.split()
+        c1, c2 = self.symmetric.split()
+        if self.initiator:
+            return c1, c2  # send, receive
+        else:
+            return c2, c1  # send, receive
 
 
 def perform_xx_handshake(sock, timeout: float = 10.0) -> Optional[Tuple]:
