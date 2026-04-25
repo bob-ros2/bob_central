@@ -547,7 +547,8 @@ class SwarmCoordinatorNode(Node):
                     })
                     self.security_pub.publish(alert_msg)
                     self.get_logger().warn(
-                        f'SECURITY ALERT: Tunnel established with external peer {finding.get("host")}!'
+                        'SECURITY ALERT: Tunnel established with external peer '
+                        f'{finding.get("host")}!'
                     )
 
                 # Check for unauthorized protocols
