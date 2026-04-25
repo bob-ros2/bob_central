@@ -25,8 +25,8 @@ import os
 import random
 import sys
 
-import rclpy
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
+import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 

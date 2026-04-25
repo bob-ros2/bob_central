@@ -27,8 +27,8 @@ import re
 import time
 
 import rclpy
-import requests
 from rclpy.node import Node
+import requests
 from std_msgs.msg import String
 
 
@@ -156,7 +156,7 @@ class MemoryDaemonNode(Node):
                     insight = self.fetch_user_insights(username)
 
                 # Update Cache
-                full_context = f"{summary}\n[Long-term Insight: {insight}]"
+                full_context = f'{summary}\n[Long-term Insight: {insight}]'
                 self.user_cache[username] = {
                     'summary': full_context,
                     'timestamp': time.time()

@@ -187,7 +187,7 @@ class SwarmScoutNode(Node):
             if sock:
                 try:
                     sock.close()
-                except:
+                except Exception:
                     pass
 
         return result

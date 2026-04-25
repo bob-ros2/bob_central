@@ -34,11 +34,11 @@ import os
 import random
 import subprocess
 import time
-import urllib.request
 from typing import Optional
+import urllib.request
 
-import rclpy
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
+import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 
