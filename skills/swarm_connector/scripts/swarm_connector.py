@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """Swarm Connector Skill - External P2P network interface for Eva."""
-import json, socket, struct, hashlib, time, os, sys
+import hashlib
+import json
+import os
+import socket
+import sys
+import time
 
 sys.path.insert(0, '/ros2_ws/src/bob_central/scripts/experimental/swarm')
 

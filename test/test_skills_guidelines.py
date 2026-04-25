@@ -100,8 +100,8 @@ def get_all_scripts():
             continue
         for fname in os.listdir(scripts_dir):
             fpath = os.path.join(scripts_dir, fname)
-            # Skip Python module files - they are imported, not executed directly
-            if fname == '__init__.py':
+            # Skip Python module files and hidden/meta files (like .ament_ignore)
+            if fname == '__init__.py' or fname.startswith('.'):
                 continue
             if os.path.isfile(fpath):
                 scripts.append((skill, fname, fpath))
