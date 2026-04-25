@@ -206,18 +206,18 @@ class MemoryDaemonNode(Node):
             }
             search_url = f'{self.db_url}/_find'
             res = requests.post(search_url, json=query_oldest, timeout=2.0)
-            
-            insight = "Stammgast."
+
+            insight = 'Stammgast.'
             if res.status_code == 200:
                 docs = res.json().get('docs', [])
                 if docs:
                     ts = docs[0].get('ts', '').split('T')[0]
                     msg = docs[0].get('data', '...')
-                    insight = f"Bekannt seit {ts}. Erste Nachricht: '{msg[:50]}...'"
+                    insight = f'Bekannt seit {ts}. Erste Nachricht: \'{msg[:50]}...\''
             return insight
         except Exception as e:
             self.get_logger().warn(f'Could not fetch sub-insights for {username}: {e}')
-            return "Wiederkehrender User."
+            return 'Wiederkehrender User.'
 
     def search_user_history(self, username, query=None, limit=10):
         """Search the entire CouchDB history for a specific user and optional keywords."""
@@ -225,19 +225,19 @@ class MemoryDaemonNode(Node):
             selector = {
                 'metadata': {'$elemMatch': {'key': 'user_name', 'value': { '$regex': f'(?i)^{username}$' }}}
             }
-            
+
             if query:
                 selector['data'] = {'$regex': f'(?i){query}'}
-                
+
             query_json = {
                 'selector': selector,
                 'sort': [{'ts': 'desc'}],
                 'limit': limit
             }
-            
+
             search_url = f'{self.db_url}/_find'
             res = requests.post(search_url, json=query_json, timeout=3.0)
-            
+
             if res.status_code == 200:
                 return res.json().get('docs', [])
             return []

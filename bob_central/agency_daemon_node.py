@@ -188,26 +188,26 @@ class AgencyDaemonNode(Node):
         """Publish idle/agency status as diagnostics."""
         diag_msg = DiagnosticArray()
         diag_msg.header.stamp = self.get_clock().now().to_msg()
-        
+
         status = DiagnosticStatus()
         status.name = 'agency_daemon: Curiosity & Impulse'
-        
+
         now = self.get_clock().now()
         elapsed = (now - self.last_activity_ts).nanoseconds / 1e9
-        
+
         if elapsed > self.idle_threshold:
             status.level = DiagnosticStatus.WARN
             status.message = f'Eva is IDLE ({elapsed:.1f}s)'
         else:
             status.level = DiagnosticStatus.OK
             status.message = f'Eva is ACTIVE (Recently engaged)'
-            
+
         status.values = [
             KeyValue(key='Idle Time', value=f'{elapsed:.1f}s'),
             KeyValue(key='Threshold', value=f'{self.idle_threshold:.1f}s'),
             KeyValue(key='Last Activity', value=str(self.last_activity_ts.nanoseconds))
         ]
-        
+
         diag_msg.status.append(status)
         self.diag_pub.publish(diag_msg)
 

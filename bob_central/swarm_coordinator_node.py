@@ -394,22 +394,22 @@ class SwarmCoordinatorNode(Node):
         """Publish swarm health as ROS 2 diagnostics."""
         diag_msg = DiagnosticArray()
         diag_msg.header.stamp = self.get_clock().now().to_msg()
-        
+
         # 1. Swarm Coordinator Status
         status = DiagnosticStatus()
         status.name = 'eva_swarm_coordinator: Mesh Status'
         status.hardware_id = self.router.peer_id
-        
+
         peers_known = len(self.router.peers)
         active_routes = len(self.router.routes)
-        
+
         if peers_known == 0:
             status.level = DiagnosticStatus.WARN
             status.message = 'No mesh peers discovered yet'
         else:
             status.level = DiagnosticStatus.OK
             status.message = f'Mesh active ({peers_known} peers, {active_routes} routes)'
-            
+
         status.values = [
             KeyValue(key='Peer ID', value=self.router.peer_id),
             KeyValue(key='Peers Known', value=str(peers_known)),
@@ -527,7 +527,7 @@ class SwarmCoordinatorNode(Node):
                 self.get_logger().info(f'Task {task_id} acknowledged as completed')
         except json.JSONDecodeError:
             pass
-            
+
     def scout_report_callback(self, msg):
         """Monitor scout reports for security-relevant events."""
         try:
@@ -546,8 +546,10 @@ class SwarmCoordinatorNode(Node):
                         'action': 'Tunnel Established - Monitoring Traffic'
                     })
                     self.security_pub.publish(alert_msg)
-                    self.get_logger().warn(f"SECURITY ALERT: Tunnel established with external peer {finding.get('host')}!")
-                
+                    self.get_logger().warn(
+                        f"SECURITY ALERT: Tunnel established with external peer {finding.get('host')}!"
+                    )
+
                 # Check for unauthorized protocols
                 for proto in finding.get('protocols', []):
                     if not any(p in proto for p in self.allowed_protocols):

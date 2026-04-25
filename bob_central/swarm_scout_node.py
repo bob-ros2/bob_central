@@ -256,14 +256,14 @@ class SwarmScoutNode(Node):
         """Publish node status as ROS 2 diagnostics."""
         diag_msg = DiagnosticArray()
         diag_msg.header.stamp = self.get_clock().now().to_msg()
-        
+
         status = DiagnosticStatus()
         status.name = 'eva_swarm_scout: External Connectivity'
         status.hardware_id = self.session_id
-        
+
         reachable_count = sum(1 for f in findings if f.get('reachable'))
         noise_success = sum(1 for f in findings if f.get('noise_handshake'))
-        
+
         if reachable_count == 0:
             status.level = DiagnosticStatus.ERROR
             status.message = 'No bootstrap nodes reachable'
@@ -273,14 +273,14 @@ class SwarmScoutNode(Node):
         else:
             status.level = DiagnosticStatus.OK
             status.message = f'Connectivity active ({reachable_count} nodes)'
-            
+
         status.values = [
             KeyValue(key='Scout Count', value=str(self.scout_count)),
             KeyValue(key='Reachable Nodes', value=str(reachable_count)),
             KeyValue(key='Noise Handshakes', value=str(noise_success)),
             KeyValue(key='Session ID', value=self.session_id)
         ]
-        
+
         diag_msg.status.append(status)
         self.diag_pub.publish(diag_msg)
 
