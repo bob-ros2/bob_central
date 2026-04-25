@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+#
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,15 +20,15 @@ Memory Daemon Node - Eva's Volatile Short-Term Memory Hub.
 Automatically fetches user history from CouchDB when a query is detected.
 """
 
-from datetime import datetime
 import json
 import os
 import re
 import time
+from datetime import datetime
 
 import rclpy
-from rclpy.node import Node
 import requests
+from rclpy.node import Node
 from std_msgs.msg import String
 
 
@@ -245,10 +246,9 @@ class MemoryDaemonNode(Node):
             return []
 
     def broadcast_context(self, username, summary):
-        """Publish the context for the orchestrator to consume with high priority formatting."""
-        # Force the LLM to see this as a primary knowledge source
-        enhanced_summary = f"[REMARK: This user is '{username}'. Historical context from CouchDB: {summary}]"
-        
+        """Publish the context for the orchestrator to consume with high priority."""
+        enhanced_summary = f"[REMARK: This user is '{username}'. Historical context: {summary}]"
+
         context_data = {
             'user_name': username,
             'context': enhanced_summary,

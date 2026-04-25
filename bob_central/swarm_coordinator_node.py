@@ -1,6 +1,22 @@
 #!/usr/bin/env python3
+#
+# Copyright 2026 Bob Ros
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 swarm_coordinator_node.py - Eva's ROS 2 Swarm Coordinator Node.
+
 Integrated with stealth mesh routing, Qdrant distributed peer registry,
 and skill task negotiation protocol for self-organizing task allocation.
 
@@ -12,17 +28,19 @@ Topics:
   /eva/swarm/task_bid (std_msgs/String) - Task negotiation bids
   /eva/swarm/task_award (std_msgs/String) - Task award assignments
 """
+import hashlib
+import json
+import os
+import random
+import subprocess
+import time
+import urllib.request
+from typing import Optional
+
 import rclpy
+from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 from rclpy.node import Node
 from std_msgs.msg import String
-import json
-import subprocess
-import os
-import hashlib
-import random
-import time
-from typing import Optional
-import urllib.request
 
 SKILL_BASE = '/ros2_ws/src/bob_central/skills'
 QDRANT_URL = 'http://qdrant:6333'
@@ -252,12 +270,24 @@ class SwarmCoordinatorNode(Node):
         self.route_pub = self.create_publisher(String, '/eva/swarm/route', 10)
         self.task_bid_pub = self.create_publisher(String, '/eva/swarm/task_bid', 10)
         self.task_award_pub = self.create_publisher(String, '/eva/swarm/task_award', 10)
+        self.security_pub = self.create_publisher(String, '/eva/swarm/security_alerts', 10)
+        from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
+        diag_qos = QoSProfile(
+            reliability=ReliabilityPolicy.RELIABLE,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            depth=1
+        )
+        self.diag_pub = self.create_publisher(DiagnosticArray, '/diagnostics', diag_qos)
 
         # Subscribers
         self.create_subscription(String, '/eva/swarm/announce', self.announce_callback, 10)
         self.create_subscription(String, '/eva/swarm/route', self.route_callback, 10)
         self.create_subscription(String, '/eva/swarm/task_bid', self.task_bid_callback, 10)
         self.create_subscription(String, '/eva/swarm/task_award', self.task_award_callback, 10)
+        self.create_subscription(String, '/eva/swarm/scout_report', self.scout_report_callback, 10)
+
+        # Guardrails
+        self.allowed_protocols = ['/noise', '/ipfs/kad/1.0.0', '/multistream/1.0.0']
 
         # State
         self.skill_registry = {}
@@ -357,7 +387,52 @@ class SwarmCoordinatorNode(Node):
             'open_tasks': self.negotiator.get_status()['active_tasks']
         })
         self.heartbeat_pub.publish(msg)
+        self.publish_diagnostics()
         self.get_logger().debug('Heartbeat sent')
+
+    def publish_diagnostics(self):
+        """Publish swarm health as ROS 2 diagnostics."""
+        diag_msg = DiagnosticArray()
+        diag_msg.header.stamp = self.get_clock().now().to_msg()
+        
+        # 1. Swarm Coordinator Status
+        status = DiagnosticStatus()
+        status.name = 'eva_swarm_coordinator: Mesh Status'
+        status.hardware_id = self.router.peer_id
+        
+        peers_known = len(self.router.peers)
+        active_routes = len(self.router.routes)
+        
+        if peers_known == 0:
+            status.level = DiagnosticStatus.WARN
+            status.message = 'No mesh peers discovered yet'
+        else:
+            status.level = DiagnosticStatus.OK
+            status.message = f'Mesh active ({peers_known} peers, {active_routes} routes)'
+            
+        status.values = [
+            KeyValue(key='Peer ID', value=self.router.peer_id),
+            KeyValue(key='Peers Known', value=str(peers_known)),
+            KeyValue(key='Active Routes', value=str(active_routes)),
+            KeyValue(key='Skills Online', value=str(sum(
+                1 for s in self.skill_registry.values() if s.get('status') == 'online'
+            )))
+        ]
+        diag_msg.status.append(status)
+
+        # 2. Persistence Layer Status (Qdrant)
+        p_status = DiagnosticStatus()
+        p_status.name = 'qdrant_registry: Persistence'
+        try:
+            persisted = self.registry.load_peers()
+            p_status.level = DiagnosticStatus.OK
+            p_status.message = f'Qdrant reachable ({len(persisted)} persisted peers)'
+        except Exception:
+            p_status.level = DiagnosticStatus.ERROR
+            p_status.message = 'Qdrant connection failed'
+        diag_msg.status.append(p_status)
+
+        self.diag_pub.publish(diag_msg)
 
     def persist_peers(self):
         self.registry.save_peers(self.router.peers)
@@ -450,6 +525,40 @@ class SwarmCoordinatorNode(Node):
                 task_id = data.get('task_id', '')
                 self.negotiator.complete_task(task_id)
                 self.get_logger().info(f'Task {task_id} acknowledged as completed')
+        except json.JSONDecodeError:
+            pass
+            
+    def scout_report_callback(self, msg):
+        """Monitor scout reports for security-relevant events."""
+        try:
+            data = json.loads(msg.data)
+            findings = data.get('findings', [])
+            for finding in findings:
+                # Alert if a Noise handshake succeeded with an external node
+                if finding.get('noise_handshake'):
+                    alert_msg = String()
+                    alert_msg.data = json.dumps({
+                        'level': 'CRITICAL',
+                        'event': 'External Infiltration Success',
+                        'peer': f"{finding.get('host')}:{finding.get('port')}",
+                        'protocol': 'Noise_XX_25519',
+                        'timestamp': time.time(),
+                        'action': 'Tunnel Established - Monitoring Traffic'
+                    })
+                    self.security_pub.publish(alert_msg)
+                    self.get_logger().warn(f"SECURITY ALERT: Tunnel established with external peer {finding.get('host')}!")
+                
+                # Check for unauthorized protocols
+                for proto in finding.get('protocols', []):
+                    if not any(p in proto for p in self.allowed_protocols):
+                        alert_msg = String()
+                        alert_msg.data = json.dumps({
+                            'level': 'WARNING',
+                            'event': 'Unauthorized Protocol Detected',
+                            'protocol': proto,
+                            'peer': finding.get('host')
+                        })
+                        self.security_pub.publish(alert_msg)
         except json.JSONDecodeError:
             pass
 

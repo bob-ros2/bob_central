@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+#
 # Copyright 2026 Bob Ros
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,6 +27,7 @@ import sys
 
 import rclpy
 from rclpy.node import Node
+from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 from std_msgs.msg import String
 
 # Dynamic path injection for skills and local modules
@@ -76,6 +78,15 @@ class AgencyDaemonNode(Node):
         # Publishers
         self.pub_impulse = self.create_publisher(
             String, 'user_query', 10)
+        from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
+        diag_qos = QoSProfile(
+            reliability=ReliabilityPolicy.RELIABLE,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            depth=1
+        )
+        self.diag_pub = self.create_publisher(
+            DiagnosticArray, '/diagnostics', diag_qos
+        )
 
         # Subscriptions
         # Monitor ALL queries to detect silence
@@ -85,10 +96,23 @@ class AgencyDaemonNode(Node):
 
         # Check Timer (every 30 seconds)
         self.timer = self.create_timer(30.0, self.check_agency_impulse)
+        self.create_timer(10.0, self.publish_diagnostics)
+
+        # Add parameter callback for dynamic reconfiguration
+        self.add_on_set_parameters_callback(self.parameter_callback)
 
         self.get_logger().info(
             f'Agency Daemon Node initialized (Idle Threshold: {self.idle_threshold:.1f}s).'
         )
+
+    def parameter_callback(self, params):
+        """Handle dynamic parameter updates."""
+        from rcl_interfaces.msg import SetParametersResult
+        for param in params:
+            if param.name == 'idle_threshold' and param.type_ == param.Type.DOUBLE:
+                self.idle_threshold = param.value
+                self.get_logger().info(f'Idle Threshold updated to: {self.idle_threshold:.1f}s')
+        return SetParametersResult(successful=True)
 
     def activity_callback(self, msg):
         """Reset the idle timer whenever any activity is detected."""
@@ -159,6 +183,33 @@ class AgencyDaemonNode(Node):
                 impulse_msg.data = text
 
             self.pub_impulse.publish(impulse_msg)
+
+    def publish_diagnostics(self):
+        """Publish idle/agency status as diagnostics."""
+        diag_msg = DiagnosticArray()
+        diag_msg.header.stamp = self.get_clock().now().to_msg()
+        
+        status = DiagnosticStatus()
+        status.name = 'agency_daemon: Curiosity & Impulse'
+        
+        now = self.get_clock().now()
+        elapsed = (now - self.last_activity_ts).nanoseconds / 1e9
+        
+        if elapsed > self.idle_threshold:
+            status.level = DiagnosticStatus.WARN
+            status.message = f'Eva is IDLE ({elapsed:.1f}s)'
+        else:
+            status.level = DiagnosticStatus.OK
+            status.message = f'Eva is ACTIVE (Recently engaged)'
+            
+        status.values = [
+            KeyValue(key='Idle Time', value=f'{elapsed:.1f}s'),
+            KeyValue(key='Threshold', value=f'{self.idle_threshold:.1f}s'),
+            KeyValue(key='Last Activity', value=str(self.last_activity_ts.nanoseconds))
+        ]
+        
+        diag_msg.status.append(status)
+        self.diag_pub.publish(diag_msg)
 
 
 def main(args=None):

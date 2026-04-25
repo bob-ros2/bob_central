@@ -1,23 +1,40 @@
 #!/usr/bin/env python3
+#
+# Copyright 2026 Bob Ros
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 swarm_scout_node.py - Eva's External Swarm Scout Daemon.
+
 Periodically probes public bootstrap nodes for peer discovery,
 attempts Noise XX handshake, reports findings to Qdrant.
 
 Topics:
   /eva/swarm/scout_report (std_msgs/String) - Scout findings
 """
+import hashlib
+import json
+import os
+import socket
+import sys
+import time
+import urllib.request
+
 import rclpy
+from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 from rclpy.node import Node
 from std_msgs.msg import String
-import json
-import socket
-import struct
-import hashlib
-import time
-import os
-import urllib.request
-import sys
 
 QDRANT_URL = 'http://qdrant:6333'
 BOOTSTRAP_NODES = [
@@ -41,7 +58,14 @@ class SwarmScoutNode(Node):
     def __init__(self):
         super().__init__('eva_swarm_scout')
 
+        from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
+        diag_qos = QoSProfile(
+            reliability=ReliabilityPolicy.RELIABLE,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            depth=1
+        )
         self.report_pub = self.create_publisher(String, '/eva/swarm/scout_report', 10)
+        self.diag_pub = self.create_publisher(DiagnosticArray, '/diagnostics', diag_qos)
 
         self.session_id = hashlib.sha256(os.urandom(16)).hexdigest()[:12]
         self.scout_count = 0
@@ -225,7 +249,40 @@ class SwarmScoutNode(Node):
             'findings': findings
         })
         self.report_pub.publish(msg)
+        self.publish_diagnostics(findings)
         self.get_logger().info(f'Scout #{self.scout_count} complete')
+
+    def publish_diagnostics(self, findings):
+        """Publish node status as ROS 2 diagnostics."""
+        diag_msg = DiagnosticArray()
+        diag_msg.header.stamp = self.get_clock().now().to_msg()
+        
+        status = DiagnosticStatus()
+        status.name = 'eva_swarm_scout: External Connectivity'
+        status.hardware_id = self.session_id
+        
+        reachable_count = sum(1 for f in findings if f.get('reachable'))
+        noise_success = sum(1 for f in findings if f.get('noise_handshake'))
+        
+        if reachable_count == 0:
+            status.level = DiagnosticStatus.ERROR
+            status.message = 'No bootstrap nodes reachable'
+        elif noise_success == 0 and any(f.get('noise_available') for f in findings):
+            status.level = DiagnosticStatus.WARN
+            status.message = 'Noise handshakes failing'
+        else:
+            status.level = DiagnosticStatus.OK
+            status.message = f'Connectivity active ({reachable_count} nodes)'
+            
+        status.values = [
+            KeyValue(key='Scout Count', value=str(self.scout_count)),
+            KeyValue(key='Reachable Nodes', value=str(reachable_count)),
+            KeyValue(key='Noise Handshakes', value=str(noise_success)),
+            KeyValue(key='Session ID', value=self.session_id)
+        ]
+        
+        diag_msg.status.append(status)
+        self.diag_pub.publish(diag_msg)
 
 
 def main(args=None):

@@ -220,3 +220,17 @@
     - info
     - -r
     - *eva_ns
+
+# Diagnostics: Health Monitoring Aggregator
+- name: diag_aggregator
+  package: diagnostic_aggregator
+  executable: aggregator_node
+  remappings:
+    - ['diagnostics', '/diagnostics']
+  parameters:
+    - ['//PKGSHARE:bob_central/config/diagnostics.yaml']
+  arguments:
+    - --ros-args
+    - --log-level
+    - warn
+
