@@ -46,7 +46,8 @@ BOOTSTRAP_NODES = [
 NOISE_AVAILABLE = False
 try:
     sys.path.insert(0, '/ros2_ws/src/bob_central/scripts/experimental/swarm')
-    from noise_xx_handshake import perform_xx_handshake
+    from noise_xx_handshake import NoiseXXHandshake, perform_xx_handshake
+    from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
     NOISE_AVAILABLE = True
 except ImportError:
     pass
@@ -149,15 +150,47 @@ class SwarmScoutNode(Node):
                 result['protocols'].append('noise')
                 result['noise_available'] = True
 
-                # Attempt Noise XX handshake
+                # Attempt libp2p Noise Handshake
                 if NOISE_AVAILABLE:
                     try:
-                        hs_result = perform_xx_handshake(sock, timeout=5.0)
-                        if hs_result:
-                            enc, dec = hs_result
-                            result['noise_handshake'] = True
-                            result['enc_key'] = enc.k[:8].hex()
-                            result['dec_key'] = dec.k[:8].hex()
+                        # Protocol: Initiator sends msg1, then receives msg2, then sends msg3
+                        # Every msg is framed with a uvarint length header
+                        static_private = X25519PrivateKey.generate()
+                        initiator = NoiseXXHandshake(initiator=True)
+                        initiator.set_static_keypair(static_private)
+                        
+                        # 1. Send Message 1
+                        msg1 = initiator.write_message_1()
+                        sock.send(self._varint_encode(len(msg1)) + msg1)
+                        
+                        # 2. Recv Message 2
+                        # Read uvarint length
+                        data = sock.recv(1)
+                        while True:
+                            val, consumed = 0, 0
+                            for i, b in enumerate(data):
+                                val |= (b & 0x7F) << (7 * i)
+                                if not (b & 0x80):
+                                    consumed = i + 1
+                                    break
+                            if consumed > 0: break
+                            data += sock.recv(1)
+                        msg2_len = val
+                        msg2 = sock.recv(msg2_len)
+                        initiator.read_message_2(msg2)
+                        
+                        # 3. Send Message 3
+                        # We send an empty libp2p identity payload (0x0a 0x00 is a valid empty protobuf)
+                        dummy_identity = b'\x0a\x00'
+                        msg3 = initiator.write_message_3(payload=dummy_identity)
+                        sock.send(self._varint_encode(len(msg3)) + msg3)
+                        
+                        # Finalize
+                        enc, dec = initiator.finalize()
+                        result['noise_handshake'] = True
+                        result['enc_key'] = enc.k[:8].hex()
+                        result['dec_key'] = dec.k[:8].hex()
+                        
                     except Exception as e:
                         result['noise_error'] = str(e)
 

@@ -124,9 +124,7 @@ class NoiseXXHandshake:
     def write_message_1(self) -> bytes:
         e_bytes = self._serialize_public(self.ephemeral_public)
         self.symmetric.mix_hash(e_bytes)
-        msg = e_bytes
-        framed = struct.pack('>H', len(msg)) + msg
-        return framed
+        return e_bytes
 
     def read_message_1(self, data: bytes) -> bytes:
         if len(data) < 32:
@@ -138,7 +136,7 @@ class NoiseXXHandshake:
         self.symmetric.mix_hash(e_bytes)
         return e_bytes
 
-    def write_message_2(self) -> bytes:
+    def write_message_2(self, payload: bytes = b'') -> bytes:
         self.ephemeral_private = X25519PrivateKey.generate()
         self.ephemeral_public = self.ephemeral_private.public_key()
         e_bytes = self._serialize_public(self.ephemeral_public)
@@ -149,10 +147,8 @@ class NoiseXXHandshake:
         encrypted_s = self.symmetric.encrypt_and_hash(s_bytes)
         es = self._dh(self.static_private, self.re)
         self.symmetric.mix_key(es)
-        encrypted_payload = self.symmetric.encrypt_and_hash(b'')
-        msg = e_bytes + encrypted_s + encrypted_payload
-        framed = struct.pack('>H', len(msg)) + msg
-        return framed
+        encrypted_payload = self.symmetric.encrypt_and_hash(payload)
+        return e_bytes + encrypted_s + encrypted_payload
 
     def read_message_2(self, data: bytes) -> Tuple[bytes, bytes, bytes]:
         offset = 0
@@ -173,15 +169,13 @@ class NoiseXXHandshake:
         plaintext = self.symmetric.decrypt_and_hash(encrypted_payload)
         return e_bytes, s_bytes, plaintext
 
-    def write_message_3(self) -> bytes:
+    def write_message_3(self, payload: bytes = b'') -> bytes:
         s_bytes = self._serialize_public(self.static_public)
         encrypted_s = self.symmetric.encrypt_and_hash(s_bytes)
         se = self._dh(self.static_private, self.re)
         self.symmetric.mix_key(se)
-        encrypted_payload = self.symmetric.encrypt_and_hash(b'')
-        msg = encrypted_s + encrypted_payload
-        framed = struct.pack('>H', len(msg)) + msg
-        return framed
+        encrypted_payload = self.symmetric.encrypt_and_hash(payload)
+        return encrypted_s + encrypted_payload
 
     def read_message_3(self, data: bytes) -> Tuple[bytes, bytes]:
         offset = 0
@@ -210,8 +204,12 @@ def perform_xx_handshake(sock, timeout: float = 10.0) -> Optional[Tuple]:
         static_private = X25519PrivateKey.generate()
         initiator = NoiseXXHandshake(initiator=True)
         initiator.set_static_keypair(static_private)
+        
+        # Message 1
         msg1 = initiator.write_message_1()
-        sock.sendall(msg1)
+        sock.sendall(struct.pack('>H', len(msg1)) + msg1)
+        
+        # Message 2
         header = sock.recv(2)
         if not header or len(header) < 2:
             return None
@@ -219,15 +217,16 @@ def perform_xx_handshake(sock, timeout: float = 10.0) -> Optional[Tuple]:
         msg2 = b''
         while len(msg2) < msg2_len:
             chunk = sock.recv(min(4096, msg2_len - len(msg2)))
-            if not chunk:
-                break
+            if not chunk: break
             msg2 += chunk
         initiator.read_message_2(msg2)
+        
+        # Message 3
         msg3 = initiator.write_message_3()
-        sock.sendall(msg3)
-        enc, dec = initiator.finalize()
-        return (enc, dec)
-    except Exception as e:
+        sock.sendall(struct.pack('>H', len(msg3)) + msg3)
+        
+        return initiator.finalize()
+    except Exception:
         return None
 
 
