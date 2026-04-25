@@ -49,15 +49,15 @@
     - --log-level
     - debug
     - -p
-    - cmap_name:=turbo
+    - cmap_name:=RdYlGn
     - -p
-    - buffer_size:=100
+    - temperature:=1.7
     - -p
-    - smooth_alpha:=0.4
+    - buffer_size:=80
     - -p 
-    - sensitivity:=3.0
+    - smooth_alpha:=0.5
     - -p 
-    - buffer_size:=150
+    - sensitivity:=2.0
     - -p
     - model_dir:=/models
 
@@ -70,8 +70,11 @@
     - *face_ns
     - -r
     - spoken_text:=llm_stream
+    - -r 
+    - speaking_flag:=/eva/tts/speaking_flag
     - -p
-    - idle_sequences:=Calm,Smile,Thinking,Agree,Busy,Idle
+    #- idle_sequences:=Calm,Smile,Thinking,Agree,Busy,Idle
+    - 'idle_sequences:=Smile,Thinking,Calm'
     - -p
     - speaking_sequences:=Speaking
 

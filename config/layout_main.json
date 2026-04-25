@@ -47,7 +47,7 @@
   {
     "id": "face_area",
     "type": "MarkerLayer",
-    "topic": "/eva/face/marker_array_raw",
+    "topic": "/eva/face/marker_array",
     "area": [
       480,
       20,

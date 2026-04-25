@@ -121,20 +121,6 @@
     - -r
     - *eva_ns
 
-# Dashboard Visualization: LLM Reasoning HUD
-#- name: reasoning_viz
-#  package: bob_central
-#  executable: reasoning_viz
-#  output: screen
-#  parameters:
-#    width: 400
-#    height: 300
-#    topic_out: "/nviz/reasoning_bitmap"
-#  arguments:
-#    - --ros-args
-#    - -r
-#    - *eva_ns
-
 # Dashboard Visualization: Artwork Background
 - name: art_observer
   package: bob_central
@@ -184,7 +170,7 @@
   respawn: true
   output: screen
   parameters:
-    idle_threshold: 600.0
+    idle_threshold: 900.0
   arguments:
     - --ros-args
     - --log-level
@@ -208,3 +194,29 @@
     - "audio_out:=/eva/streamer/in2"
     - -r
     - *synth_ns
+
+# Swarm Coordinator: Decentralized Mesh Orchestration
+- name: swarm_coordinator
+  package: bob_central
+  executable: swarm_coordinator
+  respawn: true
+  output: screen
+  arguments:
+    - --ros-args
+    - --log-level
+    - info
+    - -r
+    - *eva_ns
+
+# Swarm Scout: External Network Reconnaissance
+- name: swarm_scout
+  package: bob_central
+  executable: swarm_scout
+  respawn: true
+  output: screen
+  arguments:
+    - --ros-args
+    - --log-level
+    - info
+    - -r
+    - *eva_ns

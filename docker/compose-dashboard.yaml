@@ -20,6 +20,7 @@ services:
       - WEBVIDEO_FPS=5
       - WEBVIDEO_FIFO_PATH=/tmp/smallchat_pipe
       - WEBVIDEO_FIFO_ALPHA=False
+      - WEBVIDEO_MAX_TEXT_LENGTH=4096
       # Paths (Matched to internal volume mount)
       - WEBVIDEO_UI_PATH=/ros2_ws/src/bob_av_tools/bob_av_tools/smallchat.html
 

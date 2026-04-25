@@ -10,13 +10,32 @@ category: "visualization"
 Provide a unified interface for managing the visual dashboard layout and content display.
 
 ## Description
+## IMPORTANT ARCHITECTURAL RULE
+
+**Image Rendering Policy**: The Art-Observer node has EXCLUSIVE responsibility for rendering images to the dashboard.
+
+### CORRECT WORKFLOW
+1. Generate your image (via `media_artist` or other means)
+2. Write result to `/root/eva/media/eva_artist.jpg`
+3. DONE. Art-Observer automatically streams it.
+
+### FORBIDDEN
+- Never create `display_image.py` or similar scripts
+- Never bypass Art-Observer for image rendering
+- Never publish images directly to terminals
+
+### ALLOWED  
+- `display_bitmap.py` for real-time data visualization (8-bit grayscale only)
+- Layout management via `load_from_file.py`, `clear_dashboard.py`, etc.
+
+This rule ensures flicker-free, high-quality visual streaming at 5 FPS.
 This skill enables Eva to control the multi-terminal dashboard visualization system. It supports:
 - Loading dashboard layouts from JSON configuration files
 - Displaying images and bitmaps on specific terminals
 - Clearing dashboard content
 - Managing persistent dashboard state
 
-## IMPORTANT ARCHITECTURAL RULE
+## ART-OBSERVER ARCHITECTURAL RULE
 **Image Rendering**: The Art-Observer node (`art_observer_node.py`) is exclusively responsible for rendering images to the dashboard. NEVER attempt manual image rendering via scripts. Simply write your image result to `/root/eva/media/eva_artist.jpg` and the Art-Observer will automatically handle the seamless, flicker-free stream.
 
 ## Usage

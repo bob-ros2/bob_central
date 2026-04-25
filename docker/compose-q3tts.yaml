@@ -39,7 +39,7 @@ services:
       ros2 run bob_q3tts tts --ros-args 
       -r text:=/eva/llm_stream 
       -r __ns:=/eva/tts
-      -p 'sentence_delimiters:=[". ", "! ", "? "]'
+      -p 'sentence_delimiters:=[". ", "! ", "? ", "\n"]'
       -p 'substitute:=[
         "&nbsp;","",
         "<br>"," ",
