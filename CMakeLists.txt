@@ -23,27 +23,20 @@ install(
 )
 
 if(BUILD_TESTING)
-  # Manual linting setup to avoid Eva's experimental chaos
-  # We only lint the core package directory and the setup script
+  # EXTREME LINT CONTROL
+  # We do NOT use ament_lint_auto because it's too aggressive with experimental folders.
+  
+  # Only run flake8/pep257/copyright on the core Python package directory.
+  # This avoids scanning skills/ or scripts/experimental/
   
   find_package(ament_cmake_copyright REQUIRED)
-  ament_copyright(EXCLUDE skills setup.py)
+  ament_copyright(DIRECTORY ${PROJECT_NAME})
 
   find_package(ament_cmake_flake8 REQUIRED)
-  ament_flake8(EXCLUDE 
-    skills/repl_kernel/scripts/health_check.py
-    skills/social_memory/scripts/search_history.py
-    skills/swarm_connector/scripts/swarm_connector.py
-    setup.py
-  )
+  ament_flake8(DIRECTORY ${PROJECT_NAME})
 
   find_package(ament_cmake_pep257 REQUIRED)
-  ament_pep257(EXCLUDE 
-    skills/repl_kernel/scripts/health_check.py
-    skills/social_memory/scripts/search_history.py
-    skills/swarm_connector/scripts/swarm_connector.py
-    setup.py
-  )
+  ament_pep257(DIRECTORY ${PROJECT_NAME})
 
   find_package(ament_cmake_pytest REQUIRED)
   ament_add_pytest_test(test_skills_guidelines test/test_skills_guidelines.py

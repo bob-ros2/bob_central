@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 """Swarm Connector Skill - External P2P network interface for Eva."""
-import hashlib
-import json
-import os
 import socket
 import sys
 import time
