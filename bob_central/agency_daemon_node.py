@@ -26,8 +26,8 @@ import random
 import sys
 
 import rclpy
-from rclpy.node import Node
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
+from rclpy.node import Node
 from std_msgs.msg import String
 
 # Dynamic path injection for skills and local modules
@@ -200,7 +200,7 @@ class AgencyDaemonNode(Node):
             status.message = f'Eva is IDLE ({elapsed:.1f}s)'
         else:
             status.level = DiagnosticStatus.OK
-            status.message = f'Eva is ACTIVE (Recently engaged)'
+            status.message = 'Eva is ACTIVE (Recently engaged)'
 
         status.values = [
             KeyValue(key='Idle Time', value=f'{elapsed:.1f}s'),

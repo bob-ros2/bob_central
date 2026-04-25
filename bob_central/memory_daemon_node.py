@@ -20,11 +20,11 @@ Memory Daemon Node - Eva's Volatile Short-Term Memory Hub.
 Automatically fetches user history from CouchDB when a query is detected.
 """
 
+from datetime import datetime
 import json
 import os
 import re
 import time
-from datetime import datetime
 
 import rclpy
 import requests
@@ -197,7 +197,14 @@ class MemoryDaemonNode(Node):
             query_oldest = {
                 'selector': {
                     '$and': [
-                        {'metadata': {'$elemMatch': {'key': 'user_name', 'value': { '$regex': f'(?i)^{username}$' }}}},
+                        {
+                            'metadata': {
+                                '$elemMatch': {
+                                    'key': 'user_name',
+                                    'value': {'$regex': f'(?i)^{username}$'}
+                                }
+                            }
+                        },
                         {'metadata': {'$elemMatch': {'key': 'type', 'value': 'event_message'}}}
                     ]
                 },
@@ -213,7 +220,7 @@ class MemoryDaemonNode(Node):
                 if docs:
                     ts = docs[0].get('ts', '').split('T')[0]
                     msg = docs[0].get('data', '...')
-                    insight = f'Bekannt seit {ts}. Erste Nachricht: \'{msg[:50]}...\''
+                    insight = f'Bekannt seit {ts}. Erste Nachricht: "{msg[:50]}..."'
             return insight
         except Exception as e:
             self.get_logger().warn(f'Could not fetch sub-insights for {username}: {e}')
@@ -223,7 +230,12 @@ class MemoryDaemonNode(Node):
         """Search the entire CouchDB history for a specific user and optional keywords."""
         try:
             selector = {
-                'metadata': {'$elemMatch': {'key': 'user_name', 'value': { '$regex': f'(?i)^{username}$' }}}
+                'metadata': {
+                    '$elemMatch': {
+                        'key': 'user_name',
+                        'value': {'$regex': f'(?i)^{username}$'}
+                    }
+                }
             }
 
             if query:

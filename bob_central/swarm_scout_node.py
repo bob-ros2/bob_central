@@ -31,8 +31,8 @@ import sys
 import time
 import urllib.request
 
-import rclpy
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
+import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 
@@ -46,7 +46,7 @@ BOOTSTRAP_NODES = [
 NOISE_AVAILABLE = False
 try:
     sys.path.insert(0, '/ros2_ws/src/bob_central/scripts/experimental/swarm')
-    from noise_xx_handshake import NoiseXXHandshake, X25519PrivateKey, perform_xx_handshake
+    from noise_xx_handshake import perform_xx_handshake
     NOISE_AVAILABLE = True
 except ImportError:
     pass

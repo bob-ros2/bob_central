@@ -232,7 +232,10 @@ class OrchestratorNode(Node):
             user_ctx_str = f" [User '{username}' History:\n{history}]"
             self.get_logger().info(f'Injected context for {username} ({len(history)} bytes)')
             if username == 'bobassi':
-                user_ctx_str += " [REMARK: This user is Bobassi, your host and core supporter. Treat with priority and familiarity.]"
+                user_ctx_str += (
+                    ' [REMARK: This user is Bobassi, your host and core supporter. '
+                    'Treat with priority and familiarity.]'
+                )
 
         sys_ctx = (f'[System Context: Current Real Time is '
                    f'{day_of_week}, {time_str}. '
