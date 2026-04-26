@@ -74,4 +74,9 @@ To manage the complex set of services, a master management script is provided in
 Current architectural state visualized as ROS graph diagrams.
 
 ![ROS Graph (2026-04-26 #0001)](gallery/rosgraph_20260426_0001.png)
-![Q3TTS Architecture (2026-04-26)](gallery/bob_q3tts_20260426.png)
+
+ROS RQT Dynamic Reconfigure GUI's   
+
+![BOB_LLM Node Dynamic Reconfigure GUI (2026-04-26)](gallery/bob_llm_node_20260426.png)
+![BOB_Q3TTS Dynamic Reconfigure GUI (2026-04-26)](gallery/bob_q3tts_20260426.png)
+![Streamer Dynamic Reconfigure GUI'S (2026-04-26)](gallery/streamer_20260426_0001.png)
