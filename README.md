@@ -69,3 +69,8 @@ To manage the complex set of services, a master management script is provided in
 * **Linter Compliant**: 100% compliance with `ament_lint_auto`, `flake8`, and `pep257`.
 * **Standardized Skills**: All tools are documented via `SKILL.md` using the Anthropic Agent Skill standard.
 * **Extensible Architecture**: Designed for autonomous self-evolution.
+
+### Snapshots
+Current architectural state visualized as ROS graph diagrams.
+
+![ROS Graph (2026-04-26 #0001)](gallery/rosgraph_20260426_0001.png)
