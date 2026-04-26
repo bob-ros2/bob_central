@@ -52,6 +52,7 @@ To manage the complex set of services, a master management script is provided in
 | `compose-gitea.yaml` | Local Git infrastructure and CI runner. |
 | `compose-inference.yaml` | LLM inference servers (Vision/Reasoning). |
 | `compose-qdrant.yaml` | Vector database for long-term memory. |
+| `compose.face.yaml` | Facial animation and sentiment visualization engine. |
 
 ### Security Features
 
@@ -70,7 +71,7 @@ To manage the complex set of services, a master management script is provided in
 * **Standardized Skills**: All tools are documented via `SKILL.md` using the Anthropic Agent Skill standard.
 * **Extensible Architecture**: Designed for autonomous self-evolution.
 
-### Snapshots
+## Snapshots
 Current architectural state visualized as ROS graph diagrams.
 
 ![ROS Graph (2026-04-26 #0001)](gallery/rosgraph_20260426_0001.png)
