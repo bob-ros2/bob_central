@@ -55,7 +55,8 @@
       320
     ],
     "scale": 800.0,
-    "offset_y": -50,
+    "offset_x": -25,
+    "offset_y": -60,
     "exclude_ns": "face_0_0,face_0_1"
   },
   {

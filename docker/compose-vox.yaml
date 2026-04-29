@@ -1,0 +1,50 @@
+# -- Transcriber Configuration (VOX-REAL) --
+name: eva-vox
+
+networks:
+  eva-net:
+    external: true
+
+services:
+  vox-transcriber:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile.vox
+    image: eva-vox:latest
+    container_name: eva-vox-transcriber
+    networks:
+      - eva-net
+    env_file:
+      - ../.env
+    environment:
+      # Pyaudio Needs the Host IDs to access PulseAudio inside Docker
+      - UID=1000
+      - GID=1000
+      # Required for ROS 2 networking
+      - ROS_DOMAIN_ID=50
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    # Connect to the host PulseAudio and pass the models cache
+    volumes:
+      - ${XDG_RUNTIME_DIR}/pulse/native:/run/pulse/native
+      - /etc/machine-id:/etc/machine-id:ro
+      - /volume1/ros/models:/models
+      - ../scripts/vox_buffer_handler.py:/app/vox_buffer_handler.py:ro
+    # Run the transcription tool and direct it to a custom ROS handler
+    command: >
+      vox --model-dir /models 
+      --model medium 
+      --lang de 
+      --custom-handler /app/vox_buffer_handler.py
+    #  --rms 
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "1"

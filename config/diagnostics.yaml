@@ -2,26 +2,9 @@
 diag_aggregator:
   ros__parameters:
     pub_rate: 1.0
-    
-    # This list is MANDATORY for the C++ aggregator to parse the namespaces correctly.
-    # It resolves the "expected [string_array] got [string]" error.
-    analyzers: ["mesh_swarm", "mesh_brain", "mesh_persistence"]
 
-    mesh_swarm:
-      type: 'diagnostic_aggregator/AnalyzerGroup'
-      path: 'Swarm'
-      # Nested analyzers names list
-      analyzers: ["scout", "coordinator"]
-      scout:
-        type: 'diagnostic_aggregator/GenericAnalyzer'
-        path: 'Scout'
-        contains: ['eva_swarm_scout']
-        timeout: 310.0
-      coordinator:
-        type: 'diagnostic_aggregator/GenericAnalyzer'
-        path: 'Coordinator'
-        contains: ['eva_swarm_coordinator']
-        timeout: 30.0
+    # This list is MANDATORY for the C++ aggregator to parse the namespaces correctly.
+    analyzers: ["mesh_brain", "mesh_persistence"]
 
     mesh_brain:
       type: 'diagnostic_aggregator/AnalyzerGroup'

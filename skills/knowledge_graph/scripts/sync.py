@@ -75,24 +75,30 @@ def rebuild_skill_md(repos):
     """Rebuild the SKILL.md index based on downloaded manuals."""
     print('Rebuilding SKILL.md...')
 
-    header = (
-        '# Skill: Knowledge Graph\n\n'
-        "Eva's internal librarian for Bob ROS documentation. "
-        'Provides access to technical manuals and package specifications.\n\n'
-        '## Properties\n'
-        '- **Type**: Information / Documentation\n'
-        '- **Strategy**: RAG (Retrieval-Augmented Generation) via local doc cache\n\n'
+    manuals_str = ", ".join(sorted(repos))
+    yaml_header = (
+        '---\n'
+        'name: knowledge_graph\n'
+        f'description: "Eva\'s librarian for technical manuals. Contains documentation for: {manuals_str}."\n'
+        'version: "2.0.0"\n'
+        'category: "knowledge"\n'
+        '---\n\n'
+    )
+
+    body = (
+        '# Knowledge Graph Skill\n\n'
+        'Provides RAG access to synchronized technical manuals.\n\n'
         '## Tools\n'
         '### read_manual\n'
         'Reads a specific documentation file from the synchronized knowledge base.\n\n'
         '- **Arguments**:\n'
         "  - `pkg`: Name of the package/manual to read (e.g., 'bob_central')\n\n"
         '## Knowledge Base Index\n'
-        'Eva has access to the following technical manuals:\n'
     )
 
     with open(SKILL_MD_PATH, 'w') as f:
-        f.write(header)
+        f.write(yaml_header)
+        f.write(body)
         for repo in sorted(repos):
             f.write(f'- **{repo}**: Technical specification and README for {repo}.\n')
 

@@ -92,4 +92,4 @@ RUN echo "#!/bin/bash\nservice cron start\nsource /opt/ros/\${ROS_DISTRO}/setup.
 ENTRYPOINT ["/ros_entrypoint.sh"]
 
 # Launch the orchestrator by default 
-CMD ["ros2", "launch", "bob_launch", "generic.launch.py", "config:=/ros2_ws/src/bob_central/launch/orch_eva.yaml"]
+CMD ["ros2", "launch", "bob_launch", "generic.launch.py", "config:=/ros2_ws/src/bob_central/launch/eva_base_launch.yaml"]

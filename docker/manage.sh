@@ -17,14 +17,19 @@ COMPOSE_FILES=(
     "compose-dashboard.yaml"
     "compose-tti.yaml"
     "compose-q3tts.yaml"
-    "compose-tbot.yaml"
+#    "compose-tbot.yaml"
     "compose.face.yaml"
     "compose-browser.yaml"
+    "compose-vox.yaml"
 )
 
 # Build the docker-compose command with all files and a fixed project name
 COMPOSE_CMD="docker compose -p eva"
 for file in "${COMPOSE_FILES[@]}"; do
+    # Skip commented out strings or empty elements
+    [[ $file =~ ^[[:space:]]*# ]] && continue
+    [ -z "$file" ] && continue
+    
     COMPOSE_CMD="$COMPOSE_CMD -f $SCRIPT_DIR/$file"
 done
 

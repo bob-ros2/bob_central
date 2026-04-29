@@ -25,10 +25,11 @@ services:
       # Twitch Config from Secret
       - TWITCH_STREAM_KEY_FILE=/run/secrets/twitch_key
       - TWITCH_STREAM_KEY_FILE_NAME=/run/secrets/twitch_key
-      - INGEST_SERVER=rtmp://live-fra.twitch.tv/app/
+      #- INGEST_SERVER=rtmp://live-fra.twitch.tv/app/
       # Test Mode
       # ffplay -listen 1 -protocol_whitelist file,rtmp,tcp rtmp://0.0.0.0:1234
       #- INGEST_SERVER=rtmp://192.168.1.47:1234
+      - INGEST_SERVER=rtmp://bob:1234
       # ROS Config
       - NAMESPACE=/eva/streamer
       # Nviz Config
@@ -39,7 +40,7 @@ services:
       # Audio Config
       - MIXER_REMAPS=-r in0:=/eva/tts/audio_raw
       - MIXER_IN0_CHANNELS=1
-      - MIXER_IN0_GAIN=0.8
+      - MIXER_IN0_GAIN=0.5
       - MIXER_ENABLE_FIFO_INPUT=true
       - AUDIO_PIPE=/tmp/audio_pipe
       - AUDIO_MASTER_PATH=/tmp/audio_master_pipe

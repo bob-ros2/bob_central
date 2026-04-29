@@ -1,0 +1,25 @@
+FROM ghcr.io/bob-ros2/vox/vox-real:latest
+
+USER root
+
+# Install ROS 2 Humble minimal stack for rclpy support
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y locales curl gnupg2 lsb-release \
+    && locale-gen en_US en_US.UTF-8 \
+    && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 \
+    && curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null \
+    && apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata \
+       ros-humble-ros-base \
+       python3-argcomplete \
+    && rm -rf /var/lib/apt/lists/*
+
+# Add source to bashrc
+RUN echo "source /opt/ros/humble/setup.bash" >> /etc/bash.bashrc
+
+# Ensure python3 finds rclpy without needing to source setup.bash if directly executing python
+ENV PYTHONPATH=/opt/ros/humble/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:$PYTHONPATH
+ENV LD_LIBRARY_PATH=/opt/ros/humble/lib:$LD_LIBRARY_PATH
+ENV AMENT_PREFIX_PATH=/opt/ros/humble
+
+USER appuser

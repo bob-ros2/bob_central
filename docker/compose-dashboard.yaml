@@ -6,7 +6,7 @@ networks:
 
 services:
   smallchat:
-    image: bob-av-tools:latest
+    image: ghcr.io/bob-ros2/bob-avtools:latest
     container_name: eva-dashboard-smallchat
     networks:
       - eva-net
@@ -20,7 +20,7 @@ services:
       - WEBVIDEO_FPS=5
       - WEBVIDEO_FIFO_PATH=/tmp/smallchat_pipe
       - WEBVIDEO_FIFO_ALPHA=False
-      - WEBVIDEO_MAX_TEXT_LENGTH=4096
+      - WEBVIDEO_MAX_TEXT_LENGTH=8192
       # Paths (Matched to internal volume mount)
       - WEBVIDEO_UI_PATH=/ros2_ws/src/bob_av_tools/bob_av_tools/smallchat.html
 
@@ -36,6 +36,7 @@ services:
       -p fifo_alpha:=$${WEBVIDEO_FIFO_ALPHA:-false} 
       -r llm_reasoning:=/eva/llm_reasoning 
       -r llm_stream:=/eva/llm_stream 
+      -r llm_query:=/eva/llm_query_trigger
       -r llm_tool_calls:=/eva/llm_tool_calls
       -r __ns:=/eva/streamer
       "

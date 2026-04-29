@@ -29,3 +29,6 @@ repositories:
   - name: bob_av_tools
     url: "https://github.com/bob-ros2/bob_av_tools"
     branch: main
+  - name: bob_synth
+    url: "https://github.com/bob-ros2/bob_synth"
+    branch: main

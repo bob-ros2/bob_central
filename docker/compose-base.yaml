@@ -16,6 +16,8 @@ services:
       - /volume1/ros/secrets/deepseek.env
     volumes:
       - ../config/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+    environment:
+      - MASTER_SEARXNG_URL=http://192.168.1.10:9080/search
     restart: always
 
   # -- CORE: EVA (Brain & Logic) --
@@ -33,7 +35,6 @@ services:
     environment:
       - DISPLAY=$DISPLAY
       - QT_X11_NO_MITSHM=1
-      - MASTER_SEARXNG_URL=http://192.168.1.10:9080/search
       - MASTER_SEARXNG_LANGUAGE=en-US
       - BOB_LAUNCH_AUTOABORT=0
     deploy:
@@ -43,7 +44,7 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    command: ros2 launch bob_launch generic.launch.py config:=/ros2_ws/src/bob_central/launch/orch_eva.yaml
+    command: ros2 launch bob_launch generic.launch.py config:=/ros2_ws/src/bob_central/launch/eva_base_launch.yaml
     volumes:
       - ../:/ros2_ws/src/bob_central # Map source for self-evolution
       - /volume1/ros/eva:/root/eva # Unified persistent home
@@ -51,6 +52,7 @@ services:
       - /tmp/eva:/tmp
     restart: on-failure
 
+  # -- STATUS: EVA (Telemetry & Dashboard Status Launcher) --
   status:
     image: eva-base:latest
     container_name: eva-status
@@ -60,7 +62,7 @@ services:
       - eva-net
     env_file:
       - ../.env
-    command: ros2 launch bob_launch generic.launch.py config:=/ros2_ws/src/bob_central/launch/orch_status.yaml
+    command: ros2 launch bob_launch generic.launch.py config:=/ros2_ws/src/bob_central/launch/status_launch.yaml
     volumes:
       - ../:/ros2_ws/src/bob_central
       - /tmp/eva:/tmp

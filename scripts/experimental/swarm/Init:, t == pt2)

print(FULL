@@ -1,4 +1,0 @@
-  File "<string>", line 26
-    print(Init-
-         ^
-SyntaxError: '(' was never closed

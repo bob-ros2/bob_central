@@ -3,6 +3,7 @@ name: social_memory
 description: Interface for querying long-term chat history and user interactions from CouchDB.
 version: "1.0.0"
 category: "memory"
+---
 
 # Social Memory Skill (CouchDB)
 

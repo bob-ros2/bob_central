@@ -40,7 +40,10 @@
     - -r
     - "bobassi_response:=/eva/bobassi/response"
     - -r
+    - "llm_query_trigger:=/eva/llm_query_trigger"
+    - -r
     - *eva_ns
+
 
 # Eva: The Core Consciousness (Deep Reasoning)
 - name: brain_eva
@@ -51,7 +54,7 @@
   parameters:
     api_url: *api_orchestrator
     api_key: "${ORCHESTRATOR_API_KEY}"
-    api_model: "deepseek-chat"
+    api_model: "${ORCHESTRATOR_MODEL_CHAT}"
     api_timeout: 180.0
     system_prompt_file: "//PKGSHARE:bob_central/prompts/orchestrator.md"
     stream: true
@@ -77,6 +80,7 @@
     - -r
     - *eva_ns
 
+
 # Bobassi: The Support Sidekick (For Busy States)
 - name: brain_bobassi
   package: bob_llm
@@ -86,7 +90,7 @@
   parameters:
     api_url: *api_orchestrator
     api_key: "${ORCHESTRATOR_API_KEY}"
-    api_model: "deepseek-chat"
+    api_model: "${ORCHESTRATOR_MODEL_CHAT}"
     api_timeout: 30.0
     system_prompt_file: "//PKGSHARE:bob_central/prompts/bobassi.md"
     stream: true
@@ -108,6 +112,7 @@
     - -r
     - *eva_ns
 
+
 # Eva REPL: Persistent Engineering Session
 - name: repl
   package: bob_central
@@ -120,6 +125,7 @@
     - info
     - -r
     - *eva_ns
+
 
 # Dashboard Visualization: Artwork Background
 - name: art_observer
@@ -137,8 +143,9 @@
     - -r
     - *eva_ns
 
+
 # Music Daemon Node
-- name: music_daemon
+- name: music_daemon_node
   package: bob_central
   executable: music_daemon
   respawn: true
@@ -147,6 +154,7 @@
     - --ros-args
     - -r
     - *eva_ns
+
 
 # Eva Short-Term Memory Daemon (ESTM)
 - name: memory_daemon
@@ -162,6 +170,7 @@
     - "user_query:=/eva/user_query"
     - -r
     - *eva_ns
+
 
 # Eva's Agency & Curiosity Impulse Generator
 - name: agency_daemon
@@ -180,6 +189,7 @@
     - -r
     - *eva_ns
 
+
 # Eva's Auditory Synthesis Engine (Alarm & Telemetry)
 - name: synth_node
   package: bob_synth
@@ -195,31 +205,6 @@
     - -r
     - *synth_ns
 
-# Swarm Coordinator: Decentralized Mesh Orchestration
-- name: swarm_coordinator
-  package: bob_central
-  executable: swarm_coordinator
-  respawn: true
-  output: screen
-  arguments:
-    - --ros-args
-    - --log-level
-    - info
-    - -r
-    - *eva_ns
-
-# Swarm Scout: External Network Reconnaissance
-- name: swarm_scout
-  package: bob_central
-  executable: swarm_scout
-  respawn: true
-  output: screen
-  arguments:
-    - --ros-args
-    - --log-level
-    - info
-    - -r
-    - *eva_ns
 
 # Diagnostics: Health Monitoring Aggregator
 - name: diag_aggregator

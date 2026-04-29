@@ -48,7 +48,7 @@ def perform_thought(task: str,
         'http://api-gateway:8080/v1'
     ).rstrip('/') + '/chat/completions'
     api_key = os.getenv('ORCHESTRATOR_API_KEY', 'no_key')
-    model = os.getenv('LLM_API_MODEL', 'deepseek-chat')
+    model = os.getenv('ORCHESTRATOR_MODEL_REASONER', 'deepseek-reasoner')
 
     personas = {
         'General': 'You are an internal reasoning module for Eva.',

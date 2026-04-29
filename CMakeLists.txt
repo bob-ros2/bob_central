@@ -35,8 +35,13 @@ if(BUILD_TESTING)
   ament_pep257(bob_central)
 
   find_package(ament_cmake_pytest REQUIRED)
-  ament_add_pytest_test(test_skills_guidelines test/test_skills_guidelines.py
+  ament_add_pytest_test(
+    test_skills_guidelines 
+    tests/test_skills_guidelines.py
     TIMEOUT 30
+  )
+  ament_add_pytest_test(test_repo_structure tests/test_repo_structure.py
+    TIMEOUT 10
   )
 endif()
 

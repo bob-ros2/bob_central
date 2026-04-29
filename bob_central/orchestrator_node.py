@@ -58,6 +58,8 @@ class OrchestratorNode(Node):
             String, 'user_query_timed', 10)
         self.pub_user_response = self.create_publisher(
             String, 'user_response', 10)
+        self.pub_dispatched_query = self.create_publisher(
+            String, 'llm_query_trigger', 10)
         self.pub_llm_stream = self.create_publisher(
             String, '/eva/llm_stream', qos_stream)
 
@@ -151,6 +153,7 @@ class OrchestratorNode(Node):
                 bob_msg = String()
                 bob_msg.data = query  # Send raw string for simplicity
                 self.pub_bobassi_query.publish(bob_msg)
+                self.pub_dispatched_query.publish(bob_msg)
                 return
             elif self.enable_queuing:
                 self.get_logger().info(f'Queuing query: {query[:30]}...')
@@ -246,6 +249,11 @@ class OrchestratorNode(Node):
         timed_msg = String()
         timed_msg.data = json.dumps(routing_data)
         self.pub_timed_query.publish(timed_msg)
+
+        # Dispatch the raw query as a unified trigger for UI/Visuals
+        dispatch_msg = String()
+        dispatch_msg.data = query
+        self.pub_dispatched_query.publish(dispatch_msg)
 
     def specialist_response_callback(self, msg):
         """Receive a response from a specialist agent."""
