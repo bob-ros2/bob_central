@@ -12,7 +12,8 @@ Provides a central interface to manage the robot's visual dashboard (nviz).
 ## Usage
 
 ### 1. Load Dashboard
-Loads the default layout or a specific file/DB entry.
+Loads the default layout or a specific file/DB entry. 
+Note: Persistent dashboards are usually stored in `/root/eva/` (e.g., `dashboard_terminals_v2_config.json`).
 ```python
 # Load default (layout_main.json)
 execute_skill_script("nviz_dashboard", "scripts/dashboard_manager.py", "load")

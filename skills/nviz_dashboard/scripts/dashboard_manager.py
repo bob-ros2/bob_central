@@ -192,6 +192,7 @@ def main():
         print("Save functionality (stub): current state fetching from /events_changed not implemented in this minimal CLI.")
 
     elif args.command == 'list':
+        # 1. Search in Qdrant
         if QDRANT_AVAILABLE:
             client = QdrantClient(host=os.environ.get('QDRANT_HOST', 'eva-qdrant'), port=6333)
             try:
@@ -200,9 +201,20 @@ def main():
                 for p in res:
                     print(f"- {p.payload.get('name')} ({p.payload.get('description', '')})")
             except Exception as e:
-                print(f"Error listing: {e}")
-        else:
-            print("Qdrant not available.")
+                print(f"Qdrant List Error: {e}")
+        
+        # 2. Search in local storage
+        local_dir = "/root/eva"
+        if not os.path.exists(local_dir): local_dir = "/volume1/ros/eva"
+        
+        if os.path.exists(local_dir):
+            print(f"\n--- Local Dashboard Files ({local_dir}) ---")
+            files = [f for f in os.listdir(local_dir) if f.endswith('.json') and 'dashboard' in f.lower()]
+            for f in files:
+                print(f"- {os.path.join(local_dir, f)}")
+        
+        if not QDRANT_AVAILABLE and not os.path.exists(local_dir):
+            print("No dashboards found (Qdrant unavailable and local storage missing).")
 
 if __name__ == '__main__':
     main()

@@ -22,12 +22,12 @@ server {
         proxy_ignore_headers "Expires" "Cache-Control" "Set-Cookie";
         gzip off;
 
-        # Inject the API Key from the environment variable (if needed)
+        # Inject the API Key from the environment variable
         proxy_set_header Authorization "Bearer ${UPSTREAM_API_KEY}";
         proxy_set_header Content-Type "application/json";
         
         # Forward to the backend (DeepSeek OR local)
-        proxy_pass ${UPSTREAM_API_URL};
+        proxy_pass https://api.deepseek.com/v1/;
         
         # Handle SSL for remote backends
         proxy_ssl_server_name on;
@@ -39,20 +39,13 @@ server {
 
     # Proxy SearXNG search requests
     location /search {
-        proxy_pass ${MASTER_SEARXNG_URL};
+        proxy_pass http://192.168.1.10:9080/search;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # CouchDB Proxy (Explicit path)
-    location /couchdb/ {
-        proxy_pass http://192.168.1.10:5984/;
-        proxy_set_header Authorization "${COUCHDB_AUTH_BASIC}";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
+    # CouchDB Proxy (Disabled due to missing env-vars)
+    # location /couchdb/ { ... }
 }
