@@ -3,6 +3,7 @@ name: eva-tts
 
 services:
   q3tts:
+    container_name: eva-q3tts
     image: ghcr.io/bob-ros2/bob-q3tts:latest
     runtime: nvidia
     env_file:
