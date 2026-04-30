@@ -45,6 +45,7 @@ services:
               count: all
               capabilities: [gpu]
     command: ros2 launch bob_launch generic.launch.py config:=/ros2_ws/src/bob_central/launch/eva_base_launch.yaml
+    dns: ["192.168.32.100"]
     volumes:
       - ../:/ros2_ws/src/bob_central # Map source for self-evolution
       - /volume1/ros/eva:/root/eva # Unified persistent home
@@ -63,6 +64,7 @@ services:
     env_file:
       - ../.env
     command: ros2 launch bob_launch generic.launch.py config:=/ros2_ws/src/bob_central/launch/status_launch.yaml
+    dns: ["192.168.32.100"]
     volumes:
       - ../:/ros2_ws/src/bob_central
       - /tmp/eva:/tmp

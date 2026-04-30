@@ -1,0 +1,21 @@
+# -- Eva DNS Control Center (AdGuard Home) --
+name: eva-dns
+
+networks:
+  eva-net:
+    external: true
+
+services:
+  adguard:
+    image: adguard/adguardhome:latest
+    container_name: eva-dns
+    networks:
+      eva-net:
+        ipv4_address: 192.168.32.100
+    volumes:
+      - /volume1/ros/eva_dns/work:/opt/adguardhome/work
+      - /volume1/ros/eva_dns/conf:/opt/adguardhome/conf
+    ports:
+      - "3000:3000/tcp" # Setup UI
+      - "853:853/tcp"  # DNS over TLS
+    restart: unless-stopped

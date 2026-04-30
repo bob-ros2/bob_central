@@ -18,9 +18,11 @@ services:
     environment:
       - BROWSER_VIEWPORT_WIDTH=1280
       - BROWSER_VIEWPORT_HEIGHT=720
+    dns: ["192.168.32.100"]
     volumes:
       - ../:/ros2_ws/src/bob_central
-      - /volume1/ros/eva:/root/eva # Access to media/logs
+      - /volume1/ros/eva/media:/root/eva/media # Restrict access to media
+      - /volume1/ros/eva/logs:/root/eva/logs   # Restrict access to logs
       - /tmp/eva_browser:/tmp
     restart: unless-stopped
     # Use the headless browser node
