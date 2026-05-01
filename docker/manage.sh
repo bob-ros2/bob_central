@@ -47,6 +47,8 @@ usage() {
 
 case "$1" in
     up)
+        # Flush FIFOs before starting to prevent artifacts
+        $SCRIPT_DIR/flush_fifos.sh
         echo "🚀 Starting Eva Stack..."
         cd "$BASE_DIR" && $COMPOSE_CMD up -d "${@:2}"
         ;;
