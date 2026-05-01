@@ -1,22 +1,29 @@
 #!/bin/bash
-# Flush all Eva-related FIFOs to prevent "garbage" data on stream start.
+# Flush all Eva-related FIFOs to prevent "garbage" data.
+# Usage: ./flush_fifos.sh [base_directory]
+# Example: ./flush_fifos.sh /tmp/ (default)
+
+BASE_DIR="${1:-/tmp}"
+# Ensure trailing slash
+[[ "$BASE_DIR" != */ ]] && BASE_DIR="$BASE_DIR/"
 
 FIFOS=(
-    "/tmp/browser_pipe"
-    "/tmp/smallchat_pipe"
-    "/tmp/photo_pipe"
-    "/tmp/audio_pipe"
-    "/tmp/audio_master_pipe"
-    "/tmp/nano_fifo"
-    "/tmp/web_fifo"
-    "/tmp/webscreen_fifo"
-    "/tmp/cam_fifo"
-    "/tmp/overlay_pipe"
+    "browser_pipe"
+    "smallchat_pipe"
+    "photo_pipe"
+    "audio_pipe"
+    "audio_master_pipe"
+    "nano_fifo"
+    "web_fifo"
+    "webscreen_fifo"
+    "cam_fifo"
+    "overlay_pipe"
 )
 
-echo "🌊 Flushing Eva FIFOs..."
+echo "🌊 Flushing Eva FIFOs in $BASE_DIR ..."
 
-for fifo in "${FIFOS[@]}"; do
+for name in "${FIFOS[@]}"; do
+    fifo="${BASE_DIR}${name}"
     if [ -p "$fifo" ]; then
         echo "  -> Flushing $fifo"
         # Read everything available with a short timeout
@@ -26,4 +33,4 @@ for fifo in "${FIFOS[@]}"; do
     fi
 done
 
-echo "✅ All FIFOs cleared."
+echo "✅ All targeted FIFOs in $BASE_DIR cleared."
