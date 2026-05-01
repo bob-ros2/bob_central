@@ -9,6 +9,7 @@ BASE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # List of all compose files in the desired order
 COMPOSE_FILES=(
+    "compose-dns.yaml"
     "compose-qdrant.yaml"
     "compose-gitea.yaml"
     "compose-inference.yaml"

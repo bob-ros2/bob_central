@@ -1,9 +1,15 @@
 # -- Eva DNS Control Center (AdGuard Home) --
+# This stack provides DNS services and an isolated administration web UI.
 name: eva-dns
 
 networks:
   eva-net:
     external: true
+  dns-admin-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.29.99.0/24
 
 services:
   adguard:
@@ -11,11 +17,35 @@ services:
     container_name: eva-dns
     networks:
       eva-net:
-        ipv4_address: 192.168.32.100
+        ipv4_address: 192.168.32.100 # Internal DNS IP for Eva containers
+      dns-admin-net:
+        ipv4_address: 172.29.99.100 # Private admin IP for the UI
     volumes:
       - /volume1/ros/eva_dns/work:/opt/adguardhome/work
       - /volume1/ros/eva_dns/conf:/opt/adguardhome/conf
     ports:
-      - "3000:3000/tcp" # Setup UI
-      - "853:853/tcp"  # DNS over TLS
+      - "853:853/tcp" # DNS over TLS
+    restart: unless-stopped
+    # Force AdGuard to bind its web UI to the private admin network ONLY.
+    # We use a more robust sed pattern to catch the address regardless of the current port.
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        sed -i 's/address: .*/address: 172.29.99.100:3000/' /opt/adguardhome/conf/AdGuardHome.yaml
+        /opt/adguardhome/AdGuardHome --work-dir /opt/adguardhome/work --config /opt/adguardhome/conf/AdGuardHome.yaml
+
+  # External proxy to access the isolated AdGuard web UI.
+  # This container is NOT part of eva-net, maintaining isolation.
+  adguard-proxy:
+    image: nginx:alpine
+    container_name: eva-dns-proxy
+    networks:
+      - dns-admin-net
+    ports:
+      - "3000:80" # Host:3000 -> Nginx:80 (Proxying to AdGuard:3000)
+    volumes:
+      - ../config/nginx-dns-proxy.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - adguard
     restart: unless-stopped
