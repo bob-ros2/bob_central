@@ -17,7 +17,7 @@ COMPOSE_FILES=(
     "compose-dashboard.yaml"
     "compose-tti.yaml"
     "compose-q3tts.yaml"
-#    "compose-tbot.yaml"
+    "compose-tbot.yaml"
     "compose.face.yaml"
     "compose-browser.yaml"
     "compose-vox.yaml"

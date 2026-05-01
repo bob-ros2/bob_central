@@ -71,10 +71,12 @@ def run_client(args):
     pub = node.create_publisher(String, '/eva/media/play_request', 10)
 
     print('Connecting to Music Daemon...')
-    # Wait for the publisher to be ready to avoid losing the first message
-    # In a one-shot script, we give it a tiny moment.
+    # Wait for the daemon to subscribe to our topic (discovery)
+    # This ensures the message is delivered without a fixed long sleep.
     import time
-    time.sleep(1.0)
+    start_wait = time.time()
+    while node.count_subscribers(pub.topic_name) == 0 and (time.time() - start_wait) < 3.0:
+        rclpy.spin_once(node, timeout_sec=0.1)
 
     request = {
         'files': files,

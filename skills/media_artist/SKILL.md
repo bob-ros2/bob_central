@@ -32,13 +32,13 @@ Sends a playback request to the background `music_daemon`. The daemon strictly p
 execute_skill_script({
   "skill_name": "media_artist",
   "script_path": "scripts/play_music.py",
-  "args": "--file '/root/eva/media/a_song_file.mp3'"
+  "args": "/root/eva/media/a_song_file.mp3"
 })
 ```
 
 #### Options (arguments)
 
-- `--file` : audio file, directory, or playlist file (repeatable). *required*.
+- `files` : List of audio files, directories, or playlist files (positional arguments). *required*.
 - `--audio-topic` : ROS topic for PCM data (default: `/eva/streamer/in1`).
 - `--status-topic` : ROS string topic for title broadcast (default: `/eva/streamer/current_song`).
 - `--loop` : loop the specified song indefinitely.

@@ -60,7 +60,7 @@ class StatusDaemonNode(Node):
         self.last_layout_time = 0
 
         # New Stream Buffer
-        self.stream_buffer = ['--- INIT SYSTEM ---']
+        self.stream_buffer = ['[SYSTEM] Resuming from Hibernation...', '[SYSTEM] Integrity Check: OK']
         self.current_line_fragment = ''
 
         # Publishers
@@ -189,7 +189,12 @@ class StatusDaemonNode(Node):
         y = 30
         draw.text((110, y), '[ CORE / BRAIN ]', fill=200, font=font_tiny)
         y += row_h + 2
-        draw.text((115, y), f"STATE: {orch.get('State', 'IDLE')[:12]}",
+        state = orch.get('State', 'IDLE')
+        # Narrative: Show DREAMING state for the first 5 minutes if idle
+        if state == 'IDLE' and uptime < 300:
+            state = 'DREAMING...'
+        
+        draw.text((115, y), f"STATE: {state[:12]}",
                   fill=255, font=font_small)
         y += row_h
         draw.text((115, y), f"QUEUE: {orch.get('Queue_Depth', 0)}",

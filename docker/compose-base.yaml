@@ -13,7 +13,7 @@ services:
     networks:
       - eva-net
     env_file:
-      - /volume1/ros/secrets/deepseek.env
+      - /volume1/ros/secrets/eva_central.env
     volumes:
       - ../config/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
     environment:

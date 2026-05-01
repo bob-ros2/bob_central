@@ -28,6 +28,9 @@ services:
       - TWITCH_CHAT_CREDENTIALS=/run/secrets/twitch_credentials
     secrets:
       - twitch_credentials
+    command: ros2 launch bob_launch generic.launch.py config:=/ros2_ws/src/bob_central/launch/tbot_launch.yaml
+    volumes:
+      - ../launch/tbot_launch.yaml:/ros2_ws/src/bob_central/launch/tbot_launch.yaml:ro
     restart: unless-stopped
     logging:
       driver: "json-file"
