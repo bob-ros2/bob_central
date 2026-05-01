@@ -13,7 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import array
+"""
+Music Daemon Node.
+
+Background Daemon that processes a strict Queue, ensuring 1 song plays at real-time pace.
+Streams audio to the Streamer Mixer input.
+"""
+
 import json
 import os
 import queue
@@ -25,22 +31,23 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Int16MultiArray, String
 
+try:
+    import mutagen
+    from mutagen.mp3 import MP3
+except ImportError:
+    mutagen = None
 
-CHUNK_FRAMES = 4096
-CHUNK_BYTES = CHUNK_FRAMES * 2 * 2  # stereo, 16-bit
 
-
-def get_metadata(file_path: str) -> dict:
-    cmd = ['ffprobe', '-v', '-quiet', '-print_format', 'json', '-show_format', file_path]
+def get_audio_info(file_path):
+    """Extract metadata and duration from audio file."""
+    if mutagen is None:
+        return {'title': os.path.basename(file_path), 'artist': 'Unknown', 'duration': '?:??'}
     try:
-        res = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
-        data = json.loads(res.stdout)
-        fmt = data.get('format', {})
-        tags = fmt.get('tags', {})
-        dur = float(fmt.get('duration', 0))
+        audio = MP3(file_path)
+        dur = audio.info.length
+        tags = audio.tags or {}
         return {
-            'file': os.path.basename(file_path),
-            'title': tags.get('title', tags.get('TITLE', os.path.basename(file_path))),
+            'title': tags.get('TIT2', tags.get('title', os.path.basename(file_path))),
             'artist': tags.get('artist', tags.get('ARTIST', 'Unknown Artist')),
             'duration': f'{int(dur // 60)}:{int(dur % 60):02d}'
         }
@@ -55,125 +62,124 @@ class MusicDaemon(Node):
         super().__init__('eva_music_daemon')
         self.pub_audio = self.create_publisher(Int16MultiArray, audio_topic, 10)
         self.pub_status = self.create_publisher(String, status_topic, 10)
+        from rclpy.qos import QoSProfile, DurabilityPolicy
+        qos = QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL)
+
         self.sub_request = self.create_subscription(
-            String, '/eva/media/play_request', self.on_request, 10)
+            String, '/eva/media/play_request', self.on_request, qos)
 
         self.audio_topic = audio_topic
         self.task_queue = queue.Queue()
-        self.current_proc = None
-        self.skip_event = threading.Event()
+        self.current_process = None
+        self.running = True
 
-        self.worker_thread = threading.Thread(target=self._playback_loop, daemon=True)
+        # Start worker thread
+        self.worker_thread = threading.Thread(target=self._worker_loop, daemon=True)
         self.worker_thread.start()
-        self.get_logger().info('🎵 Music Daemon started. Listening on /eva/media/play_request...')
 
-    def on_request(self, msg: String):
+        self.get_logger().info('Music Daemon started.')
+
+    def on_request(self, msg):
+        """Handle incoming play requests (JSON)."""
         try:
-            req = json.loads(msg.data)
-            files = req.get('files', [])
-            loop = req.get('loop', False)
-            loop_all = req.get('loop_all', False)
-            enqueue = req.get('enqueue', False)
+            data = json.loads(msg.data)
+            files = data.get('files', [])
+            enqueue = data.get('enqueue', False)
+            loop = data.get('loop', False)
 
             if not enqueue:
-                # Clear queue and stop current song immediately
-                while not self.task_queue.empty():
-                    self.task_queue.get_nowait()
-                self.skip_event.set()
+                # Stop current playback if not enqueuing
+                self.stop_playback()
 
-            if files:
-                self.task_queue.put({'files': files, 'loop': loop, 'loop_all': loop_all})
-                self.get_logger().info(f'Added task with {len(files)} files to queue.')
+            for f in files:
+                self.task_queue.put({
+                    'path': f,
+                    'loop': loop
+                })
+                self.get_logger().info(f'Added task with {f}')
+
         except Exception as e:
-            self.get_logger().error(f'Invalid request: {e}')
+            self.get_logger().error(f'Failed to parse request: {e}')
 
-    def _playback_loop(self):
-        while rclpy.ok():
+    def stop_playback(self):
+        """Terminate current FFmpeg process and clear queue."""
+        with self.task_queue.mutex:
+            self.task_queue.queue.clear()
+
+        if self.current_process:
+            self.current_process.terminate()
+            self.current_process = None
+
+    def _worker_loop(self):
+        """Worker thread to process the audio queue."""
+        while rclpy.ok() and self.running:
             try:
                 task = self.task_queue.get(timeout=1.0)
-                self.skip_event.clear()
-                self._play_task(task['files'], task['loop'], task['loop_all'])
-
-                # Clear status when task completes naturally (not skipped)
-                if not self.skip_event.is_set():
-                    self.pub_status.publish(String(data=''))
+                self._play_file(task['path'], task['loop'])
             except queue.Empty:
-                pass
+                continue
             except Exception as e:
-                self.get_logger().error(f'Playback error: {e}')
+                self.get_logger().error(f'Worker loop error: {e}')
 
-    def _play_task(self, files: list, loop: bool, loop_all: bool):
-        while rclpy.ok() and not self.skip_event.is_set():
-            for f in files:
-                if loop:
-                    while rclpy.ok() and not self.skip_event.is_set():
-                        self._stream_file(f)
-                else:
-                    self._stream_file(f)
-                    if self.skip_event.is_set():
-                        break
+    def _play_file(self, file_path, loop):
+        """Use FFmpeg to stream file to ROS topic."""
+        if not os.path.exists(file_path):
+            self.get_logger().warn(f'File not found: {file_path}')
+            return
 
-            if not loop_all or self.skip_event.is_set():
-                break
+        info = get_audio_info(file_path)
+        status_msg = String()
+        status_msg.data = json.dumps(info)
+        self.pub_status.publish(status_msg)
 
-    def _stream_file(self, file_path: str):
-        meta = get_metadata(file_path)
-        display_name = f'{meta["title"]} - {meta["artist"]}'
-        self.pub_status.publish(String(data=display_name))
-        self.get_logger().info(f'Playing: {display_name}')
+        self.get_logger().info(f"Playing: {info['title']} - {info['artist']}")
 
-        # We remove -re because we will explicitly pace the loop in Python
-        # to guarantee flawless 44.1kHz real-time regardless of pipe bursts.
-        cmd = [
-            'ffmpeg', '-i', file_path,
-            '-f', 's16le', '-ar', '44100', '-ac', '2', 'pipe:1'
-        ]
-        self.current_proc = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        while rclpy.ok() and self.running:
+            # Construct FFmpeg command
+            cmd = [
+                'ffmpeg', '-re', '-i', file_path,
+                '-f', 's16le', '-ar', '44100', '-ac', '2', 'pipe:1'
+            ]
 
-        chunk_duration = CHUNK_FRAMES / 44100.0  # Time per chunk: ~0.0928 seconds
-        start_time = time.time()
-        chunks_played = 0
+            self.current_process = subprocess.Popen(
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
+            )
 
-        try:
-            while rclpy.ok() and not self.skip_event.is_set():
-                raw = self.current_proc.stdout.read(CHUNK_BYTES)
-                if not raw:
+            # Read from pipe and publish
+            chunk_size = 4096  # 1024 samples * 2 channels * 2 bytes
+            while rclpy.ok() and self.running:
+                data = self.current_process.stdout.read(chunk_size)
+                if not data:
                     break
 
-                # Sleep to enforce real-time pacing precisely
-                expected_time = start_time + (chunks_played * chunk_duration)
-                now = time.time()
-                if expected_time > now:
-                    time.sleep(expected_time - now)
-                elif now - expected_time > 1.0:
-                    start_time = now
-                    chunks_played = 0
+                import array
+                audio_data = array.array('h', data)
+                msg = Int16MultiArray()
+                msg.data = audio_data.tolist()
+                self.pub_audio.publish(msg)
 
-                samples = array.array('h', raw)
-                self.pub_audio.publish(Int16MultiArray(data=samples.tolist()))
-                chunks_played += 1
+            self.current_process.wait()
 
-        finally:
-            if self.current_proc:
-                try:
-                    self.current_proc.terminate()
-                    self.current_proc.wait(timeout=1.0)
-                except subprocess.TimeoutExpired:
-                    self.current_proc.kill()
-                finally:
-                    self.current_proc = None
+            if not loop or not self.running:
+                break
+
+        # Clear status
+        status_msg.data = '{}'
+        self.pub_status.publish(status_msg)
 
 
 def main(args=None):
+    """Run music daemon."""
     rclpy.init(args=args)
-    daemon = MusicDaemon()
+    node = MusicDaemon()
     try:
-        rclpy.spin(daemon)
+        rclpy.spin(node)
     except KeyboardInterrupt:
         pass
     finally:
-        daemon.destroy_node()
+        node.running = False
+        node.stop_playback()
+        node.destroy_node()
         rclpy.shutdown()
 
 

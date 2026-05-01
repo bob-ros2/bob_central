@@ -13,37 +13,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 """
-Status Daemon Node - Unified Telemetry Monitor.
+Status Daemon Node (Streamer Version).
 
-Provides a single-page transparent overlay with system and brain metrics.
+Collects telemetry from various sources and renders a status bitmap for the dashboard.
+Optimized for real-time visualization.
 """
 
-from datetime import datetime
 import json
 import os
 import time
+from datetime import datetime
 
-from PIL import Image, ImageDraw, ImageFont
 import psutil
+from PIL import Image, ImageDraw, ImageFont
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String, UInt8MultiArray
 
 
 class StatusDaemonNode(Node):
-    """ROS 2 node for system and logic telemetry visualization."""
+    """ROS 2 node for rendering system status into a shared bitmap."""
 
     def __init__(self):
-        super().__init__('status_daemon')
+        super().__init__('eva_status_daemon')
 
         # Parameters
-        self.declare_parameter('width', 428)
-        self.declare_parameter('height', 120)
-        self.declare_parameter('update_rate', 0.5)
-        self.declare_parameter('stream_topic', '/eva/streamer/status_stream')
-        self.declare_parameter('stream_max_lines', 5)
+        self.declare_parameter('width', 220)
+        self.declare_parameter('height', 180)
+        self.declare_parameter('update_rate', 1.0)
+        self.declare_parameter('stream_topic', '/eva/orchestrator/stream')
+        self.declare_parameter('stream_max_lines', 12)
         self.declare_parameter('register_dashboard', False)
 
         self.width = self.get_parameter('width').value
@@ -60,7 +60,10 @@ class StatusDaemonNode(Node):
         self.last_layout_time = 0
 
         # New Stream Buffer
-        self.stream_buffer = ['[SYSTEM] Resuming from Hibernation...', '[SYSTEM] Integrity Check: OK']
+        self.stream_buffer = [
+            '[SYSTEM] Resuming from Hibernation...',
+            '[SYSTEM] Integrity Check: OK'
+        ]
         self.current_line_fragment = ''
 
         # Publishers
@@ -193,8 +196,8 @@ class StatusDaemonNode(Node):
         # Narrative: Show DREAMING state for the first 5 minutes if idle
         if state == 'IDLE' and uptime < 300:
             state = 'DREAMING...'
-        
-        draw.text((115, y), f"STATE: {state[:12]}",
+
+        draw.text((115, y), f'STATE: {state[:12]}',
                   fill=255, font=font_small)
         y += row_h
         draw.text((115, y), f"QUEUE: {orch.get('Queue_Depth', 0)}",
@@ -203,40 +206,25 @@ class StatusDaemonNode(Node):
         draw.text((115, y), f"REPL: {self.repl_status['age']}",
                   fill=180, font=font_small)
 
-        # --- Right Half: Reactive Stream (X=220) ---
-        y_stream = 30
-        draw.text((220, y_stream), '[ REACTIVE STREAM ]',
-                  fill=200, font=font_tiny)
-        draw.line([214, 25, 214, self.height - 25],
-                  fill=100, width=1)  # Vertical Separator
-        y_stream += row_h + 2
+        # --- Footer: STREAM (Bottom Section) ---
+        draw.line([0, 85, self.width, 85], fill=180, width=1)
+        draw.text((5, 88), '[ EVENT STREAM ]', fill=200, font=font_tiny)
+        y = 100
+        for line in self.stream_buffer:
+            draw.text((10, y), line, fill=230, font=font_tiny)
+            y += row_h - 1
+            if y > self.height - 5:
+                break
 
-        # Display buffer + current fragment
-        fragments = ([self.current_line_fragment] if
-                     self.current_line_fragment else [])
-        display_lines = self.stream_buffer + fragments
-
-        for line in display_lines[-self.stream_max_lines:]:
-            draw.text((220, y_stream), line, fill=220, font=font_tiny)
-            y_stream += 10
-
-        # Footer
-        draw.line([0, self.height - 25, self.width, self.height - 25],
-                  fill=120, width=1)
-        query_text = orch.get('Last_Query', 'Idle')
-        if len(query_text) > 80:
-            query_text = query_text[:77] + '...'
-        draw.text((10, self.height - 18), f'QUERY: {query_text}',
-                  fill=255, font=font)
-
-        # Publish
+        # Convert to UInt8MultiArray (Grayscale)
+        raw_data = list(img.tobytes())
         msg = UInt8MultiArray()
-        msg.data = list(img.tobytes())
+        msg.data = raw_data
         self.pub_bitmap.publish(msg)
 
 
 def main(args=None):
-    """Initialize and spin the status daemon node."""
+    """Run status daemon."""
     rclpy.init(args=args)
     node = StatusDaemonNode()
     try:

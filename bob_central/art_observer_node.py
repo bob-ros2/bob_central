@@ -110,8 +110,9 @@ class ArtObserverNode(Node):
             try:
                 # Open pipe (blocks until reader is ready)
                 if fifo is None:
-                    # O_NONBLOCK prevents deadlocks if no reader
                     fifo = open(self.pipe_path, 'wb')
+                    self.get_logger().info('Reader connected. Syncing...')
+                    time.sleep(1.0)  # Wait for reader to stabilize
 
                 with self.buffer_lock:
                     if self.image_buffer is not None:
