@@ -22,17 +22,20 @@ jobs:
         run: |
           sudo apt-mark hold firefox
           sudo apt-get purge -y snapd
+
+      - name: Setup ROS 2
+        uses: ros-tooling/setup-ros@v0.7
+        with:
+          required-ros-distributions: humble
+
+      - name: Install extra test dependencies
+        run: |
           sudo apt-get update && sudo apt-get install -y \
             ros-humble-ament-cmake-test \
             ros-humble-ament-lint-auto \
             ros-humble-ament-cmake-copyright \
             ros-humble-ament-cmake-flake8 \
             ros-humble-ament-cmake-pep257
-
-      - name: Setup ROS 2
-        uses: ros-tooling/setup-ros@v0.7
-        with:
-          required-ros-distributions: humble
 
       - name: Build and Test
         uses: ros-tooling/action-ros-ci@v0.3
