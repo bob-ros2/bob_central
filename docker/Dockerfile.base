@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV SHELL=/bin/bash
 
 # -- Install System Dependencies --
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y \
     vim \
     build-essential \
     ffmpeg \
@@ -57,7 +57,7 @@ RUN mkdir -p /ros2_ws/src
 ARG CACHE_BUST=1
 
 # 1. Clone Bob's engine dependencies & install their requirements
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y \
     ros-${ROS_DISTRO}-rosidl-default-generators \
     ros-${ROS_DISTRO}-rosidl-generator-c \
     ros-${ROS_DISTRO}-rosidl-generator-cpp \
