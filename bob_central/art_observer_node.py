@@ -20,7 +20,6 @@ Monitors artwork files and streams them to the dashboard without flickering.
 Uses a persistent buffer to ensure seamless transitions.
 """
 
-import json
 import os
 import threading
 import time
@@ -43,14 +42,12 @@ class ArtObserverNode(Node):
         self.declare_parameter('fps', 15)  # Higher FPS for video stability
         self.declare_parameter('img_size', [320, 320])
         self.declare_parameter('img_pos', [480, 20])
-        self.declare_parameter('register_dashboard', False)
 
         self.image_path = self.get_parameter('image_path').value
         self.pipe_path = self.get_parameter('pipe_path').value
         self.fps = self.get_parameter('fps').value
         self.img_size = self.get_parameter('img_size').value
         self.img_pos = self.get_parameter('img_pos').value
-        self.register_dashboard = self.get_parameter('register_dashboard').value
 
         # Publishers
         self.pub_events = self.create_publisher(
@@ -73,33 +70,11 @@ class ArtObserverNode(Node):
         # Start monitoring
         self.create_timer(1.0, self.check_art)
 
-        # Optional initial registration
-        if self.register_dashboard:
-            self.register_layer()
-
         # Start the streaming thread
         self.stream_thread = threading.Thread(target=self._streaming_loop, daemon=True)
         self.stream_thread.start()
 
         self.get_logger().info('Art Observer Node started (Seamless Mode).')
-
-    def register_layer(self):
-        """Register the artwork layer with the streamer."""
-        config = {
-            'type': 'VideoStream',
-            'id': 'eva_art_background',
-            'area': [
-                self.img_pos[0], self.img_pos[1],
-                self.img_size[0], self.img_size[1]
-            ],
-            'topic': self.pipe_path,
-            'encoding': 'rgb',
-            'source_width': self.img_size[0],
-            'source_height': self.img_size[1]
-        }
-        msg = String()
-        msg.data = json.dumps([config])
-        self.pub_events.publish(msg)
 
     def _streaming_loop(self):
         """Persist loop to push frames into the pipe at a steady rate."""

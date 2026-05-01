@@ -44,14 +44,12 @@ class StatusDaemonNode(Node):
         self.declare_parameter('update_rate', 1.0)
         self.declare_parameter('stream_topic', '/eva/orchestrator/stream')
         self.declare_parameter('stream_max_lines', 12)
-        self.declare_parameter('register_dashboard', False)
 
         self.width = self.get_parameter('width').value
         self.height = self.get_parameter('height').value
         self.update_rate = self.get_parameter('update_rate').value
         self.stream_topic = self.get_parameter('stream_topic').value
         self.stream_max_lines = self.get_parameter('stream_max_lines').value
-        self.register_dashboard = self.get_parameter('register_dashboard').value
 
         # State
         self.orch_status = {}
@@ -82,25 +80,8 @@ class StatusDaemonNode(Node):
 
         # Timers
         self.create_timer(self.update_rate, self.render_loop)
-
-        # Optional initial registration
-        if self.register_dashboard:
-            self.register_layer()
-
         self.get_logger().info(
             f'Status Daemon V2 (Streamer) on {self.stream_topic}')
-
-    def register_layer(self):
-        """Register the system status layer with the streamer."""
-        config = {
-            'type': 'Bitmap', 'id': 'system_status',
-            'area': [426, 360, self.width, self.height],
-            'topic': '/eva/streamer/data/system_status',
-            'depth': 8, 'color': [0, 255, 150, 255]
-        }
-        msg = String()
-        msg.data = json.dumps([config])
-        self.pub_events.publish(msg)
 
     def orch_cb(self, msg):
         """Update orchestrator status."""

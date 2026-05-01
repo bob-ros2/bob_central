@@ -49,7 +49,7 @@ services:
     command: [ "/ros2_ws/src/bob_nviz/scripts/start_stream.sh" ]
     volumes:
       - /tmp/eva:/tmp
-      - /volume1/ros/eva/dashboard_terminals_v2_config.json:/ros2_ws/src/bob_central/config/layout_main.json
+      - ../config/layout_main.json:/ros2_ws/src/bob_central/config/layout_main.json:ro
     logging:
       driver: "json-file"
       options:
