@@ -40,7 +40,7 @@ class ArtObserverNode(Node):
         # Parameters
         self.declare_parameter('image_path', '/root/eva/media/eva_artist.jpg')
         self.declare_parameter('pipe_path', '/tmp/photo_pipe')
-        self.declare_parameter('fps', 5)  # Higher FPS for video stability
+        self.declare_parameter('fps', 15)  # Higher FPS for video stability
         self.declare_parameter('img_size', [320, 320])
         self.declare_parameter('img_pos', [480, 20])
         self.declare_parameter('register_dashboard', False)
