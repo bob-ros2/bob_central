@@ -39,8 +39,8 @@ class StatusDaemonNode(Node):
         super().__init__('eva_status_daemon')
 
         # Parameters
-        self.declare_parameter('width', 220)
-        self.declare_parameter('height', 180)
+        self.declare_parameter('width', 428)
+        self.declare_parameter('height', 120)
         self.declare_parameter('update_rate', 1.0)
         self.declare_parameter('stream_topic', '/eva/orchestrator/stream')
         self.declare_parameter('stream_max_lines', 12)
