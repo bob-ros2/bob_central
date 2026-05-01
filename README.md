@@ -7,8 +7,7 @@ This package is a **General Central Orchestration Brain-Mesh System** designed f
 
 **The Central Nervous System of the Bob ROS Ecosystem.**
 
-`bob_central` provides the essential infrastructure for orchestrating complex, multi-modular AI agents in a ROS 2 environment. It handles everything from high-level decision making (Orchestrator) to real-time system visualization (nviz), stateful code engineering (REPL), and autonomous documentation management (Knowledge Graph).\
-It is specifically designed to be an ideal environment for developing a ROS 2 infrastructure-based AI in collaboration with advanced coding agents such as Gemini, Anthropic or others.
+`bob_central` provides the essential infrastructure for orchestrating complex, multi-modular AI agents in a ROS 2 environment. It handles everything from high-level decision making (Orchestrator) to real-time system visualization (nviz), stateful code engineering (REPL), and autonomous documentation management (Knowledge Graph).
 
 ## Core Concept
 At its heart, `bob_central` manages a "Brain-Mesh" of interconnected specialized nodes. The system is not monolithic; it is a distributed network of intelligence where every component is replaceable and extensible.
