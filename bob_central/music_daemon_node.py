@@ -25,7 +25,6 @@ import os
 import queue
 import subprocess
 import threading
-import time
 
 import rclpy
 from rclpy.node import Node
