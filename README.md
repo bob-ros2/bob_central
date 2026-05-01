@@ -12,6 +12,20 @@ This package is a **General Central Orchestration Brain-Mesh System** designed f
 ## Core Concept
 At its heart, `bob_central` manages a "Brain-Mesh" of interconnected specialized nodes. The system is not monolithic; it is a distributed network of intelligence where every component is replaceable and extensible.
 
+### Core Nodes (`bob_central`)
+| Node | Description |
+|:---|:---|
+| `agency_daemon` | Orchestrates autonomous agent workflows and tool execution. |
+| `art_observer` | Vision-Language observer for providing artistic feedback on generated content. |
+| `browser_daemon` | Manages headless browser automation for information retrieval. |
+| `jlog` | Handles JSON-structured logging and system-wide telemetry aggregation. |
+| `memory_daemon` | Manages long-term memory storage and retrieval using Qdrant vector database. |
+| `music_daemon` | Controls media playback, playlist management, and auditory atmosphere. |
+| `orchestrator` | The central brain of Eva, responsible for logic routing and task dispatching. |
+| `repl` | Provides an interactive command-line interface for direct system interaction. |
+| `status_daemon` | Renders the dashboard telemetry bitmap and manages the real-time event stream. |
+| `tti` | Gateway node for asynchronous Text-to-Image generation requests. |
+
 ## Key Features
 - **Recursive Reasoning (RLM Core)**: Multi-step internal dialogue using expert personas (Architect, Critic, Planner, Debugger) to decompose complex tasks.
 - **Persistent Python REPL**: A stateful engineering environment for iterative code development and system manipulation, preserving state across sessions.
@@ -52,6 +66,9 @@ To manage the complex set of services, a master management script is provided in
 | `compose-inference.yaml` | LLM inference servers (Vision/Reasoning). |
 | `compose-qdrant.yaml` | Vector database for long-term memory. |
 | `compose.face.yaml` | Facial animation and sentiment visualization engine. |
+| `compose-browser.yaml` | Headless browser for web exploration. |
+| `compose-dns.yaml` | Local DNS management for internal resolution. |
+| `compose-vox.yaml` | Speech-to-Text (STT) and voice input processing. |
 
 ### Security Features
 
