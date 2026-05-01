@@ -68,7 +68,9 @@ def run_client(args):
 
     rclpy.init()
     node = Node('play_music_client')
-    pub = node.create_publisher(String, '/eva/media/play_request', 10)
+    from rclpy.qos import QoSProfile, DurabilityPolicy
+    qos = QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL)
+    pub = node.create_publisher(String, '/eva/media/play_request', qos)
 
     print('Connecting to Music Daemon...')
     # Wait for the daemon to subscribe to our topic (discovery)
