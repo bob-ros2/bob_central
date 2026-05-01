@@ -3,11 +3,9 @@
 [![amd64](https://img.shields.io/github/actions/workflow/status/bob-ros2/bob_central/docker.yml?label=amd64&logo=docker)](https://github.com/bob-ros2/bob_central/actions/workflows/docker.yml)
 [![arm64](https://img.shields.io/github/actions/workflow/status/bob-ros2/bob_central/docker.yml?label=arm64&logo=docker)](https://github.com/bob-ros2/bob_central/actions/workflows/docker.yml)
 
-This package is a **General Central Orchestration Brain-Mesh System** designed for building and hosting self-evolving, autonomous AI entities within isolated container environments. It represents an AI deeply integrated into a **ROS 2 environment**, leveraging the full power of the ROS 2 ecosystem (topics, services, and parameters) for real-world interaction and self-monitoring.
-
 **The Central Nervous System of the Bob ROS Ecosystem.**
 
-`bob_central` provides the essential infrastructure for orchestrating complex, multi-modular AI agents in a ROS 2 environment. It handles everything from high-level decision making (Orchestrator) to real-time system visualization (nviz), stateful code engineering (REPL), and autonomous documentation management (Knowledge Graph).
+`bob_central` provides the essential infrastructure for orchestrating complex, multi-modular AI agents in a ROS 2 environment. It is an ideal platform for developing and evolving AI systems in collaboration with advanced coding agents such as **Antigravity**, **Gemini**, or **Anthropic**. The package handles everything from high-level decision making (Orchestrator) to real-time system visualization (nviz), stateful code engineering (REPL), and autonomous knowledge management.
 
 ## Core Concept
 At its heart, `bob_central` manages a "Brain-Mesh" of interconnected specialized nodes. The system is not monolithic; it is a distributed network of intelligence where every component is replaceable and extensible.
