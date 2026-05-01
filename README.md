@@ -57,6 +57,7 @@ To manage the complex set of services, a master management script is provided in
 | `compose-vox.yaml` | Speech-to-Text (STT) and voice input processing. |
 
 ### Security Features
+
 - **Container Isolation**: All specialized nodes run in independent Docker containers to minimize the attack surface and protect the host system.
 - **Traffic Control & Privacy**: Integrated local DNS (AdGuard) management to monitor and block unauthorized outbound telemetry or data-sharing requests from AI models.
 - **DDS Domain Separation**: Enforcement of strict `ROS_DOMAIN_ID` boundaries to prevent cross-talk between development, testing, and production environments.
