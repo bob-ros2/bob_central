@@ -21,7 +21,7 @@ COMPOSE_FILES=(
     "compose-tbot.yaml"
     "compose.face.yaml"
     "compose-browser.yaml"
-    "compose-vox.yaml"
+#    "compose-vox.yaml"
 )
 
 # Build the docker-compose command with all files and a fixed project name

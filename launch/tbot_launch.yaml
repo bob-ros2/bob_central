@@ -44,7 +44,7 @@
     - messages
     - chat_filtered
     - '0.1'
-    - /eva/user_query_tbot
+    - /eva/user_query
     - --ros-args
     - -r
     - *twitch_ns
