@@ -33,12 +33,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && git config --global --add safe.directory '*'
 
-# -- Install NVIDIA Utilities (nvidia-smi) --
-# Default version for nvidia-utils (can be overridden via build-arg)
+# -- Install NVIDIA Utilities (nvidia-smi) only on AMD64 --
 ARG NVIDIA_VERSION=535
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN if [ "$(uname -m)" = "x86_64" ]; then \
+    apt-get update && apt-get install -y --no-install-recommends \
     nvidia-utils-${NVIDIA_VERSION}-server \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/*; \
+    else \
+    echo "Skipping nvidia-utils for non-x86_64 architecture"; \
+    fi
 
 # -- Install Python Dependencies for Eva --
 # Leverage Docker layer caching for requirements
