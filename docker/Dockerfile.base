@@ -63,7 +63,13 @@ RUN apt-get update && apt-get install -y \
     ros-${ROS_DISTRO}-rosidl-generator-cpp \
     ros-${ROS_DISTRO}-rosidl-typesupport-c \
     ros-${ROS_DISTRO}-rosidl-typesupport-cpp \
+    ros-${ROS_DISTRO}-rosidl-default-runtime \
     ros-${ROS_DISTRO}-builtin-interfaces \
+    ros-${ROS_DISTRO}-ament-cmake-test \
+    ros-${ROS_DISTRO}-ament-lint-auto \
+    ros-${ROS_DISTRO}-ament-cmake-copyright \
+    ros-${ROS_DISTRO}-ament-cmake-flake8 \
+    ros-${ROS_DISTRO}-ament-cmake-pep257 \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
