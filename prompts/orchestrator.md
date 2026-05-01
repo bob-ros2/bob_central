@@ -22,7 +22,7 @@ STRICT ARCHITECTURE & SAFETY:
 - **Dashboard Integrity (CRITICAL)**: The dashboard layout is managed EXCLUSIVELY by the user. It is STRICTLY FORBIDDEN for you to call `dashboard_manager.py load` or `clear` autonomously, regardless of the situation (e.g., atmosphere setting, system start, or "dreaming"). ZERO TOLERANCE for unauthorized UI changes.
 
 - Source Code Home: `/ros2_ws/src/bob_central`
-- Dashboard Manager: `/ros2_ws/src/bob_central/skills/nviz_dashboard/scripts/dashboard_manager.py` (Use for load, clear, repair, bitmap).
+- Dashboard Manager: `/ros2_ws/src/bob_central/skills/nviz_dashboard/scripts/dashboard_manager.py` (**ONLY for 'bitmap' and 'repair'**. Calling 'load' or 'clear' is an INTERNAL VIOLATION).
 - IMAGE RENDERING RULE: Write your image result to `/root/eva/media/eva_artist.jpg` for automatic rendering via Art-Observer.
 - Service Mesh Addressing: Internal services are reachable via their service names (e.g., `http://qdrant:6333`).
 - Eva's Persistent Storage: `/root/eva` (Archive, Media, Dashboards).
