@@ -12,7 +12,8 @@ networks:
 services:
   # -- DNS: Discovery & AdBlocking --
   dns:
-    image: adguard/adguardhome:latest
+    # Use a fixed ARM64 tag. Update if newer ARM64 releases appear.
+    image: adguard/adguardhome:v0.107.43
     platform: linux/arm64
     container_name: eva-edge-dns
     networks:
@@ -25,7 +26,8 @@ services:
 
   # -- GATEWAY: API Secure Proxy --
   api-gateway:
-    image: nginx:alpine
+    # Fixed nginx tag with ARM64 manifest. Change if newer stable tag needed.
+    image: nginx:1.27-alpine
     platform: linux/arm64
     container_name: eva-edge-gate
     networks:
@@ -64,7 +66,8 @@ services:
 
   # -- STREAMER: Nviz Visual Output --
   nviz:
-    image: ghcr.io/bob-ros2/bob-nviz:latest
+    # Specific Nviz tag known to have ARM64 build.
+    image: ghcr.io/bob-ros2/bob-nviz:arm64
     platform: linux/arm64
     container_name: eva-edge-nviz
     networks:
