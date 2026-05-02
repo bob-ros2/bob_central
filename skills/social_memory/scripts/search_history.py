@@ -14,7 +14,7 @@ def main():
     
     args = parser.parse_args()
     
-    db_url = os.getenv('COUCHDB_URL', 'http://admin:eva_central_2026@api-gateway:5984/memo_db')
+    db_url = os.getenv('COUCHDB_URL', 'http://api-gateway:8080/couchdb/memo_db')
     
     # Mango Query
     selector = {

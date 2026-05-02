@@ -44,7 +44,7 @@ class MemoryDaemonNode(Node):
         super().__init__('memory_daemon')
 
         # Parameters
-        db_default = 'http://api-gateway:8080/memo_db'
+        db_default = 'http://api-gateway:8080/couchdb/memo_db'
         env_db_url = os.environ.get('JLOG_DB_URL', db_default)
         self.declare_parameter('db_url', env_db_url)
         self.declare_parameter('cache_ttl', 900)  # 15 minutes TTL
