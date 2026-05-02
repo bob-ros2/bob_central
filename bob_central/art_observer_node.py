@@ -39,13 +39,11 @@ class ArtObserverNode(Node):
         self.declare_parameter('pipe_path', '/tmp/photo_pipe')
         self.declare_parameter('fps', 15)  # Higher FPS for video stability
         self.declare_parameter('img_size', [320, 320])
-        self.declare_parameter('img_pos', [480, 20])
 
         self.image_path = self.get_parameter('image_path').value
         self.pipe_path = self.get_parameter('pipe_path').value
         self.fps = self.get_parameter('fps').value
         self.img_size = self.get_parameter('img_size').value
-        self.img_pos = self.get_parameter('img_pos').value
 
         # State
         self.last_mtime = 0

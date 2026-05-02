@@ -136,8 +136,6 @@
   parameters:
     image_path: "/root/eva/media/eva_artist.jpg"
     img_size: [320, 320]
-    img_pos: [480, 20]
-    register_dashboard: true
   arguments:
     - --ros-args
     - -r
