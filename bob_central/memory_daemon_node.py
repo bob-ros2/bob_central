@@ -201,7 +201,7 @@ class MemoryDaemonNode(Node):
                             'metadata': {
                                 '$elemMatch': {
                                     'key': 'user_name',
-                                    'value': {'$regex': f'(?i)^{username}$'}
+                                    'value': username
                                 }
                             }
                         },
@@ -212,7 +212,7 @@ class MemoryDaemonNode(Node):
                 'limit': 1
             }
             search_url = f'{self.db_url}/_find'
-            res = requests.post(search_url, json=query_oldest, timeout=2.0)
+            res = requests.post(search_url, json=query_oldest, timeout=5.0)
 
             insight = 'Stammgast.'
             if res.status_code == 200:
@@ -233,7 +233,7 @@ class MemoryDaemonNode(Node):
                 'metadata': {
                     '$elemMatch': {
                         'key': 'user_name',
-                        'value': {'$regex': f'(?i)^{username}$'}
+                        'value': username
                     }
                 }
             }
@@ -248,7 +248,7 @@ class MemoryDaemonNode(Node):
             }
 
             search_url = f'{self.db_url}/_find'
-            res = requests.post(search_url, json=query_json, timeout=3.0)
+            res = requests.post(search_url, json=query_json, timeout=5.0)
 
             if res.status_code == 200:
                 return res.json().get('docs', [])
