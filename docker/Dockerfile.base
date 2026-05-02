@@ -30,6 +30,7 @@ RUN apt-get update && apt-get install -y \
     openssh-client \
     libasound2-dev \
     libssl-dev \
+    openssl \
     && rm -rf /var/lib/apt/lists/* \
     && git config --global --add safe.directory '*'
 
@@ -85,7 +86,8 @@ RUN echo "Cache bust: $CACHE_BUST" && \
 COPY . /ros2_ws/src/bob_central
 
 # 3. Clean and Build (Force clean to avoid symlink/copy mismatches)
-RUN rm -rf /ros2_ws/build /ros2_ws/install /ros2_ws/log && \
+RUN export OPENSSL_ROOT_DIR=/usr && \
+    rm -rf /ros2_ws/build /ros2_ws/install /ros2_ws/log && \
     . /opt/ros/${ROS_DISTRO}/setup.sh && \
     colcon build --symlink-install --packages-select bob_llm bob_central bob_launch bob_synth \
     --event-handlers console_direct+
