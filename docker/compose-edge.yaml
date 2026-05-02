@@ -40,12 +40,16 @@ services:
 
   # -- CORE: EVA (Brain & Logic) --
   base:
+  
+    image: ghcr.io/bob-ros2/bob-base:arm64
+    # OR
+    #build:
+    #  context: ../
+    #  dockerfile: ./docker/Dockerfile.base
+    #  args:
+    #    ROS_DISTRO: ${ROS_DISTRO:-humble}
+
     platform: linux/arm64
-    build:
-      context: ../
-      dockerfile: ./docker/Dockerfile.base
-      args:
-        ROS_DISTRO: ${ROS_DISTRO:-humble}
     container_name: eva-edge-base
     networks:
       - eva-net
