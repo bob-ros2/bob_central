@@ -92,7 +92,8 @@ def get_system_status():
 
         # ROS nodes
         try:
-            ros_domain = os.environ.get('ROS_DOMAIN_ID', '50')
+            # Pick domain from environment (set via docker-compose .env)
+            ros_domain = os.environ.get('ROS_DOMAIN_ID', '0')
             ros_setup = '/opt/ros/${ROS_DISTRO:-humble}/setup.bash'
             ws_setup = '/ros2_ws/install/setup.bash'
             ros_cmd = (
