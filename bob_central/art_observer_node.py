@@ -28,6 +28,7 @@ from PIL import Image
 import rclpy
 from rclpy.node import Node
 
+
 class ArtObserverNode(Node):
     """ROS 2 node for monitoring and streaming artwork seamlessly."""
 

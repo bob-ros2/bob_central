@@ -5,6 +5,7 @@ import requests
 import os
 import sys
 
+
 def main():
     parser = argparse.ArgumentParser(description='Search user history in CouchDB')
     parser.add_argument('--user', required=True, help='Username to search')
