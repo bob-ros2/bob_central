@@ -27,8 +27,6 @@ import time
 from PIL import Image
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
-
 
 class ArtObserverNode(Node):
     """ROS 2 node for monitoring and streaming artwork seamlessly."""
@@ -48,10 +46,6 @@ class ArtObserverNode(Node):
         self.fps = self.get_parameter('fps').value
         self.img_size = self.get_parameter('img_size').value
         self.img_pos = self.get_parameter('img_pos').value
-
-        # Publishers
-        self.pub_events = self.create_publisher(
-            String, '/eva/streamer/events', 10)
 
         # State
         self.last_mtime = 0
