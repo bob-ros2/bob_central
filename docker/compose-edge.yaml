@@ -13,6 +13,7 @@ services:
   # -- DNS: Discovery & AdBlocking --
   dns:
     image: adguard/adguardhome:latest
+    platform: linux/arm64
     container_name: eva-edge-dns
     networks:
       eva-net:
@@ -25,6 +26,7 @@ services:
   # -- GATEWAY: API Secure Proxy --
   api-gateway:
     image: nginx:alpine
+    platform: linux/arm64
     container_name: eva-edge-gate
     networks:
       - eva-net
@@ -36,6 +38,7 @@ services:
 
   # -- CORE: EVA (Brain & Logic) --
   base:
+    platform: linux/arm64
     build:
       context: ../
       dockerfile: ./docker/Dockerfile.base
@@ -62,6 +65,7 @@ services:
   # -- STREAMER: Nviz Visual Output --
   nviz:
     image: ghcr.io/bob-ros2/bob-nviz:latest
+    platform: linux/arm64
     container_name: eva-edge-nviz
     networks:
       - eva-net
