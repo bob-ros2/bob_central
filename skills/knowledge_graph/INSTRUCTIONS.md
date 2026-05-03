@@ -8,7 +8,7 @@ Run the following command to fetch all manuals from GitHub and build the `SKILL.
 python3 scripts/sync.py
 ```
 This script will:
-1. Parse `/blue/dev/bob_topic_tools/ros2_ws/src/bob_central/config/knowledge_repos.yaml`.
+1. Parse `/ros2_ws/src/bob_central/config/knowledge_repos.yaml`.
 2. Download all READMEs into `docs/`.
 3. Rebuild `SKILL.md` to reflect the available knowledge.
 

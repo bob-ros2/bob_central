@@ -31,7 +31,7 @@ except ImportError:
 DEFAULT_LAYOUT = "/ros2_ws/src/bob_central/config/layout_main.json"
 if not os.path.exists(DEFAULT_LAYOUT):
     # Fallback for host-side execution
-    DEFAULT_LAYOUT = "/blue/dev/bob_topic_tools/ros2_ws/src/bob_central/config/layout_main.json"
+    DEFAULT_LAYOUT = "/ros2_ws/src/bob_central/config/layout_main.json"
 
 COLLECTION_NAME = "eva_nviz_dashboards"
 

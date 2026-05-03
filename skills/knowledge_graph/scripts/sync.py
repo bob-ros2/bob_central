@@ -27,7 +27,7 @@ import yaml
 # Paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Central config path
-CONFIG_PATH = '/blue/dev/bob_topic_tools/ros2_ws/src/bob_central/config/knowledge_repos.yaml'
+CONFIG_PATH = '/ros2_ws/src/bob_central/config/knowledge_repos.yaml'
 DOCS_DIR = os.path.join(BASE_DIR, 'docs')
 SKILL_MD_PATH = os.path.join(BASE_DIR, 'SKILL.md')
 

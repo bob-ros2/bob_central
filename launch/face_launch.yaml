@@ -87,7 +87,7 @@
 #    - -r
 #    - *face_ns
 #    - -p
-#    - sequences_config:=/blue/dev/rosface/ros2_ws/src/bob_face/config/sequences.yaml
+#    - sequences_config:=/ros2_ws/src/bob_face/config/sequences.yaml
 
 #- name: tf_map_2_face
 #  package: tf2_ros
