@@ -26,6 +26,10 @@ services:
     volumes:
       - ~/eva_data/dns/work:/opt/adguardhome/work
       - ~/eva_data/dns/conf:/opt/adguardhome/conf
+    ports:
+      - "3000:3000"     # AdGuard Home Web UI (Setup/Dashboard)
+      - "53:53/udp"     # DNS service (UDP)
+      - "53:53/tcp"     # DNS service (TCP)
     restart: unless-stopped
 
   # -- GATEWAY: API Secure Proxy --
@@ -40,6 +44,9 @@ services:
       - ../.env
     volumes:
       - ../config/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+    ports:
+      - "80:80"         # Public HTTP port
+      - "443:443"       # Public HTTPS port
     restart: always
 
   # -- CORE: EVA (Brain & Logic) --
