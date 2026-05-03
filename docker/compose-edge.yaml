@@ -39,7 +39,7 @@ services:
     env_file:
       - ../.env
     volumes:
-      - ../config/nginx-edge-combined.template:/etc/nginx/templates/default.conf.template:ro
+      - ../config/nginx-edge.conf:/etc/nginx/templates/default.conf.template:ro
     ports:
       - "80:80"
     restart: always
