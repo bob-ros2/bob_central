@@ -79,12 +79,10 @@ To talk to Eva directly from the Edge device's terminal:
    *Alternatively, you can run the full command if needed:*
    ```bash
    ros2 run bob_llm chat \
-     --topic_in /eva/bobassi/user_query \
+     --topic_in /eva/user_query \
      --topic_out /eva/llm_stream \
-     --topic_response /eva/bobassi/response \
-     --topic_tools /eva/llm_tool_calls \
-     --topic_reasoning /eva/llm_reasoning \
-     --panels
+     --topic_response /eva/llm_latest_turn \
+     --topic_reasoning /eva/llm_reasoning
    ```
 
 ## Configuration Files
