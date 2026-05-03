@@ -1,0 +1,3 @@
+/root/eva/media/br_bach_20260428_140000_rec.mp3
+/root/eva/media/br_bach_20260503_231656_rec.mp3
+/root/eva/media/20231104_br_the_left.mp3

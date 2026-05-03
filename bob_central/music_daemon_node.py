@@ -48,7 +48,7 @@ def get_audio_info(file_path):
         return {
             'title': tags.get('TIT2', tags.get('title', os.path.basename(file_path))),
             'artist': tags.get('artist', tags.get('ARTIST', 'Unknown Artist')),
-            'duration': f'{int(dur // 60)}:{int(dur % 60):02d}'
+            'duration': f'{int(dur // 60)}:{int(dur % 60):02d}',
         }
     except Exception:
         return {'title': os.path.basename(file_path), 'artist': 'Unknown', 'duration': '?:??'}
@@ -62,15 +62,21 @@ class MusicDaemon(Node):
         self.pub_audio = self.create_publisher(Int16MultiArray, audio_topic, 10)
         self.pub_status = self.create_publisher(String, status_topic, 10)
         from rclpy.qos import QoSProfile, DurabilityPolicy
+
         qos = QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL)
 
         self.sub_request = self.create_subscription(
-            String, '/eva/media/play_request', self.on_request, qos)
+            String, '/eva/media/play_request', self.on_request, qos
+        )
 
         self.audio_topic = audio_topic
         self.task_queue = queue.Queue()
         self.current_process = None
         self.running = True
+
+        # loop_all support
+        self.loop_all_active = False
+        self.loop_all_files = []
 
         # Start worker thread
         self.worker_thread = threading.Thread(target=self._worker_loop, daemon=True)
@@ -85,16 +91,17 @@ class MusicDaemon(Node):
             files = data.get('files', [])
             enqueue = data.get('enqueue', False)
             loop = data.get('loop', False)
+            loop_all = data.get('loop_all', False)
 
             if not enqueue:
-                # Stop current playback if not enqueuing
                 self.stop_playback()
 
+            if loop_all:
+                self.loop_all_active = True
+                self.loop_all_files = list(files)
+
             for f in files:
-                self.task_queue.put({
-                    'path': f,
-                    'loop': loop
-                })
+                self.task_queue.put({'path': f, 'loop': loop})
                 self.get_logger().info(f'Added task with {f}')
 
         except Exception as e:
@@ -105,17 +112,24 @@ class MusicDaemon(Node):
         with self.task_queue.mutex:
             self.task_queue.queue.clear()
 
+        self.loop_all_active = False
+        self.loop_all_files = []
+
         if self.current_process:
             self.current_process.terminate()
             self.current_process = None
 
     def _worker_loop(self):
-        """Worker thread to process the audio queue."""
+        """Infinite loop processing the queue."""
         while rclpy.ok() and self.running:
             try:
                 task = self.task_queue.get(timeout=1.0)
                 self._play_file(task['path'], task['loop'])
             except queue.Empty:
+                # If loop_all is active and queue is empty, re-queue all files
+                if self.loop_all_active and self.loop_all_files:
+                    for f in self.loop_all_files:
+                        self.task_queue.put({'path': f, 'loop': False})
                 continue
             except Exception as e:
                 self.get_logger().error(f'Worker loop error: {e}')
@@ -144,10 +158,8 @@ class MusicDaemon(Node):
                 cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
             )
 
-            # Read from pipe and publish
-            chunk_size = 4096  # 1024 samples * 2 channels * 2 bytes
             while rclpy.ok() and self.running:
-                data = self.current_process.stdout.read(chunk_size)
+                data = self.current_process.stdout.read(4096)
                 if not data:
                     break
 
@@ -158,8 +170,7 @@ class MusicDaemon(Node):
                 self.pub_audio.publish(msg)
 
             self.current_process.wait()
-
-            if not loop or not self.running:
+            if not loop:
                 break
 
         # Clear status
@@ -168,17 +179,16 @@ class MusicDaemon(Node):
 
 
 def main(args=None):
-    """Run music daemon."""
     rclpy.init(args=args)
-    node = MusicDaemon()
+    daemon = MusicDaemon()
     try:
-        rclpy.spin(node)
+        rclpy.spin(daemon)
     except KeyboardInterrupt:
         pass
     finally:
-        node.running = False
-        node.stop_playback()
-        node.destroy_node()
+        daemon.running = False
+        daemon.stop_playback()
+        daemon.destroy_node()
         rclpy.shutdown()
 
 
