@@ -29,15 +29,6 @@ jobs:
         with:
           required-ros-distributions: ${{ env.ROS_DISTRO }}
 
-      - name: Install extra test dependencies
-        run: |
-          sudo apt-get update && sudo apt-get install -y \
-            ros-${{ env.ROS_DISTRO }}-ament-cmake-test \
-            ros-${{ env.ROS_DISTRO }}-ament-lint-auto \
-            ros-${{ env.ROS_DISTRO }}-ament-cmake-copyright \
-            ros-${{ env.ROS_DISTRO }}-ament-cmake-flake8 \
-            ros-${{ env.ROS_DISTRO }}-ament-cmake-pep257
-
       - name: Build and Test
         uses: ros-tooling/action-ros-ci@v0.3
         with:
@@ -45,3 +36,5 @@ jobs:
           target-ros2-distro: ${{ env.ROS_DISTRO }}
           vcs-repo-file-url: ''
           import-token: ${{ secrets.GITHUB_TOKEN }}
+          # Ensure all dependencies from package.xml are installed
+          skip-rosdep-update: false
