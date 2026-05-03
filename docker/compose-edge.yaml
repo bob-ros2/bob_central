@@ -9,6 +9,10 @@ networks:
       config:
         - subnet: 192.168.32.0/24
 
+secrets:
+  twitch_key:
+    file: /volume1/ros/secrets/streamkey_bobassi
+
 services:
   # -- DNS: Discovery & AdBlocking --
   dns:
@@ -76,9 +80,14 @@ services:
     container_name: eva-edge-nviz
     networks:
       - eva-net
+    restart: unless-stopped
+    secrets:
+      - twitch_key
     env_file:
       - ../.env
     environment:
+      - TWITCH_STREAM_KEY_FILE=/run/secrets/twitch_key
+      - TWITCH_STREAM_KEY_FILE_NAME=/run/secrets/twitch_key
       - NAMESPACE=/eva/streamer
       - NVIZ_WIDTH=854
       - NVIZ_HEIGHT=480
@@ -88,4 +97,3 @@ services:
     volumes:
       - /tmp/eva:/tmp
       - ../config/layout_main.json:/ros2_ws/src/bob_central/config/layout_main.json:ro
-    restart: unless-stopped
