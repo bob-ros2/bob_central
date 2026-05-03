@@ -1,0 +1,18 @@
+# ROS 2 Environment
+source /opt/ros/humble/setup.bash
+source /ros2_ws/install/setup.bash
+
+# Eva Chat Alias
+alias chat='ros2 run bob_llm chat \
+  --topic_in /eva/bobassi/user_query \
+  --topic_out /eva/llm_stream \
+  --topic_response /eva/bobassi/response \
+  --topic_tools /eva/llm_tool_calls \
+  --topic_reasoning /eva/llm_reasoning \
+  --panels'
+
+echo "------------------------------------------------------"
+echo " Eva Edge Base Container"
+echo " ROS 2 Environment Sourced."
+echo " Type 'chat' to talk to Eva."
+echo "------------------------------------------------------"

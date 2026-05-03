@@ -72,6 +72,7 @@ services:
       - ~/eva_data/base/media:/root/eva/media
       - ~/eva_data/base/logs:/root/eva/logs
       - ~/eva_data/base/ssh:/root/.ssh
+      - ./bashrc_edge:/root/.bashrc:ro
     restart: on-failure
 
   # -- STREAMER: Nviz Visual Output --

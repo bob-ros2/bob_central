@@ -62,6 +62,31 @@ Verify that Eva can reach the internet (once DNS setup is complete):
 docker logs eva-edge-base | grep "network"
 ```
 
+## Interacting with Eva (Chat)
+
+To talk to Eva directly from the Edge device's terminal:
+
+1. **Enter the container**:
+   ```bash
+   docker exec -it eva-edge-base bash
+   ```
+2. **Start the Chat**:
+   (The environment is automatically sourced. Just type the alias:)
+   ```bash
+   chat
+   ```
+
+   *Alternatively, you can run the full command if needed:*
+   ```bash
+   ros2 run bob_llm chat \
+     --topic_in /eva/bobassi/user_query \
+     --topic_out /eva/llm_stream \
+     --topic_response /eva/bobassi/response \
+     --topic_tools /eva/llm_tool_calls \
+     --topic_reasoning /eva/llm_reasoning \
+     --panels
+   ```
+
 ## Configuration Files
 
 - **`docker/compose-edge.yaml`**: The main orchestration file. It handles network isolation (192.168.32.0/24), secrets, and ARM64-specific image tags.
