@@ -1,6 +1,9 @@
 # -- ROS 2 Core Sourcing --
-if [ -f /opt/ros/humble/setup.bash ]; then
-    source /opt/ros/humble/setup.bash
+# Use ROS_DISTRO from environment or fallback to humble
+DISTRO=${ROS_DISTRO:-humble}
+
+if [ -f /opt/ros/$DISTRO/setup.bash ]; then
+    source /opt/ros/$DISTRO/setup.bash
 fi
 
 # -- Workspace Sourcing (if exists) --
@@ -22,7 +25,7 @@ fi
 # -- Visual Feedback --
 echo "------------------------------------------------------"
 echo " Eva ROS 2 Environment"
-echo " Sourced: /opt/ros/humble"
+echo " Sourced: /opt/ros/$DISTRO"
 [ -f /ros2_ws/install/setup.bash ] && echo " Sourced: /ros2_ws/install"
 [ -d /ros2_ws/install/bob_llm ] && echo " Alias 'chat' is available."
 echo "------------------------------------------------------"

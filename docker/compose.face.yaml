@@ -17,7 +17,7 @@ services:
       - DISPLAY=$DISPLAY
       - QT_X11_NO_MITSHM=1
     command: >
-      bash -c "source /opt/ros/humble/setup.bash && 
+      bash -c "source /opt/ros/$${ROS_DISTRO:-humble}/setup.bash && 
                if [ -f /ros2_ws/install/setup.bash ]; then source /ros2_ws/install/setup.bash; fi &&
                ros2 launch bob_launch generic.launch.py config:=/ros2_ws/src/bob_central/launch/face_launch.yaml"
     volumes:

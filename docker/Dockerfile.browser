@@ -3,7 +3,10 @@ FROM mcr.microsoft.com/playwright/python:v1.42.0-jammy
 # Prevent interactive prompts during build (fixes tzdata hang)
 ENV DEBIAN_FRONTEND=noninteractive
 
-# ROS 2 Humble Installation components
+# ROS 2 Distribution Argument
+ARG ROS_DISTRO=humble
+
+# Installation components
 RUN apt-get update && apt-get install -y \
     curl \
     gnupg2 \
@@ -13,9 +16,9 @@ RUN apt-get update && apt-get install -y \
     && curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null \
     && apt-get update && apt-get install -y \
-    ros-humble-ros-base \
-    ros-humble-sensor-msgs \
-    ros-humble-cv-bridge \
+    ros-${ROS_DISTRO}-ros-base \
+    ros-${ROS_DISTRO}-sensor-msgs \
+    ros-${ROS_DISTRO}-cv-bridge \
     python3-colcon-common-extensions \
     && rm -rf /var/lib/apt/lists/*
 
@@ -33,5 +36,5 @@ COPY . /ros2_ws/src/bob_central
 RUN python3 -m playwright install --with-deps chromium
 
 # Entrypoint setup
-ENTRYPOINT ["/bin/bash", "-c", "source /opt/ros/humble/setup.bash && exec \"$@\""]
+ENTRYPOINT ["/bin/bash", "-c", "source /opt/ros/${ROS_DISTRO}/setup.bash && exec \"$@\""]
 CMD ["python3", "/ros2_ws/src/bob_central/bob_central/browser_daemon_node.py"]
