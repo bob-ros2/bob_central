@@ -64,7 +64,6 @@ services:
     environment:
       - MASTER_SEARXNG_LANGUAGE=en-US
       - BOB_LAUNCH_AUTOABORT=0
-    # No GPU reservation for ARM devices
     # Automated environment setup for interactive shells (docker exec)
     command: >
       bash -c "
