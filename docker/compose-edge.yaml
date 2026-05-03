@@ -26,8 +26,6 @@ services:
     volumes:
       - ~/eva_data/dns/work:/opt/adguardhome/work
       - ~/eva_data/dns/conf:/opt/adguardhome/conf
-    ports:
-      - "3000:3000"     # Needed for the Web-UI Setup
     restart: unless-stopped
 
   # -- GATEWAY: API Secure Proxy --
@@ -42,6 +40,8 @@ services:
       - ../.env
     volumes:
       - ../config/nginx-edge-dns-proxy.conf:/etc/nginx/templates/default.conf.template:ro
+    ports:
+      - "80:80"
     restart: always
 
   # -- CORE: EVA (Brain & Logic) --
