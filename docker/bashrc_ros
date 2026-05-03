@@ -1,0 +1,28 @@
+# -- ROS 2 Core Sourcing --
+if [ -f /opt/ros/humble/setup.bash ]; then
+    source /opt/ros/humble/setup.bash
+fi
+
+# -- Workspace Sourcing (if exists) --
+if [ -f /ros2_ws/install/setup.bash ]; then
+    source /ros2_ws/install/setup.bash
+fi
+
+# -- Chat Alias (only if bob_llm is installed) --
+if [ -d /ros2_ws/install/bob_llm ]; then
+    alias chat='ros2 run bob_llm chat \
+      --topic_in /eva/user_query \
+      --topic_out /eva/llm_stream \
+      --topic_response /eva/logic/internal/full_response_text \
+      --topic_reasoning /eva/llm_reasoning \
+      --topic_tools /eva/llm_tool_calls \
+      --panels'
+fi
+
+# -- Visual Feedback --
+echo "------------------------------------------------------"
+echo " Eva ROS 2 Environment"
+echo " Sourced: /opt/ros/humble"
+[ -f /ros2_ws/install/setup.bash ] && echo " Sourced: /ros2_ws/install"
+[ -d /ros2_ws/install/bob_llm ] && echo " Alias 'chat' is available."
+echo "------------------------------------------------------"

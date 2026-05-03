@@ -46,6 +46,7 @@ services:
     dns: ["192.168.32.100"]
     volumes:
       - ../:/ros2_ws/src/bob_central # Map source for self-evolution
+      - ./bashrc_ros:/root/.bashrc:ro
       - /volume1/ros/eva:/root/eva # Unified persistent home
       - /volume1/ros/eva/ssh:/root/.ssh # Persistent AI Identity (Keys)
       - /tmp/eva:/tmp
@@ -65,5 +66,6 @@ services:
     dns: ["192.168.32.100"]
     volumes:
       - ../:/ros2_ws/src/bob_central
+      - ./bashrc_ros:/root/.bashrc:ro
       - /tmp/eva:/tmp
     restart: always

@@ -64,22 +64,11 @@ services:
     environment:
       - MASTER_SEARXNG_LANGUAGE=en-US
       - BOB_LAUNCH_AUTOABORT=0
-    # Automated environment setup for interactive shells (docker exec)
-    command: >
-      bash -c "
-      echo 'source /opt/ros/humble/setup.bash' > /root/.bashrc &&
-      echo 'source /ros2_ws/install/setup.bash' >> /root/.bashrc &&
-      echo \"alias chat='ros2 run bob_llm chat --topic_in /eva/user_query --topic_out /eva/llm_stream --topic_response /eva/logic/internal/full_response_text --topic_reasoning /eva/llm_reasoning --topic_tools /eva/llm_tool_calls'\" >> /root/.bashrc &&
-      echo \"echo '------------------------------------------------------'\" >> /root/.bashrc &&
-      echo \"echo ' Eva Edge Base Container'\" >> /root/.bashrc &&
-      echo \"echo ' ROS 2 Environment Sourced.'\" >> /root/.bashrc &&
-      echo \"echo ' Type \\\"chat\\\" to talk to Eva.'\" >> /root/.bashrc &&
-      echo \"echo '------------------------------------------------------'\" >> /root/.bashrc &&
-      ros2 launch bob_launch generic.launch.py config:=/ros2_ws/src/bob_central/launch/eva_base_launch.yaml
-      "
+    command: ros2 launch bob_launch generic.launch.py config:=/ros2_ws/src/bob_central/launch/eva_base_launch.yaml
     dns: ["192.168.32.100"]
     volumes:
       - ../:/ros2_ws/src/bob_central
+      - ./bashrc_ros:/root/.bashrc:ro
       - ~/eva_data/base/media:/root/eva/media
       - ~/eva_data/base/logs:/root/eva/logs
       - ~/eva_data/base/ssh:/root/.ssh

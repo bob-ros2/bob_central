@@ -71,7 +71,7 @@ To talk to Eva directly from the Edge device's terminal:
    docker exec -it eva-edge-base bash
    ```
 2. **Start the Chat**:
-   (The environment is automatically sourced. Just type the alias:)
+   (The environment is automatically sourced and include the `--panels` view by default. Just type the alias:)
    ```bash
    chat
    ```
@@ -83,7 +83,8 @@ To talk to Eva directly from the Edge device's terminal:
      --topic_out /eva/llm_stream \
      --topic_response /eva/logic/internal/full_response_text \
      --topic_reasoning /eva/llm_reasoning \
-     --topic_tools /eva/llm_tool_calls
+     --topic_tools /eva/llm_tool_calls \
+     --panels
    ```
 
 ## Configuration Files
