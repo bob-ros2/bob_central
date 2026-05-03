@@ -1,0 +1,84 @@
+# -- SERVER 1: DNS GUI PROXY (Port 80) --
+server {
+    listen 80;
+
+    location / {
+        # Try normal operation port (80) first
+        proxy_pass http://192.168.32.100:80;
+        
+        # If port 80 is not responding (502/504), fallback to setup port (3000)
+        proxy_intercept_errors on;
+        error_page 502 504 = @setup;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Fallback location for the initial setup phase
+    location @setup {
+        proxy_pass http://192.168.32.100:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+# -- SERVER 2: LLM API & SERVICES (Port 8080) --
+server {
+    listen 8080;
+
+    # Global Streaming optimizations for LLM interactions
+    tcp_nodelay on;
+    proxy_buffering off;
+    proxy_request_buffering off;
+    proxy_cache off;
+    proxy_set_header Connection "";
+    proxy_http_version 1.1;
+    chunked_transfer_encoding on;
+    proxy_read_timeout 600s;
+    proxy_send_timeout 600s;
+    keepalive_timeout 600s;
+
+    location /v1/ {
+        # Security & Speed: Disable ALL buffering layers for streaming
+        proxy_buffering off;
+        proxy_request_buffering off;
+        proxy_cache off;
+        proxy_set_header X-Accel-Buffering no;
+        proxy_ignore_headers "Expires" "Cache-Control" "Set-Cookie";
+        gzip off;
+
+        # Inject the API Key from the environment variable
+        proxy_set_header Authorization "Bearer ${UPSTREAM_API_KEY}";
+        proxy_set_header Content-Type "application/json";
+        
+        # Forward to the backend (DeepSeek OR local)
+        proxy_pass https://api.deepseek.com/v1/;
+        
+        # Handle SSL for remote backends
+        proxy_ssl_server_name on;
+        proxy_ssl_protocols TLSv1.2 TLSv1.3;
+        
+        # Preserve error messages from upstream for better debugging
+        proxy_intercept_errors off;
+    }
+
+    # Proxy SearXNG search requests
+    location /search {
+        proxy_pass http://${SEARXNG_URL}/search;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # CouchDB Proxy for Social Memory
+    location /couchdb/ {
+        proxy_pass http://${COUCHDB_URL}/;
+        proxy_set_header Host $host;
+        proxy_set_header Authorization "Basic ${COUCHDB_AUTH}";
+    }
+}
