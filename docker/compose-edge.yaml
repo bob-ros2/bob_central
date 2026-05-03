@@ -69,7 +69,7 @@ services:
       bash -c "
       echo 'source /opt/ros/humble/setup.bash' > /root/.bashrc &&
       echo 'source /ros2_ws/install/setup.bash' >> /root/.bashrc &&
-      echo \"alias chat='ros2 run bob_llm chat --topic_in /eva/user_query --topic_out /eva/llm_stream --topic_response /eva/llm_latest_turn --topic_reasoning /eva/llm_reasoning'\" >> /root/.bashrc &&
+      echo \"alias chat='ros2 run bob_llm chat --topic_in /eva/user_query --topic_out /eva/llm_stream --topic_response /eva/logic/internal/full_response_text --topic_reasoning /eva/llm_reasoning --topic_tools /eva/llm_tool_calls'\" >> /root/.bashrc &&
       echo \"echo '------------------------------------------------------'\" >> /root/.bashrc &&
       echo \"echo ' Eva Edge Base Container'\" >> /root/.bashrc &&
       echo \"echo ' ROS 2 Environment Sourced.'\" >> /root/.bashrc &&
