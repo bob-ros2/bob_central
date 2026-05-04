@@ -36,5 +36,3 @@ jobs:
           target-ros2-distro: ${{ env.ROS_DISTRO }}
           vcs-repo-file-url: ''
           import-token: ${{ secrets.GITHUB_TOKEN }}
-          # Ensure all dependencies from package.xml are installed
-          skip-rosdep-update: false
