@@ -32,4 +32,4 @@ ENTRYPOINT ["/ros_entrypoint.sh"]
 # Expose Web UI and Bridge Ports
 EXPOSE 5000 5001
 
-CMD ["ros2", "launch", "vizanti", "vizanti.launch.py"]
+CMD ["ros2", "launch", "vizanti_server", "vizanti_server.launch.py"]
