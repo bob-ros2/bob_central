@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     python3-flask \
     python3-flask-compress \
     python3-eventlet \
+    python3-waitress \
     ros-${ROS_DISTRO}-rosbridge-suite \
     ros-${ROS_DISTRO}-tf2-web-republisher \
     git \
@@ -17,7 +18,8 @@ RUN apt-get update && apt-get install -y \
 
 # -- Build Vizanti from Source (ROS 2 Branch) --
 WORKDIR /ros2_ws/src
-RUN git clone -b ros2 https://github.com/MoffKalast/vizanti.git
+RUN git clone -b ros2 https://github.com/MoffKalast/vizanti.git && \
+    sed -i 's/4.0/4/g' vizanti/vizanti_server/launch/vizanti_server.launch.py
 
 WORKDIR /ros2_ws
 RUN . /opt/ros/${ROS_DISTRO}/setup.sh && \
