@@ -106,3 +106,17 @@ services:
       - /tmp/eva:/tmp
       - ../config/layout_main.json:/ros2_ws/src/bob_central/config/layout_main.json:ro
 
+  # -- VISUALIZER: Vizanti (Self-Built Web GUI) --
+  vizanti:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile.vizanti
+    container_name: eva-edge-vizanti
+    networks:
+      - eva-net
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+    environment:
+      - ROS_DOMAIN_ID=55
+    restart: unless-stopped

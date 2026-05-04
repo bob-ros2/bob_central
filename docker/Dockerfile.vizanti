@@ -1,0 +1,35 @@
+# -- Vizanti: Self-Hosted ROS 2 Web GUI (ARM64/AMD64 compatible) --
+ARG ROS_DISTRO=humble
+FROM ros:${ROS_DISTRO}-ros-base
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# -- Install Vizanti & Dependencies --
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    python3-flask \
+    python3-flask-compress \
+    python3-eventlet \
+    ros-${ROS_DISTRO}-rosbridge-suite \
+    ros-${ROS_DISTRO}-tf2-web-republisher \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# -- Build Vizanti from Source (ROS 2 Branch) --
+WORKDIR /ros2_ws/src
+RUN git clone -b ros2 https://github.com/MoffKalast/vizanti.git
+
+WORKDIR /ros2_ws
+RUN . /opt/ros/${ROS_DISTRO}/setup.sh && \
+    colcon build --packages-select vizanti --cmake-args -DBUILD_TESTING=OFF
+
+# -- Setup Entrypoint --
+RUN echo "#!/bin/bash\nsource /opt/ros/\${ROS_DISTRO}/setup.bash\nsource /ros2_ws/install/setup.bash\nexec \"\$@\"" > /ros_entrypoint.sh \
+    && chmod +x /ros_entrypoint.sh
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+
+# Expose Web UI and Bridge Ports
+EXPOSE 5000 5001
+
+CMD ["ros2", "launch", "vizanti", "vizanti.launch.py"]
