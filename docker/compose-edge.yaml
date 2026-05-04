@@ -64,7 +64,7 @@ services:
     environment:
       - MASTER_SEARXNG_LANGUAGE=en-US
       - BOB_LAUNCH_AUTOABORT=0
-      - ROS_DISCOVERY_SERVER=discovery-server:11811
+      - ROS_DISCOVERY_SERVER=192.168.32.1:11811
     command: ros2 launch bob_launch generic.launch.py config:=/ros2_ws/src/bob_central/launch/eva_base_launch.yaml
     dns: ["192.168.32.100"]
     volumes:
@@ -108,14 +108,11 @@ services:
       - /tmp/eva:/tmp
       - ../config/layout_main.json:/ros2_ws/src/bob_central/config/layout_main.json:ro
 
-  # -- NETWORK: Discovery Server --
+  # -- NETWORK: Discovery Server (Host Mode for UDP Stability) --
   discovery-server:
     image: ghcr.io/bob-ros2/bob-base:arm64
     container_name: eva-edge-discovery
-    networks:
-      - eva-net
-    ports:
-      - "11811:11811/udp"
+    network_mode: host
     command: fastdds discovery --server-id 0
     restart: always
 
