@@ -115,7 +115,7 @@ services:
     networks:
       - eva-net
     ports:
-      - "11811:11811"
+      - "11811:11811/udp"
     command: fastdds discovery --server-id 0
     restart: always
 
