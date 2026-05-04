@@ -105,3 +105,15 @@ services:
     volumes:
       - /tmp/eva:/tmp
       - ../config/layout_main.json:/ros2_ws/src/bob_central/config/layout_main.json:ro
+
+  # -- VISUALIZER: ROSboard (Self-Hosted Web GUI) --
+  rosboard:
+    image: dheera/rosboard:latest
+    container_name: eva-edge-rosboard
+    networks:
+      - eva-net
+    ports:
+      - "8888:8888"
+    environment:
+      - ROS_DOMAIN_ID=55
+    restart: unless-stopped
