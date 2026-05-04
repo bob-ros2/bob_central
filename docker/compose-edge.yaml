@@ -106,3 +106,19 @@ services:
       - /tmp/eva:/tmp
       - ../config/layout_main.json:/ros2_ws/src/bob_central/config/layout_main.json:ro
 
+  # -- GATEWAY: ROSbridge WebSocket --
+  rosbridge:
+    image: ros:humble-ros-base
+    container_name: eva-edge-rosbridge
+    networks:
+      - eva-net
+    ports:
+      - "9090:9090"
+    environment:
+      - ROS_DOMAIN_ID=55
+    restart: unless-stopped
+    command: >
+      bash -c "apt-get update && apt-get install -y ros-humble-rosbridge-suite && 
+      source /opt/ros/humble/setup.bash && 
+      ros2 launch rosbridge_server rosbridge_websocket_launch.xml"
+
